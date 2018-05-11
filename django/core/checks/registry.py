@@ -4,9 +4,9 @@ from django.utils.itercompat import is_iterable
 
 
 class Tags:
-    """
+    '''
     Built-in tags for internal checks.
-    """
+    '''
     admin = 'admin'
     caches = 'caches'
     compatibility = 'compatibility'
@@ -19,7 +19,6 @@ class Tags:
 
 
 class CheckRegistry:
-
     def __init__(self):
         self.registered_checks = set()
         self.deployment_checks = set()
@@ -40,6 +39,7 @@ class CheckRegistry:
             # or
             registry.register(my_check, 'mytag', 'anothertag')
         """
+
         def inner(check):
             check.tags = tags
             checks = self.deployment_checks if kwargs.get('deploy') else self.registered_checks
@@ -48,15 +48,13 @@ class CheckRegistry:
 
         if callable(check):
             return inner(check)
-        else:
-            if check:
-                tags += (check,)
-            return inner
+        elif check:
+            tags += (check,)return inner
 
     def run_checks(self, app_configs=None, tags=None, include_deployment_checks=False):
-        """
+        '''
         Run all registered checks and return list of Errors and Warnings.
-        """
+        '''
         errors = []
         checks = self.get_checks(include_deployment_checks)
 
@@ -69,9 +67,11 @@ class CheckRegistry:
 
         for check in checks:
             new_errors = check(app_configs=app_configs)
-            assert is_iterable(new_errors), (
+            assert is_iterable(new_errors), \
                 "The function %r did not return a list. All functions registered "
-                "with the checks registry must return a list." % check)
+                "with the checks registry must return a list." \
+                % \
+                check
             errors.extend(new_errors)
         return errors
 
@@ -79,9 +79,7 @@ class CheckRegistry:
         return tag in self.tags_available(include_deployment_checks)
 
     def tags_available(self, deployment_checks=False):
-        return set(chain.from_iterable(
-            check.tags for check in self.get_checks(deployment_checks)
-        ))
+        return set(chain.from_iterable(check.tags for check in self.get_checks(deployment_checks)))
 
     def get_checks(self, include_deployment_checks=False):
         checks = list(self.registered_checks)

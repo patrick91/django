@@ -4,33 +4,35 @@ from datetime import datetime
 from django.test import SimpleTestCase
 from django.utils.functional import lazystr
 from django.utils.html import (
-    conditional_escape, escape, escapejs, format_html, html_safe, json_script,
-    linebreaks, smart_urlquote, strip_spaces_between_tags, strip_tags, urlize,
+    conditional_escape,
+    escape,
+    escapejs,
+    format_html,
+    html_safe,
+    json_script,
+    linebreaks,
+    smart_urlquote,
+    strip_spaces_between_tags,
+    strip_tags,
+    urlize
 )
 from django.utils.safestring import mark_safe
 
 
 class TestUtilsHtml(SimpleTestCase):
-
     def check_output(self, function, value, output=None):
-        """
+        '''
         function(value) equals output. If output is None, function(value)
         equals value.
-        """
+        '''
         if output is None:
             output = value
         self.assertEqual(function(value), output)
 
     def test_escape(self):
-        items = (
-            ('&', '&amp;'),
-            ('<', '&lt;'),
-            ('>', '&gt;'),
-            ('"', '&quot;'),
-            ("'", '&#39;'),
-        )
+        items = (('&', '&amp;'), ('<', '&lt;'), ('>', '&gt;'), ('"', '&quot;'), ("'", '&#39;'))
         # Substitution patterns for testing the above items.
-        patterns = ("%s", "asdf%sfdsa", "%s1", "1%sb")
+        patterns = ('%s', 'asdf%sfdsa', '%s1', '1%sb')
         for value, output in items:
             with self.subTest(value=value, output=output):
                 for pattern in patterns:
@@ -43,23 +45,14 @@ class TestUtilsHtml(SimpleTestCase):
         self.check_output(escape, '<&', '&lt;&amp;')
 
     def test_format_html(self):
-        self.assertEqual(
-            format_html(
-                "{} {} {third} {fourth}",
-                "< Dangerous >",
-                mark_safe("<b>safe</b>"),
-                third="< dangerous again",
-                fourth=mark_safe("<i>safe again</i>"),
-            ),
-            "&lt; Dangerous &gt; <b>safe</b> &lt; dangerous again <i>safe again</i>"
-        )
+        self.assertEqual(format_html('{} {} {third} {fourth}', '< Dangerous >', mark_safe('<b>safe</b>'), third='< dangerous again', fourth=mark_safe('<i>safe again</i>')), '&lt; Dangerous &gt; <b>safe</b> &lt; dangerous again <i>safe again</i>')
 
     def test_linebreaks(self):
         items = (
-            ("para1\n\npara2\r\rpara3", "<p>para1</p>\n\n<p>para2</p>\n\n<p>para3</p>"),
-            ("para1\nsub1\rsub2\n\npara2", "<p>para1<br>sub1<br>sub2</p>\n\n<p>para2</p>"),
-            ("para1\r\n\r\npara2\rsub1\r\rpara4", "<p>para1</p>\n\n<p>para2<br>sub1</p>\n\n<p>para4</p>"),
-            ("para1\tmore\n\npara2", "<p>para1\tmore</p>\n\n<p>para2</p>"),
+            ('para1\n\npara2\r\rpara3', '<p>para1</p>\n\n<p>para2</p>\n\n<p>para3</p>'),
+            ('para1\nsub1\rsub2\n\npara2', '<p>para1<br>sub1<br>sub2</p>\n\n<p>para2</p>'),
+            ('para1\r\n\r\npara2\rsub1\r\rpara4', '<p>para1</p>\n\n<p>para2<br>sub1</p>\n\n<p>para4</p>'),
+            ('para1\tmore\n\npara2', '<p>para1\tmore</p>\n\n<p>para2</p>')
         )
         for value, output in items:
             with self.subTest(value=value, output=output):
@@ -68,8 +61,10 @@ class TestUtilsHtml(SimpleTestCase):
 
     def test_strip_tags(self):
         items = (
-            ('<p>See: &#39;&eacute; is an apostrophe followed by e acute</p>',
-             'See: &#39;&eacute; is an apostrophe followed by e acute'),
+            (
+                '<p>See: &#39;&eacute; is an apostrophe followed by e acute</p>',
+                'See: &#39;&eacute; is an apostrophe followed by e acute'
+            ),
             ('<adf>a', 'a'),
             ('</adf>a', 'a'),
             ('<asdf><asdf>e', 'e'),
@@ -87,7 +82,7 @@ class TestUtilsHtml(SimpleTestCase):
             # http://bugs.python.org/issue20288
             ('&gotcha&#;<>', '&gotcha&#;<>'),
             ('<sc<!-- -->ript>test<<!-- -->/script>', 'ript>test'),
-            ('<script>alert()</script>&h', 'alert()h'),
+            ('<script>alert()</script>&h', 'alert()h')
         )
         for value, output in items:
             with self.subTest(value=value, output=output):
@@ -105,7 +100,7 @@ class TestUtilsHtml(SimpleTestCase):
                     stripped = strip_tags(content)
                     elapsed = datetime.now() - start
                 self.assertEqual(elapsed.seconds, 0)
-                self.assertIn("Please try again.", stripped)
+                self.assertIn('Please try again.', stripped)
                 self.assertNotIn('<', stripped)
 
     def test_strip_spaces_between_tags(self):
@@ -115,12 +110,11 @@ class TestUtilsHtml(SimpleTestCase):
             with self.subTest(value=value):
                 self.check_output(strip_spaces_between_tags, value)
                 self.check_output(strip_spaces_between_tags, lazystr(value))
-
         # Strings that have spaces to strip.
         items = (
             ('<d> </d>', '<d></d>'),
             ('<p>hello </p>\n<p> world</p>', '<p>hello </p><p> world</p>'),
-            ('\n<p>\t</p>\n<p> </p>\n', '\n<p></p><p></p>\n'),
+            ('\n<p>\t</p>\n<p> </p>\n', '\n<p></p><p></p>\n')
         )
         for value, output in items:
             with self.subTest(value=value, output=output):
@@ -140,7 +134,7 @@ class TestUtilsHtml(SimpleTestCase):
                 'paragraph separator:\u2029and line separator:\u2028',
                 'paragraph separator:\\u2029and line separator:\\u2028'
             ),
-            ('`', '\\u0060'),
+            ('`', '\\u0060')
         )
         for value, output in items:
             with self.subTest(value=value, output=output):
@@ -148,9 +142,9 @@ class TestUtilsHtml(SimpleTestCase):
                 self.check_output(escapejs, lazystr(value), output)
 
     def test_json_script(self):
-        tests = (
-            # "<", ">" and "&" are quoted inside JSON strings
-            (('&<>', '<script id="test_id" type="application/json">"\\u0026\\u003C\\u003E"</script>')),
+        tests = # "<", ">" and "&" are quoted inside JSON strings
+        (
+            ('&<>', '<script id="test_id" type="application/json">"\\u0026\\u003C\\u003E"</script>'),
             # "<", ">" and "&" are quoted inside JSON objects
             (
                 {'a': '<script>test&ing</script>'},
@@ -163,7 +157,7 @@ class TestUtilsHtml(SimpleTestCase):
                 {'a': lazystr('<script>test&ing</script>')},
                 '<script id="test_id" type="application/json">'
                 '{"a": "\\u003Cscript\\u003Etest\\u0026ing\\u003C/script\\u003E"}</script>'
-            ),
+            )
         )
         for arg, expected in tests:
             with self.subTest(arg=arg):
@@ -179,10 +173,14 @@ class TestUtilsHtml(SimpleTestCase):
             ('http://example.com/%C3%B6/ä/', 'http://example.com/%C3%B6/%C3%A4/'),
             ('http://example.com/?x=1&y=2+3&z=', 'http://example.com/?x=1&y=2+3&z='),
             ('http://example.com/?x=<>"\'', 'http://example.com/?x=%3C%3E%22%27'),
-            ('http://example.com/?q=http://example.com/?x=1%26q=django',
-             'http://example.com/?q=http%3A%2F%2Fexample.com%2F%3Fx%3D1%26q%3Ddjango'),
-            ('http://example.com/?q=http%3A%2F%2Fexample.com%2F%3Fx%3D1%26q%3Ddjango',
-             'http://example.com/?q=http%3A%2F%2Fexample.com%2F%3Fx%3D1%26q%3Ddjango'),
+            (
+                'http://example.com/?q=http://example.com/?x=1%26q=django',
+                'http://example.com/?q=http%3A%2F%2Fexample.com%2F%3Fx%3D1%26q%3Ddjango'
+            ),
+            (
+                'http://example.com/?q=http%3A%2F%2Fexample.com%2F%3Fx%3D1%26q%3Ddjango',
+                'http://example.com/?q=http%3A%2F%2Fexample.com%2F%3Fx%3D1%26q%3Ddjango'
+            )
         )
         # IDNs are properly quoted
         for value, output in items:
@@ -245,11 +243,8 @@ class TestUtilsHtml(SimpleTestCase):
                 'Search for google.com/?q=! and see.',
                 'Search for <a href="http://google.com/?q=">google.com/?q=</a>! and see.'
             ),
-            (
-                lazystr('Search for google.com/?q=!'),
-                'Search for <a href="http://google.com/?q=">google.com/?q=</a>!'
-            ),
-            ('foo@example.com', '<a href="mailto:foo@example.com">foo@example.com</a>'),
+            (lazystr('Search for google.com/?q=!'), 'Search for <a href="http://google.com/?q=">google.com/?q=</a>!'),
+            ('foo@example.com', '<a href="mailto:foo@example.com">foo@example.com</a>')
         )
         for value, output in tests:
             with self.subTest(value=value):
@@ -257,13 +252,13 @@ class TestUtilsHtml(SimpleTestCase):
 
     def test_urlize_unchanged_inputs(self):
         tests = (
-            ('a' + '@a' * 50000) + 'a',  # simple_email_re catastrophic test
-            ('a' + '.' * 1000000) + 'a',  # trailing_punctuation catastrophic test
+            'a' + '@a' * 50000 + 'a', # simple_email_re catastrophic test
+            'a' + '.' * 1000000 + 'a', # trailing_punctuation catastrophic test
             'foo@',
             '@foo.com',
             'foo@.example.com',
             'foo@localhost',
-            'foo@localhost.',
+            'foo@localhost.'
         )
         for value in tests:
             with self.subTest(value=value):

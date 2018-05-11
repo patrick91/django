@@ -2,8 +2,16 @@ from django.core.exceptions import FieldError
 from django.test import TestCase
 
 from .models import (
-    Entry, Line, Post, RegressionModelSplit, SelfRefer, SelfReferChild,
-    SelfReferChildSibling, Tag, TagCollection, Worksheet,
+    Entry,
+    Line,
+    Post,
+    RegressionModelSplit,
+    SelfRefer,
+    SelfReferChild,
+    SelfReferChildSibling,
+    Tag,
+    TagCollection,
+    Worksheet
 )
 
 
@@ -25,34 +33,33 @@ class M2MRegressionTests(TestCase):
         e1.topics.add(t1)
         e1.related.add(t2)
 
-        self.assertQuerysetEqual(s1.references.all(), ["<SelfRefer: s2>"])
-        self.assertQuerysetEqual(s1.related.all(), ["<SelfRefer: s3>"])
+        self.assertQuerysetEqual(s1.references.all(), ['<SelfRefer: s2>'])
+        self.assertQuerysetEqual(s1.related.all(), ['<SelfRefer: s3>'])
 
-        self.assertQuerysetEqual(e1.topics.all(), ["<Tag: t1>"])
-        self.assertQuerysetEqual(e1.related.all(), ["<Tag: t2>"])
+        self.assertQuerysetEqual(e1.topics.all(), ['<Tag: t1>'])
+        self.assertQuerysetEqual(e1.related.all(), ['<Tag: t2>'])
 
     def test_internal_related_name_not_in_error_msg(self):
         # The secret internal related names for self-referential many-to-many
         # fields shouldn't appear in the list when an error is made.
-        self.assertRaisesMessage(
-            FieldError,
-            "Choices are: id, name, references, related, selfreferchild, selfreferchildsibling",
-            lambda: SelfRefer.objects.filter(porcupine='fred')
-        )
+        self.assertRaisesMessage(FieldError, 'Choices are: id, name, references, related, selfreferchild, selfreferchildsibling', lambda \
+                 \
+            : \
+                SelfRefer.objects.filter(porcupine='fred'))
 
     def test_m2m_inheritance_symmetry(self):
         # Test to ensure that the relationship between two inherited models
         # with a self-referential m2m field maintains symmetry
 
-        sr_child = SelfReferChild(name="Hanna")
+        sr_child = SelfReferChild(name='Hanna')
         sr_child.save()
 
-        sr_sibling = SelfReferChildSibling(name="Beth")
+        sr_sibling = SelfReferChildSibling(name='Beth')
         sr_sibling.save()
         sr_child.related.add(sr_sibling)
 
-        self.assertQuerysetEqual(sr_child.related.all(), ["<SelfRefer: Beth>"])
-        self.assertQuerysetEqual(sr_sibling.related.all(), ["<SelfRefer: Hanna>"])
+        self.assertQuerysetEqual(sr_child.related.all(), ['<SelfRefer: Beth>'])
+        self.assertQuerysetEqual(sr_sibling.related.all(), ['<SelfRefer: Hanna>'])
 
     def test_m2m_pk_field_type(self):
         # Regression for #11311 - The primary key for models in a m2m relation
@@ -73,19 +80,17 @@ class M2MRegressionTests(TestCase):
         c1.tags.set([t1, t2])
         c1 = TagCollection.objects.get(name='c1')
 
-        self.assertQuerysetEqual(c1.tags.all(), ["<Tag: t1>", "<Tag: t2>"], ordered=False)
-        self.assertQuerysetEqual(t1.tag_collections.all(), ["<TagCollection: c1>"])
+        self.assertQuerysetEqual(c1.tags.all(), ['<Tag: t1>', '<Tag: t2>'], ordered=False)
+        self.assertQuerysetEqual(t1.tag_collections.all(), ['<TagCollection: c1>'])
 
     def test_manager_class_caching(self):
         e1 = Entry.objects.create()
         e2 = Entry.objects.create()
         t1 = Tag.objects.create()
         t2 = Tag.objects.create()
-
         # Get same manager twice in a row:
         self.assertIs(t1.entry_set.__class__, t1.entry_set.__class__)
         self.assertIs(e1.topics.__class__, e1.topics.__class__)
-
         # Get same manager for different instances
         self.assertIs(e1.topics.__class__, e2.topics.__class__)
         self.assertIs(t1.entry_set.__class__, t2.entry_set.__class__)
@@ -106,7 +111,7 @@ class M2MRegressionTests(TestCase):
             c1.tags.set(7)
 
         c1.refresh_from_db()
-        self.assertQuerysetEqual(c1.tags.order_by('name'), ["<Tag: t1>", "<Tag: t2>"])
+        self.assertQuerysetEqual(c1.tags.order_by('name'), ['<Tag: t1>', '<Tag: t2>'])
 
     def test_multiple_forwards_only_m2m(self):
         # Regression for #24505 - Multiple ManyToManyFields to same "to"

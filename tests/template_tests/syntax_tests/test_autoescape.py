@@ -6,7 +6,6 @@ from ..utils import SafeClass, UnsafeClass, setup
 
 
 class AutoescapeTagTests(SimpleTestCase):
-
     @setup({'autoescape-tag01': '{% autoescape off %}hello{% endautoescape %}'})
     def test_autoescape_tag01(self):
         output = self.engine.render_to_string('autoescape-tag01')
@@ -25,7 +24,7 @@ class AutoescapeTagTests(SimpleTestCase):
     # Autoescape disabling and enabling nest in a predictable way.
     @setup({
         'autoescape-tag04':
-        '{% autoescape off %}{{ first }} {% autoescape on %}{{ first }}{% endautoescape %}{% endautoescape %}'
+            '{% autoescape off %}{{ first }} {% autoescape on %}{{ first }}{% endautoescape %}{% endautoescape %}'
     })
     def test_autoescape_tag04(self):
         output = self.engine.render_to_string('autoescape-tag04', {'first': '<a>'})
@@ -48,15 +47,12 @@ class AutoescapeTagTests(SimpleTestCase):
         output = self.engine.render_to_string('autoescape-tag07', {'first': mark_safe('<b>Apple</b>')})
         self.assertEqual(output, '<b>Apple</b>')
 
-    @setup({
-        'autoescape-tag08':
-        r'{% autoescape on %}{{ var|default_if_none:" endquote\" hah" }}{% endautoescape %}'
-    })
+    @setup({'autoescape-tag08': r'{% autoescape on %}{{ var|default_if_none:" endquote" hah" }}{% endautoescape %}'})
     def test_autoescape_tag08(self):
-        """
+        '''
         Literal string arguments to filters, if used in the result, are safe.
-        """
-        output = self.engine.render_to_string('autoescape-tag08', {"var": None})
+        '''
+        output = self.engine.render_to_string('autoescape-tag08', {'var': None})
         self.assertEqual(output, ' endquote" hah')
 
     # Objects which return safe strings as their __str__ method
@@ -73,19 +69,19 @@ class AutoescapeTagTests(SimpleTestCase):
 
     @setup({'autoescape-filtertag01': '{{ first }}{% filter safe %}{{ first }} x<y{% endfilter %}'})
     def test_autoescape_filtertag01(self):
-        """
+        '''
         The "safe" and "escape" filters cannot work due to internal
         implementation details (fortunately, the (no)autoescape block
         tags can be used in those cases)
-        """
+        '''
         with self.assertRaises(TemplateSyntaxError):
             self.engine.render_to_string('autoescape-filtertag01', {'first': '<a>'})
 
     @setup({'autoescape-ifequal01': '{% ifequal var "this & that" %}yes{% endifequal %}'})
     def test_autoescape_ifequal01(self):
-        """
+        '''
         ifequal compares unescaped vales.
-        """
+        '''
         output = self.engine.render_to_string('autoescape-ifequal01', {'var': 'this & that'})
         self.assertEqual(output, 'yes')
 
@@ -102,25 +98,25 @@ class AutoescapeTagTests(SimpleTestCase):
 
     @setup({'autoescape-literals01': '{{ "this & that" }}'})
     def test_autoescape_literals01(self):
-        """
+        '''
         Literal strings are safe.
-        """
+        '''
         output = self.engine.render_to_string('autoescape-literals01')
         self.assertEqual(output, 'this & that')
 
     @setup({'autoescape-stringiterations01': '{% for l in var %}{{ l }},{% endfor %}'})
     def test_autoescape_stringiterations01(self):
-        """
+        '''
         Iterating over strings outputs safe characters.
-        """
+        '''
         output = self.engine.render_to_string('autoescape-stringiterations01', {'var': 'K&R'})
         self.assertEqual(output, 'K,&amp;,R,')
 
     @setup({'autoescape-lookup01': '{{ var.key }}'})
     def test_autoescape_lookup01(self):
-        """
+        '''
         Escape requirement survives lookup.
-        """
+        '''
         output = self.engine.render_to_string('autoescape-lookup01', {'var': {'key': 'this & that'}})
         self.assertEqual(output, 'this &amp; that')
 

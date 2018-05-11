@@ -13,16 +13,18 @@ class Article(models.Model):
 class Person(models.Model):
     name = models.CharField(max_length=30)
     birthday = models.DateField()
-    # Note that this model doesn't have "get_latest_by" set.
 
+
+# Note that this model doesn't have "get_latest_by" set.
 
 # Ticket #23555 - model with an intentionally broken QuerySet.__iter__ method.
 
 class IndexErrorQuerySet(models.QuerySet):
-    """
+    '''
     Emulates the case when some internal code raises an unexpected
     IndexError.
-    """
+    '''
+
     def __iter__(self):
         raise IndexError
 

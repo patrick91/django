@@ -1,6 +1,6 @@
-"""
+'''
 Test URLs for auth admins.
-"""
+'''
 
 from django.conf.urls import url
 from django.contrib import admin
@@ -13,6 +13,4 @@ site = admin.AdminSite(name='auth_test_admin')
 site.register(User, UserAdmin)
 site.register(Group, GroupAdmin)
 
-urlpatterns += [
-    url(r'^admin/', site.urls),
-]
+urlpatterns += [url(r'^admin/', site.urls)]

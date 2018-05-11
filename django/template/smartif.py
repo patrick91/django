@@ -1,50 +1,48 @@
 """
 Parser and utilities for the smart 'if' tag
 """
+
+
 # Using a simple top down parser, as described here:
 #    http://effbot.org/zone/simple-top-down-parsing.htm.
 # 'led' = left denotation
 # 'nud' = null denotation
 # 'bp' = binding power (left = lbp, right = rbp)
 
-
 class TokenBase:
-    """
+    '''
     Base class for operators and literals, mainly for debugging and for throwing
     syntax errors.
-    """
-    id = None  # node/token type name
-    value = None  # used by literals
-    first = second = None  # used by tree nodes
+    '''
+    id = None # node/token type name
+    value = None # used by literals
+    first = second = None # used by tree nodes
 
     def nud(self, parser):
         # Null denotation - called in prefix context
-        raise parser.error_class(
-            "Not expecting '%s' in this position in if tag." % self.id
-        )
+        raise parser.error_class("Not expecting '%s' in this position in if tag." % self.id)
 
     def led(self, left, parser):
         # Left denotation - called in infix context
-        raise parser.error_class(
-            "Not expecting '%s' as infix operator in if tag." % self.id
-        )
+        raise parser.error_class("Not expecting '%s' as infix operator in if tag." % self.id)
 
     def display(self):
-        """
+        '''
         Return what to display in error messages for this node
-        """
+        '''
         return self.id
 
     def __repr__(self):
         out = [str(x) for x in [self.id, self.first, self.second] if x is not None]
-        return "(" + " ".join(out) + ")"
+        return '(' + ' '.join(out) + ')'
 
 
 def infix(bp, func):
-    """
+    '''
     Create an infix operator, given a binding power and a function that
     evaluates the node.
-    """
+    '''
+
     class Operator(TokenBase):
         lbp = bp
 
@@ -66,10 +64,11 @@ def infix(bp, func):
 
 
 def prefix(bp, func):
-    """
+    '''
     Create a prefix operator, given a binding power and a function that
     evaluates the node.
-    """
+    '''
+
     class Operator(TokenBase):
         lbp = bp
 
@@ -103,22 +102,21 @@ OPERATORS = {
     '>': infix(10, lambda context, x, y: x.eval(context) > y.eval(context)),
     '>=': infix(10, lambda context, x, y: x.eval(context) >= y.eval(context)),
     '<': infix(10, lambda context, x, y: x.eval(context) < y.eval(context)),
-    '<=': infix(10, lambda context, x, y: x.eval(context) <= y.eval(context)),
+    '<=': infix(10, lambda context, x, y: x.eval(context) <= y.eval(context))
 }
-
 # Assign 'id' to each:
 for key, op in OPERATORS.items():
     op.id = key
 
 
 class Literal(TokenBase):
-    """
+    '''
     A basic self-resolvable object similar to a Django template variable.
-    """
+    '''
     # IfParser uses Literal in create_var, but TemplateIfParser overrides
     # create_var so that a proper implementation that actually resolves
     # variables, filters etc. is used.
-    id = "literal"
+    id = 'literal'
     lbp = 0
 
     def __init__(self, value):
@@ -134,14 +132,14 @@ class Literal(TokenBase):
         return self.value
 
     def __repr__(self):
-        return "(%s %r)" % (self.id, self.value)
+        return '(%s %r)' % (self.id, self.value)
 
 
 class EndToken(TokenBase):
     lbp = 0
 
     def nud(self, parser):
-        raise parser.error_class("Unexpected end of expression in if tag.")
+        raise parser.error_class('Unexpected end of expression in if tag.')
 
 
 EndToken = EndToken()
@@ -157,12 +155,12 @@ class IfParser:
         i = 0
         while i < num_tokens:
             token = tokens[i]
-            if token == "is" and i + 1 < num_tokens and tokens[i + 1] == "not":
-                token = "is not"
-                i += 1  # skip 'not'
-            elif token == "not" and i + 1 < num_tokens and tokens[i + 1] == "in":
-                token = "not in"
-                i += 1  # skip 'in'
+            if token == 'is' and i + 1 < num_tokens and tokens[i + 1] == 'not':
+                token = 'is not'
+                i += 1 # skip 'not'
+            elif token == 'not' and i + 1 < num_tokens and tokens[i + 1] == 'in':
+                token = 'not in'
+                i += 1 # skip 'in'
             mapped_tokens.append(self.translate_token(token))
             i += 1
 
@@ -190,8 +188,7 @@ class IfParser:
         retval = self.expression()
         # Check that we have exhausted all the tokens
         if self.current_token is not EndToken:
-            raise self.error_class("Unused '%s' at end of if expression." %
-                                   self.current_token.display())
+            raise self.error_class("Unused '%s' at end of if expression." % self.current_token.display())
         return retval
 
     def expression(self, rbp=0):

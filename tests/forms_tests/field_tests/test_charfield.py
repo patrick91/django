@@ -1,14 +1,10 @@
-from django.forms import (
-    CharField, HiddenInput, PasswordInput, Textarea, TextInput,
-    ValidationError,
-)
+from django.forms import CharField, HiddenInput, PasswordInput, Textarea, TextInput, ValidationError
 from django.test import SimpleTestCase
 
 from . import FormFieldAssertionsMixin
 
 
-class CharFieldTest(FormFieldAssertionsMixin, SimpleTestCase):
-
+class CharFieldTest(FormFieldAssertionsMixin,SimpleTestCase):
     def test_charfield_1(self):
         f = CharField()
         self.assertEqual('1', f.clean(1))
@@ -65,10 +61,10 @@ class CharFieldTest(FormFieldAssertionsMixin, SimpleTestCase):
         self.assertEqual(f.min_length, 10)
 
     def test_charfield_length_not_int(self):
-        """
+        '''
         Setting min_length or max_length to something that is not a number
         raises an exception.
-        """
+        '''
         with self.assertRaises(ValueError):
             CharField(min_length='a')
         with self.assertRaises(ValueError):
@@ -78,28 +74,25 @@ class CharFieldTest(FormFieldAssertionsMixin, SimpleTestCase):
             CharField('a')
 
     def test_charfield_widget_attrs(self):
-        """
+        '''
         CharField.widget_attrs() always returns a dictionary and includes
         minlength/maxlength if min_length/max_length are defined on the field
         and the widget is not hidden.
-        """
+        '''
         # Return an empty dictionary if max_length and min_length are both None.
         f = CharField()
         self.assertEqual(f.widget_attrs(TextInput()), {})
         self.assertEqual(f.widget_attrs(Textarea()), {})
-
         # Return a maxlength attribute equal to max_length.
         f = CharField(max_length=10)
         self.assertEqual(f.widget_attrs(TextInput()), {'maxlength': '10'})
         self.assertEqual(f.widget_attrs(PasswordInput()), {'maxlength': '10'})
         self.assertEqual(f.widget_attrs(Textarea()), {'maxlength': '10'})
-
         # Return a minlength attribute equal to min_length.
         f = CharField(min_length=5)
         self.assertEqual(f.widget_attrs(TextInput()), {'minlength': '5'})
         self.assertEqual(f.widget_attrs(PasswordInput()), {'minlength': '5'})
         self.assertEqual(f.widget_attrs(Textarea()), {'minlength': '5'})
-
         # Return both maxlength and minlength when both max_length and
         # min_length are set.
         f = CharField(max_length=10, min_length=5)
@@ -109,9 +102,9 @@ class CharFieldTest(FormFieldAssertionsMixin, SimpleTestCase):
         self.assertEqual(f.widget_attrs(HiddenInput()), {})
 
     def test_charfield_strip(self):
-        """
+        '''
         Values have whitespace stripped but not if strip=False.
-        """
+        '''
         f = CharField()
         self.assertEqual(f.clean(' 1'), '1')
         self.assertEqual(f.clean('1 '), '1')
@@ -129,7 +122,8 @@ class CharFieldTest(FormFieldAssertionsMixin, SimpleTestCase):
         self.assertIsNone(f.clean(' '))
 
     def test_clean_non_string(self):
-        """CharField.clean() calls str(value) before stripping it."""
+        '''CharField.clean() calls str(value) before stripping it.'''
+
         class StringWrapper:
             def __init__(self, v):
                 self.v = v

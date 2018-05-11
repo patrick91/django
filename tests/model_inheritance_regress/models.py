@@ -11,7 +11,7 @@ class Place(models.Model):
         ordering = ('name',)
 
     def __str__(self):
-        return "%s the place" % self.name
+        return '%s the place' % self.name
 
 
 class Restaurant(Place):
@@ -19,14 +19,14 @@ class Restaurant(Place):
     serves_pizza = models.BooleanField(default=False)
 
     def __str__(self):
-        return "%s the restaurant" % self.name
+        return '%s the restaurant' % self.name
 
 
 class ItalianRestaurant(Restaurant):
     serves_gnocchi = models.BooleanField(default=False)
 
     def __str__(self):
-        return "%s the italian restaurant" % self.name
+        return '%s the italian restaurant' % self.name
 
 
 class ParkingLot(Place):
@@ -35,7 +35,7 @@ class ParkingLot(Place):
     capacity = models.IntegerField()
 
     def __str__(self):
-        return "%s the parking lot" % self.name
+        return '%s the parking lot' % self.name
 
 
 class ParkingLot3(Place):
@@ -52,11 +52,11 @@ class ParkingLot4(models.Model):
         abstract = True
 
 
-class ParkingLot4A(ParkingLot4, Place):
+class ParkingLot4A(ParkingLot4,Place):
     pass
 
 
-class ParkingLot4B(Place, ParkingLot4):
+class ParkingLot4B(Place,ParkingLot4):
     pass
 
 
@@ -135,8 +135,7 @@ class DerivedM(BaseM):
     derived_name = models.CharField(max_length=100)
 
     def __str__(self):
-        return "PK = %d, base_name = %s, derived_name = %s" % (
-            self.customPK, self.base_name, self.derived_name)
+        return 'PK = %d, base_name = %s, derived_name = %s' % (self.customPK, self.base_name, self.derived_name)
 
 
 class AuditBase(models.Model):
@@ -169,7 +168,7 @@ class Person(models.Model):
 
 class AbstractEvent(models.Model):
     name = models.CharField(max_length=100)
-    attendees = models.ManyToManyField(Person, related_name="%(class)s_set")
+    attendees = models.ManyToManyField(Person, related_name='%(class)s_set')
 
     class Meta:
         abstract = True
@@ -226,7 +225,7 @@ class Politician(models.Model):
     title = models.CharField(max_length=50)
 
 
-class Congressman(Person, Politician):
+class Congressman(Person,Politician):
     state = models.CharField(max_length=2)
 
 

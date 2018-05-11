@@ -31,7 +31,7 @@ class FilePathFieldTest(SimpleTestCase):
         ('/filepathfield_test_dir/c/f/__init__.py', '__init__.py'),
         ('/filepathfield_test_dir/c/f/g.py', 'g.py'),
         ('/filepathfield_test_dir/h/__init__.py', '__init__.py'),
-        ('/filepathfield_test_dir/j/__init__.py', '__init__.py'),
+        ('/filepathfield_test_dir/j/__init__.py', '__init__.py')
     ]
     path = os.path.join(PATH, 'filepathfield_test_dir') + '/'
 
@@ -39,13 +39,11 @@ class FilePathFieldTest(SimpleTestCase):
         self.assertEqual(fix_os_paths(field.choices), expected_choices)
 
     def test_fix_os_paths(self):
-        self.assertEqual(fix_os_paths(self.path), ('/filepathfield_test_dir/'))
+        self.assertEqual(fix_os_paths(self.path), '/filepathfield_test_dir/')
 
     def test_no_options(self):
         f = FilePathField(path=self.path)
-        expected = [
-            ('/filepathfield_test_dir/README', 'README'),
-        ] + self.expected_choices[:4]
+        expected = [('/filepathfield_test_dir/README', 'README')] + self.expected_choices[:4]
         self.assertChoices(f, expected)
 
     def test_clean(self):
@@ -72,8 +70,7 @@ class FilePathFieldTest(SimpleTestCase):
             ('/filepathfield_test_dir/c/f/__init__.py', 'c/f/__init__.py'),
             ('/filepathfield_test_dir/c/f/g.py', 'c/f/g.py'),
             ('/filepathfield_test_dir/h/__init__.py', 'h/__init__.py'),
-            ('/filepathfield_test_dir/j/__init__.py', 'j/__init__.py'),
-
+            ('/filepathfield_test_dir/j/__init__.py', 'j/__init__.py')
         ]
         self.assertChoices(f, expected)
 
@@ -82,7 +79,7 @@ class FilePathFieldTest(SimpleTestCase):
         self.assertChoices(f, [
             ('/filepathfield_test_dir/c', 'c'),
             ('/filepathfield_test_dir/h', 'h'),
-            ('/filepathfield_test_dir/j', 'j'),
+            ('/filepathfield_test_dir/j', 'j')
         ])
 
     def test_recursive_no_folders_or_files(self):
@@ -95,5 +92,5 @@ class FilePathFieldTest(SimpleTestCase):
             ('/filepathfield_test_dir/c', 'c'),
             ('/filepathfield_test_dir/h', 'h'),
             ('/filepathfield_test_dir/j', 'j'),
-            ('/filepathfield_test_dir/c/f', 'c/f'),
+            ('/filepathfield_test_dir/c/f', 'c/f')
         ])

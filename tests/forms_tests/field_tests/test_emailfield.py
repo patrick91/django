@@ -4,8 +4,7 @@ from django.test import SimpleTestCase
 from . import FormFieldAssertionsMixin
 
 
-class EmailFieldTest(FormFieldAssertionsMixin, SimpleTestCase):
-
+class EmailFieldTest(FormFieldAssertionsMixin,SimpleTestCase):
     def test_emailfield_1(self):
         f = EmailField()
         self.assertWidgetRendersTo(f, '<input type="email" name="f" id="id_f" required>')
@@ -16,10 +15,7 @@ class EmailFieldTest(FormFieldAssertionsMixin, SimpleTestCase):
         self.assertEqual('person@example.com', f.clean('person@example.com'))
         with self.assertRaisesMessage(ValidationError, "'Enter a valid email address.'"):
             f.clean('foo')
-        self.assertEqual(
-            'local@domain.with.idn.xyz\xe4\xf6\xfc\xdfabc.part.com',
-            f.clean('local@domain.with.idn.xyzäöüßabc.part.com')
-        )
+        self.assertEqual('local@domain.with.idn.xyz\xe4\xf6\xfc\xdfabc.part.com', f.clean('local@domain.with.idn.xyzäöüßabc.part.com'))
 
     def test_email_regexp_for_performance(self):
         f = EmailField()
@@ -39,10 +35,7 @@ class EmailFieldTest(FormFieldAssertionsMixin, SimpleTestCase):
 
     def test_emailfield_min_max_length(self):
         f = EmailField(min_length=10, max_length=15)
-        self.assertWidgetRendersTo(
-            f,
-            '<input id="id_f" type="email" name="f" maxlength="15" minlength="10" required>',
-        )
+        self.assertWidgetRendersTo(f, '<input id="id_f" type="email" name="f" maxlength="15" minlength="10" required>')
         with self.assertRaisesMessage(ValidationError, "'Ensure this value has at least 10 characters (it has 9).'"):
             f.clean('a@foo.com')
         self.assertEqual('alf@foo.com', f.clean('alf@foo.com'))

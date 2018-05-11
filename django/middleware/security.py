@@ -18,24 +18,23 @@ class SecurityMiddleware(MiddlewareMixin):
         self.get_response = get_response
 
     def process_request(self, request):
-        path = request.path.lstrip("/")
-        if (self.redirect and not request.is_secure() and
-                not any(pattern.search(path)
-                        for pattern in self.redirect_exempt)):
+        path = request.path.lstrip('/')
+        if self.redirect \
+        and \
+        not request.is_secure() \
+        and \
+        not any(pattern.search(path) for pattern in self.redirect_exempt):
             host = self.redirect_host or request.get_host()
-            return HttpResponsePermanentRedirect(
-                "https://%s%s" % (host, request.get_full_path())
-            )
+            return HttpResponsePermanentRedirect('https://%s%s' % (host, request.get_full_path()))
 
     def process_response(self, request, response):
-        if (self.sts_seconds and request.is_secure() and
-                'strict-transport-security' not in response):
-            sts_header = "max-age=%s" % self.sts_seconds
+        if self.sts_seconds and request.is_secure() and 'strict-transport-security' not in response:
+            sts_header = 'max-age=%s' % self.sts_seconds
             if self.sts_include_subdomains:
-                sts_header = sts_header + "; includeSubDomains"
+                sts_header = sts_header + '; includeSubDomains'
             if self.sts_preload:
-                sts_header = sts_header + "; preload"
-            response["strict-transport-security"] = sts_header
+                sts_header = sts_header + '; preload'
+            response['strict-transport-security'] = sts_header
 
         if self.content_type_nosniff:
             response.setdefault('x-content-type-options', 'nosniff')

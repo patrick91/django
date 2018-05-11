@@ -29,6 +29,7 @@ class ReverseInnerInStreaming(MiddlewareMixin):
     def process_view(self, *args, **kwargs):
         def stream():
             yield reverse('inner')
+
         return StreamingHttpResponse(stream())
 
 
@@ -36,4 +37,5 @@ class ReverseOuterInStreaming(MiddlewareMixin):
     def process_view(self, *args, **kwargs):
         def stream():
             yield reverse('outer')
+
         return StreamingHttpResponse(stream())

@@ -9,6 +9,7 @@ from django.views.decorators.csrf import csrf_protect
 
 DEFAULT_TEMPLATE = 'flatpages/default.html'
 
+
 # This view is called from FlatpageFallbackMiddleware.process_response
 # when a 404 is raised, which often means CsrfViewMiddleware.process_view
 # has not been called even if CsrfViewMiddleware is installed. So we need
@@ -18,9 +19,8 @@ DEFAULT_TEMPLATE = 'flatpages/default.html'
 # without any CSRF checks. Therefore, we only
 # CSRF protect the internal implementation.
 
-
 def flatpage(request, url):
-    """
+    '''
     Public interface to the flat page view.
 
     Models: `flatpages.flatpages`
@@ -29,7 +29,7 @@ def flatpage(request, url):
     Context:
         flatpage
             `flatpages.flatpages` object
-    """
+    '''
     if not url.startswith('/'):
         url = '/' + url
     site_id = get_current_site(request).id
@@ -47,9 +47,9 @@ def flatpage(request, url):
 
 @csrf_protect
 def render_flatpage(request, f):
-    """
+    '''
     Internal interface to the flat page view.
-    """
+    '''
     # If registration is required for accessing this page, and the user isn't
     # logged in, redirect to the login page.
     if f.registration_required and not request.user.is_authenticated:
@@ -59,7 +59,6 @@ def render_flatpage(request, f):
         template = loader.select_template((f.template_name, DEFAULT_TEMPLATE))
     else:
         template = loader.get_template(DEFAULT_TEMPLATE)
-
     # To avoid having to always use the "|safe" filter in flatpage templates,
     # mark the title and content as already safe (since they are raw HTML
     # content in the first place).

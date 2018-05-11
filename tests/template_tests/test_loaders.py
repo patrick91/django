@@ -13,16 +13,10 @@ from .utils import TEMPLATE_DIR
 
 
 class CachedLoaderTests(SimpleTestCase):
-
     def setUp(self):
-        self.engine = Engine(
-            dirs=[TEMPLATE_DIR],
-            loaders=[
-                ('django.template.loaders.cached.Loader', [
-                    'django.template.loaders.filesystem.Loader',
-                ]),
-            ],
-        )
+        self.engine = Engine(dirs=[TEMPLATE_DIR], loaders=[
+            ('django.template.loaders.cached.Loader', ['django.template.loaders.filesystem.Loader'])
+        ])
 
     def test_get_template(self):
         template = self.engine.get_template('index.html')
@@ -32,7 +26,6 @@ class CachedLoaderTests(SimpleTestCase):
 
         cache = self.engine.template_loaders[0].get_template_cache
         self.assertEqual(cache['index.html'], template)
-
         # Run a second time from cache
         template = self.engine.get_template('index.html')
         self.assertEqual(template.origin.name, os.path.join(TEMPLATE_DIR, 'index.html'))
@@ -40,11 +33,11 @@ class CachedLoaderTests(SimpleTestCase):
         self.assertEqual(template.origin.loader, self.engine.template_loaders[0].loaders[0])
 
     def test_get_template_missing_debug_off(self):
-        """
+        '''
         With template debugging disabled, the raw TemplateDoesNotExist class
         should be cached when a template is missing. See ticket #26306 and
         docstrings in the cached loader for details.
-        """
+        '''
         self.engine.debug = False
         with self.assertRaises(TemplateDoesNotExist):
             self.engine.get_template('prod-template-missing.html')
@@ -52,10 +45,10 @@ class CachedLoaderTests(SimpleTestCase):
         self.assertEqual(e, TemplateDoesNotExist)
 
     def test_get_template_missing_debug_on(self):
-        """
+        '''
         With template debugging enabled, a TemplateDoesNotExist instance
         should be cached when a template is missing.
-        """
+        '''
         self.engine.debug = True
         with self.assertRaises(TemplateDoesNotExist):
             self.engine.get_template('debug-template-missing.html')
@@ -64,17 +57,17 @@ class CachedLoaderTests(SimpleTestCase):
         self.assertEqual(e.args[0], 'debug-template-missing.html')
 
     def test_cached_exception_no_traceback(self):
-        """
+        '''
         When a TemplateDoesNotExist instance is cached, the cached instance
         should not contain the __traceback__, __context__, or __cause__
         attributes that Python sets when raising exceptions.
-        """
+        '''
         self.engine.debug = True
         with self.assertRaises(TemplateDoesNotExist):
             self.engine.get_template('no-traceback-in-cache.html')
         e = self.engine.template_loaders[0].get_template_cache['no-traceback-in-cache.html']
 
-        error_msg = "Cached TemplateDoesNotExist must not have been thrown."
+        error_msg = 'Cached TemplateDoesNotExist must not have been thrown.'
         self.assertIsNone(e.__traceback__, error_msg)
         self.assertIsNone(e.__context__, error_msg)
         self.assertIsNone(e.__cause__, error_msg)
@@ -87,15 +80,14 @@ class CachedLoaderTests(SimpleTestCase):
         self.assertEqual(self.engine.template_loaders[0].cache_key('-template.html', []), '-template.html')
 
     def test_template_name_lazy_string(self):
-        """
+        '''
         #26603 -- A template name specified as a lazy string should be forced
         to text before computing its cache key.
-        """
+        '''
         self.assertEqual(self.engine.template_loaders[0].cache_key(lazystr('template.html'), []), 'template.html')
 
 
 class FileSystemLoaderTests(SimpleTestCase):
-
     @classmethod
     def setUpClass(cls):
         cls.engine = Engine(dirs=[TEMPLATE_DIR], loaders=['django.template.loaders.filesystem.Loader'])
@@ -107,6 +99,7 @@ class FileSystemLoaderTests(SimpleTestCase):
         self.engine.dirs = dirs
         try:
             yield
+
         finally:
             self.engine.dirs = original_dirs
 
@@ -116,10 +109,7 @@ class FileSystemLoaderTests(SimpleTestCase):
 
         def check_sources(path, expected_sources):
             expected_sources = [os.path.abspath(s) for s in expected_sources]
-            self.assertEqual(
-                [origin.name for origin in loader.get_template_sources(path)],
-                expected_sources,
-            )
+            self.assertEqual([origin.name for origin in loader.get_template_sources(path)], expected_sources)
 
         with self.set_dirs(dirs):
             yield check_sources
@@ -137,7 +127,7 @@ class FileSystemLoaderTests(SimpleTestCase):
         self.assertEqual(template.origin.name, os.path.join(TEMPLATE_DIR, 'index.html'))
 
     def test_loaders_dirs_empty(self):
-        """An empty dirs list in loaders overrides top level dirs."""
+        '''An empty dirs list in loaders overrides top level dirs.'''
         engine = Engine(dirs=[TEMPLATE_DIR], loaders=[('django.template.loaders.filesystem.Loader', [])])
         with self.assertRaises(TemplateDoesNotExist):
             engine.get_template('index.html')
@@ -162,9 +152,9 @@ class FileSystemLoaderTests(SimpleTestCase):
             check_sources('Ångström', ['/dir1/Ångström', '/dir2/Ångström'])
 
     def test_utf8_bytestring(self):
-        """
+        '''
         Invalid UTF-8 encoding in bytestrings should raise a useful error
-        """
+        '''
         engine = self.engine
         loader = engine.template_loaders[0]
         with self.assertRaises(UnicodeDecodeError):
@@ -175,10 +165,7 @@ class FileSystemLoaderTests(SimpleTestCase):
             check_sources('Ångström', ['/Straße/Ångström'])
             check_sources(b'\xc3\x85ngstr\xc3\xb6m', ['/Straße/Ångström'])
 
-    @unittest.skipUnless(
-        os.path.normcase('/TEST') == os.path.normpath('/test'),
-        "This test only runs on case-sensitive file systems.",
-    )
+    @unittest.skipUnless(os.path.normcase('/TEST') == os.path.normpath('/test'), 'This test only runs on case-sensitive file systems.')
     def test_case_sensitivity(self):
         with self.source_checker(['/dir1', '/DIR2']) as check_sources:
             check_sources('index.html', ['/dir1/index.html', '/DIR2/index.html'])
@@ -188,10 +175,7 @@ class FileSystemLoaderTests(SimpleTestCase):
         with self.assertRaises(TemplateDoesNotExist):
             self.engine.get_template('doesnotexist.html')
 
-    @unittest.skipIf(
-        sys.platform == 'win32',
-        "Python on Windows doesn't have working os.chmod().",
-    )
+    @unittest.skipIf(sys.platform == 'win32', "Python on Windows doesn't have working os.chmod().")
     def test_permissions_error(self):
         with tempfile.NamedTemporaryFile() as tmpfile:
             tmpdir = os.path.dirname(tmpfile.name)
@@ -207,12 +191,9 @@ class FileSystemLoaderTests(SimpleTestCase):
 
 
 class AppDirectoriesLoaderTests(SimpleTestCase):
-
     @classmethod
     def setUpClass(cls):
-        cls.engine = Engine(
-            loaders=['django.template.loaders.app_directories.Loader'],
-        )
+        cls.engine = Engine(loaders=['django.template.loaders.app_directories.Loader'])
         super().setUpClass()
 
     @override_settings(INSTALLED_APPS=['template_tests'])
@@ -229,14 +210,9 @@ class AppDirectoriesLoaderTests(SimpleTestCase):
 
 
 class LocmemLoaderTests(SimpleTestCase):
-
     @classmethod
     def setUpClass(cls):
-        cls.engine = Engine(
-            loaders=[('django.template.loaders.locmem.Loader', {
-                'index.html': 'index',
-            })],
-        )
+        cls.engine = Engine(loaders=[('django.template.loaders.locmem.Loader', {'index.html': 'index'})])
         super().setUpClass()
 
     def test_get_template(self):

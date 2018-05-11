@@ -7,9 +7,7 @@ from django.conf import settings
 from django.contrib.sessions.exceptions import SuspiciousSession
 from django.core.exceptions import SuspiciousOperation
 from django.utils import timezone
-from django.utils.crypto import (
-    constant_time_compare, get_random_string, salted_hmac,
-)
+from django.utils.crypto import constant_time_compare, get_random_string, salted_hmac
 from django.utils.encoding import force_bytes
 from django.utils.module_loading import import_string
 
@@ -19,24 +17,24 @@ VALID_KEY_CHARS = string.ascii_lowercase + string.digits
 
 
 class CreateError(Exception):
-    """
+    '''
     Used internally as a consistent exception type to catch from save (see the
     docstring for SessionBase.save() for details).
-    """
+    '''
     pass
 
 
 class UpdateError(Exception):
-    """
+    '''
     Occurs if Django tries to update a session that was deleted.
-    """
+    '''
     pass
 
 
 class SessionBase:
-    """
+    '''
     Base class for all Session classes.
-    """
+    '''
     TEST_COOKIE_NAME = 'testcookie'
     TEST_COOKIE_VALUE = 'worked'
 
@@ -88,14 +86,14 @@ class SessionBase:
         del self[self.TEST_COOKIE_NAME]
 
     def _hash(self, value):
-        key_salt = "django.contrib.sessions" + self.__class__.__name__
+        key_salt = 'django.contrib.sessions' + self.__class__.__name__
         return salted_hmac(key_salt, value).hexdigest()
 
     def encode(self, session_dict):
-        "Return the given session dictionary serialized and encoded as a string."
+        'Return the given session dictionary serialized and encoded as a string.'
         serialized = self.serializer().dumps(session_dict)
         hash = self._hash(serialized)
-        return base64.b64encode(hash.encode() + b":" + serialized).decode('ascii')
+        return base64.b64encode(hash.encode() + b':' + serialized).decode('ascii')
 
     def decode(self, session_data):
         encoded_data = base64.b64decode(force_bytes(session_data))
@@ -104,7 +102,7 @@ class SessionBase:
             hash, serialized = encoded_data.split(b':', 1)
             expected_hash = self._hash(serialized)
             if not constant_time_compare(hash.decode(), expected_hash):
-                raise SuspiciousSession("Session data corrupted")
+                raise SuspiciousSession('Session data corrupted')
             else:
                 return self.serializer().loads(serialized)
         except Exception as e:
@@ -140,7 +138,7 @@ class SessionBase:
         self.modified = True
 
     def is_empty(self):
-        "Return True when there is no session_key and the session is empty."
+        'Return True when there is no session_key and the session is empty.'
         try:
             return not self._session_key and not self._session_cache
         except AttributeError:
@@ -159,19 +157,19 @@ class SessionBase:
         return self._session_key
 
     def _validate_session_key(self, key):
-        """
+        '''
         Key must be truthy and at least 8 characters long. 8 characters is an
         arbitrary lower bound for some minimal key security.
-        """
+        '''
         return key and len(key) >= 8
 
     def _get_session_key(self):
         return self.__session_key
 
     def _set_session_key(self, value):
-        """
+        '''
         Validate session key on assignment. Invalid values will set to None.
-        """
+        '''
         if self._validate_session_key(value):
             self.__session_key = value
         else:
@@ -181,10 +179,10 @@ class SessionBase:
     _session_key = property(_get_session_key, _set_session_key)
 
     def _get_session(self, no_load=False):
-        """
+        '''
         Lazily load session from storage (unless "no_load" is True, when only
         an empty dict is stored) and store it in the current instance.
-        """
+        '''
         self.accessed = True
         try:
             return self._session_cache
@@ -198,11 +196,11 @@ class SessionBase:
     _session = property(_get_session)
 
     def get_expiry_age(self, **kwargs):
-        """Get the number of seconds until the session expires.
+        '''Get the number of seconds until the session expires.
 
         Optionally, this function accepts `modification` and `expiry` keyword
         arguments specifying the modification and expiry of the session.
-        """
+        '''
         try:
             modification = kwargs['modification']
         except KeyError:
@@ -215,7 +213,7 @@ class SessionBase:
         except KeyError:
             expiry = self.get('_session_expiry')
 
-        if not expiry:   # Checks both None and 0 cases
+        if not expiry: # Checks both None and 0 cases
             return settings.SESSION_COOKIE_AGE
         if not isinstance(expiry, datetime):
             return expiry
@@ -223,11 +221,11 @@ class SessionBase:
         return delta.days * 86400 + delta.seconds
 
     def get_expiry_date(self, **kwargs):
-        """Get session the expiry date (as a datetime object).
+        '''Get session the expiry date (as a datetime object).
 
         Optionally, this function accepts `modification` and `expiry` keyword
         arguments specifying the modification and expiry of the session.
-        """
+        '''
         try:
             modification = kwargs['modification']
         except KeyError:
@@ -240,11 +238,11 @@ class SessionBase:
 
         if isinstance(expiry, datetime):
             return expiry
-        expiry = expiry or settings.SESSION_COOKIE_AGE   # Checks both None and 0 cases
+        expiry = expiry or settings.SESSION_COOKIE_AGE # Checks both None and 0 cases
         return modification + timedelta(seconds=expiry)
 
     def set_expiry(self, value):
-        """
+        '''
         Set a custom expiration for the session. ``value`` can be an integer,
         a Python ``datetime`` or ``timedelta`` object or ``None``.
 
@@ -257,7 +255,7 @@ class SessionBase:
 
         If ``value`` is ``None``, the session uses the global session expiry
         policy.
-        """
+        '''
         if value is None:
             # Remove any custom expiration for this session.
             try:
@@ -281,18 +279,18 @@ class SessionBase:
         return self.get('_session_expiry') == 0
 
     def flush(self):
-        """
+        '''
         Remove the current session data from the database and regenerate the
         key.
-        """
+        '''
         self.clear()
         self.delete()
         self._session_key = None
 
     def cycle_key(self):
-        """
+        '''
         Create a new session key, while retaining the current session data.
-        """
+        '''
         data = self._session
         key = self.session_key
         self.create()
@@ -303,17 +301,17 @@ class SessionBase:
     # Methods that child classes must implement.
 
     def exists(self, session_key):
-        """
+        '''
         Return True if the given session_key already exists.
-        """
+        '''
         raise NotImplementedError('subclasses of SessionBase must provide an exists() method')
 
     def create(self):
-        """
+        '''
         Create a new session instance. Guaranteed to create a new object with
         a unique key and will have saved the result once (with empty data)
         before the method returns.
-        """
+        '''
         raise NotImplementedError('subclasses of SessionBase must provide a create() method')
 
     def save(self, must_create=False):
@@ -325,16 +323,16 @@ class SessionBase:
         raise NotImplementedError('subclasses of SessionBase must provide a save() method')
 
     def delete(self, session_key=None):
-        """
+        '''
         Delete the session data under this key. If the key is None, use the
         current session key value.
-        """
+        '''
         raise NotImplementedError('subclasses of SessionBase must provide a delete() method')
 
     def load(self):
-        """
+        '''
         Load the session data and return a dictionary.
-        """
+        '''
         raise NotImplementedError('subclasses of SessionBase must provide a load() method')
 
     @classmethod

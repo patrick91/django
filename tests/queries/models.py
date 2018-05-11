@@ -1,6 +1,6 @@
-"""
+'''
 Various complex queries that have been problematic in the past.
-"""
+'''
 import threading
 
 from django.db import models
@@ -24,12 +24,7 @@ class NamedCategory(DumbCategory):
 
 class Tag(models.Model):
     name = models.CharField(max_length=10)
-    parent = models.ForeignKey(
-        'self',
-        models.SET_NULL,
-        blank=True, null=True,
-        related_name='children',
-    )
+    parent = models.ForeignKey('self', models.SET_NULL, blank=True, null=True, related_name='children')
     category = models.ForeignKey(NamedCategory, models.SET_NULL, null=True, default=None)
 
     class Meta:
@@ -147,9 +142,9 @@ class Number(models.Model):
     def __str__(self):
         return str(self.num)
 
+
 # Symmetrical m2m field with a normal field using the reverse accessor name
 # ("valid").
-
 
 class Valid(models.Model):
     valid = models.CharField(max_length=10)
@@ -158,9 +153,9 @@ class Valid(models.Model):
     class Meta:
         ordering = ['valid']
 
+
 # Some funky cross-linked models for testing a couple of infinite recursion
 # cases.
-
 
 class X(models.Model):
     y = models.ForeignKey('Y', models.CASCADE)
@@ -169,9 +164,9 @@ class X(models.Model):
 class Y(models.Model):
     x1 = models.ForeignKey(X, models.CASCADE, related_name='y1')
 
+
 # Some models with a cycle in the default ordering. This would be bad if we
 # didn't catch the infinite loop.
-
 
 class LoopX(models.Model):
     y = models.ForeignKey('LoopY', models.CASCADE)
@@ -196,7 +191,6 @@ class LoopZ(models.Model):
 
 # A model and custom default manager combination.
 
-
 class CustomManager(models.Manager):
     def get_queryset(self):
         qs = super().get_queryset()
@@ -214,8 +208,8 @@ class ManagedModel(models.Model):
     def __str__(self):
         return self.data
 
-# An inter-related setup with multiple paths from Child to Detail.
 
+# An inter-related setup with multiple paths from Child to Detail.
 
 class Detail(models.Model):
     data = models.CharField(max_length=10)
@@ -223,7 +217,7 @@ class Detail(models.Model):
 
 class MemberManager(models.Manager):
     def get_queryset(self):
-        return super().get_queryset().select_related("details")
+        return super().get_queryset().select_related('details')
 
 
 class Member(models.Model):
@@ -235,10 +229,10 @@ class Member(models.Model):
 
 class Child(models.Model):
     person = models.OneToOneField(Member, models.CASCADE, primary_key=True)
-    parent = models.ForeignKey(Member, models.CASCADE, related_name="children")
+    parent = models.ForeignKey(Member, models.CASCADE, related_name='children')
+
 
 # Custom primary keys interfered with ordering in the past.
-
 
 class CustomPk(models.Model):
     name = models.CharField(max_length=10, primary_key=True)
@@ -257,13 +251,13 @@ class CustomPkTag(models.Model):
     custom_pk = models.ManyToManyField(CustomPk)
     tag = models.CharField(max_length=20)
 
+
 # An inter-related setup with a model subclass that has a nullable
 # path to another model, and a return path from that model.
 
-
 class Celebrity(models.Model):
-    name = models.CharField("Name", max_length=20)
-    greatest_fan = models.ForeignKey("Fan", models.SET_NULL, null=True, unique=True)
+    name = models.CharField('Name', max_length=20)
+    greatest_fan = models.ForeignKey('Fan', models.SET_NULL, null=True, unique=True)
 
     def __str__(self):
         return self.name
@@ -276,8 +270,8 @@ class TvChef(Celebrity):
 class Fan(models.Model):
     fan_of = models.ForeignKey(Celebrity, models.CASCADE)
 
-# Multiple foreign keys
 
+# Multiple foreign keys
 
 class LeafA(models.Model):
     data = models.CharField(max_length=10)
@@ -302,8 +296,8 @@ class ReservedName(models.Model):
     def __str__(self):
         return self.name
 
-# A simpler shared-foreign-key setup that can expose some problems.
 
+# A simpler shared-foreign-key setup that can expose some problems.
 
 class SharedConnection(models.Model):
     data = models.CharField(max_length=10)
@@ -319,8 +313,8 @@ class PointerA(models.Model):
 class PointerB(models.Model):
     connection = models.ForeignKey(SharedConnection, models.CASCADE)
 
-# Multi-layer ordering
 
+# Multi-layer ordering
 
 class SingleObject(models.Model):
     name = models.CharField(max_length=10)
@@ -367,22 +361,22 @@ class Food(models.Model):
 
 
 class Eaten(models.Model):
-    food = models.ForeignKey(Food, models.SET_NULL, to_field="name", null=True)
+    food = models.ForeignKey(Food, models.SET_NULL, to_field='name', null=True)
     meal = models.CharField(max_length=20)
 
     def __str__(self):
-        return "%s at %s" % (self.food, self.meal)
+        return '%s at %s' % (self.food, self.meal)
 
 
 class Node(models.Model):
     num = models.IntegerField(unique=True)
-    parent = models.ForeignKey("self", models.SET_NULL, to_field="num", null=True)
+    parent = models.ForeignKey('self', models.SET_NULL, to_field='num', null=True)
 
     def __str__(self):
-        return "%s" % self.num
+        return '%s' % self.num
+
 
 # Bug #12252
-
 
 class ObjectA(models.Model):
     name = models.CharField(max_length=50)
@@ -439,14 +433,14 @@ class SpecialCategory(SimpleCategory):
     special_name = models.CharField(max_length=15)
 
     def __str__(self):
-        return self.name + " " + self.special_name
+        return self.name + ' ' + self.special_name
 
 
 class CategoryItem(models.Model):
     category = models.ForeignKey(SimpleCategory, models.CASCADE)
 
     def __str__(self):
-        return "category item: " + str(self.category)
+        return 'category item: ' + str(self.category)
 
 
 class MixedCaseFieldCategoryItem(models.Model):
@@ -462,7 +456,7 @@ class OneToOneCategory(models.Model):
     category = models.OneToOneField(SimpleCategory, models.CASCADE)
 
     def __str__(self):
-        return "one2one " + self.new_name
+        return 'one2one ' + self.new_name
 
 
 class CategoryRelationship(models.Model):
@@ -516,14 +510,13 @@ class JobResponsibilities(models.Model):
 
 class Responsibility(models.Model):
     description = models.CharField(max_length=20, unique=True)
-    jobs = models.ManyToManyField(Job, through=JobResponsibilities,
-                                  related_name='responsibilities')
+    jobs = models.ManyToManyField(Job, through=JobResponsibilities, related_name='responsibilities')
 
     def __str__(self):
         return self.description
 
-# Models for disjunction join promotion low level testing.
 
+# Models for disjunction join promotion low level testing.
 
 class FK1(models.Model):
     f1 = models.TextField()
@@ -586,8 +579,8 @@ class MyObject(models.Model):
     data = models.CharField(max_length=100)
     created_at = models.DateTimeField(auto_now_add=True)
 
-# Models for #17600 regressions
 
+# Models for #17600 regressions
 
 class Order(models.Model):
     id = models.IntegerField(primary_key=True)
@@ -696,7 +689,7 @@ class Ticket23605A(Ticket23605AParent):
 
 class Ticket23605B(models.Model):
     modela_fk = models.ForeignKey(Ticket23605A, models.CASCADE)
-    modelc_fk = models.ForeignKey("Ticket23605C", models.CASCADE)
+    modelc_fk = models.ForeignKey('Ticket23605C', models.CASCADE)
     field_b0 = models.IntegerField(null=True)
     field_b1 = models.BooleanField(default=False)
 

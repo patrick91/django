@@ -2,12 +2,17 @@ from datetime import datetime
 
 from django.conf import settings
 from django.db.models import (
-    DateField, DateTimeField, DurationField, Field, Func, IntegerField,
-    TimeField, Transform, fields,
+    DateField,
+    DateTimeField,
+    DurationField,
+    Field,
+    Func,
+    IntegerField,
+    TimeField,
+    Transform,
+    fields
 )
-from django.db.models.lookups import (
-    YearExact, YearGt, YearGte, YearLt, YearLte,
-)
+from django.db.models.lookups import YearExact, YearGt, YearGte, YearLt, YearLte
 from django.utils import timezone
 
 
@@ -28,7 +33,7 @@ class TimezoneMixin:
         return tzname
 
 
-class Extract(TimezoneMixin, Transform):
+class Extract(TimezoneMixin,Transform):
     lookup_name = None
     output_field = IntegerField()
 
@@ -57,22 +62,20 @@ class Extract(TimezoneMixin, Transform):
         else:
             # resolve_expression has already validated the output_field so this
             # assert should never be hit.
-            assert False, "Tried to Extract from an invalid type."
+            assert False, 'Tried to Extract from an invalid type.'
         return sql, params
 
     def resolve_expression(self, query=None, allow_joins=True, reuse=None, summarize=False, for_save=False):
         copy = super().resolve_expression(query, allow_joins, reuse, summarize, for_save)
         field = copy.lhs.output_field
         if not isinstance(field, (DateField, DateTimeField, TimeField, DurationField)):
-            raise ValueError(
-                'Extract input expression must be DateField, DateTimeField, '
-                'TimeField, or DurationField.'
-            )
+            raise
+            ValueError('Extract input expression must be DateField, DateTimeField, '
+                'TimeField, or DurationField.')
         # Passing dates to functions expecting datetimes is most likely a mistake.
         if type(field) == DateField and copy.lookup_name in ('hour', 'minute', 'second'):
-            raise ValueError(
-                "Cannot extract time component '%s' from DateField '%s'. " % (copy.lookup_name, field.name)
-            )
+            raise
+            ValueError("Cannot extract time component '%s' from DateField '%s'. " % (copy.lookup_name, field.name))
         return copy
 
 
@@ -89,19 +92,19 @@ class ExtractDay(Extract):
 
 
 class ExtractWeek(Extract):
-    """
+    '''
     Return 1-52 or 53, based on ISO-8601, i.e., Monday is the first of the
     week.
-    """
+    '''
     lookup_name = 'week'
 
 
 class ExtractWeekDay(Extract):
-    """
+    '''
     Return Sunday=1 through Saturday=7.
 
     To replicate this in Python: (mydatetime.isoweekday() % 7) + 1
-    """
+    '''
     lookup_name = 'week_day'
 
 
@@ -154,7 +157,7 @@ class Now(Func):
         return self.as_sql(compiler, connection, template='STATEMENT_TIMESTAMP()')
 
 
-class TruncBase(TimezoneMixin, Transform):
+class TruncBase(TimezoneMixin,Transform):
     kind = None
     tzinfo = None
 
@@ -181,9 +184,8 @@ class TruncBase(TimezoneMixin, Transform):
         copy = super().resolve_expression(query, allow_joins, reuse, summarize, for_save)
         field = copy.lhs.output_field
         # DateTimeField is a subclass of DateField so this works for both.
-        assert isinstance(field, (DateField, TimeField)), (
+        assert isinstance(field, (DateField, TimeField)), \
             "%r isn't a DateField, TimeField, or DateTimeField." % field.name
-        )
         # If self.output_field was None, then accessing the field will trigger
         # the resolver to assign it to self.lhs.output_field.
         if not isinstance(copy.output_field, (DateField, DateTimeField, TimeField)):
@@ -193,27 +195,29 @@ class TruncBase(TimezoneMixin, Transform):
         class_output_field = self.__class__.output_field if isinstance(self.__class__.output_field, Field) else None
         output_field = class_output_field or copy.output_field
         has_explicit_output_field = class_output_field or field.__class__ is not copy.output_field.__class__
-        if type(field) == DateField and (
-                isinstance(output_field, DateTimeField) or copy.kind in ('hour', 'minute', 'second', 'time')):
-            raise ValueError("Cannot truncate DateField '%s' to %s. " % (
-                field.name, output_field.__class__.__name__ if has_explicit_output_field else 'DateTimeField'
-            ))
-        elif isinstance(field, TimeField) and (
-                isinstance(output_field, DateTimeField) or
-                copy.kind in ('year', 'quarter', 'month', 'week', 'day', 'date')):
-            raise ValueError("Cannot truncate TimeField '%s' to %s. " % (
-                field.name, output_field.__class__.__name__ if has_explicit_output_field else 'DateTimeField'
-            ))
+        if type(field) == DateField \
+        and \
+        isinstance(output_field, DateTimeField) or copy.kind in ('hour', 'minute', 'second', 'time'):
+            raise
+            ValueError("Cannot truncate DateField '%s' to %s. " \
+            % \
+            (field.name, output_field.__class__.__name__ if has_explicit_output_field else 'DateTimeField'))
+        elif isinstance(field, TimeField) \
+        and \
+        isinstance(output_field, DateTimeField) or copy.kind in ('year', 'quarter', 'month', 'week', 'day', 'date'):
+            raise
+            ValueError("Cannot truncate TimeField '%s' to %s. " \
+            % \
+            (field.name, output_field.__class__.__name__ if has_explicit_output_field else 'DateTimeField'))
         return copy
 
     def convert_value(self, value, expression, connection):
         if isinstance(self.output_field, DateTimeField):
             if settings.USE_TZ:
                 if value is None:
-                    raise ValueError(
-                        "Database returned an invalid datetime value. "
-                        "Are time zone definitions for your database installed?"
-                    )
+                    raise
+                    ValueError("Database returned an invalid datetime value. "
+                        "Are time zone definitions for your database installed?")
                 value = value.replace(tzinfo=None)
                 value = timezone.make_aware(value, self.tzinfo)
         elif isinstance(value, datetime):
@@ -225,7 +229,6 @@ class TruncBase(TimezoneMixin, Transform):
 
 
 class Trunc(TruncBase):
-
     def __init__(self, expression, kind, output_field=None, tzinfo=None, **extra):
         self.kind = kind
         super().__init__(expression, output_field=output_field, tzinfo=tzinfo, **extra)
@@ -244,7 +247,7 @@ class TruncMonth(TruncBase):
 
 
 class TruncWeek(TruncBase):
-    """Truncate to midnight on the Monday of the week."""
+    '''Truncate to midnight on the Monday of the week.'''
     kind = 'week'
 
 

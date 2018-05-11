@@ -3,23 +3,22 @@ from django.contrib.gis.gdal.prototypes import raster as capi
 
 
 class GDALRasterBase(GDALBase):
-    """
+    '''
     Attributes that exist on both GDALRaster and GDALBand.
-    """
+    '''
+
     @property
     def metadata(self):
-        """
+        '''
         Return the metadata for this raster or band. The return value is a
         nested dictionary, where the first-level key is the metadata domain and
         the second-level is the metadata item names and values for that domain.
-        """
+        '''
         if not capi.get_ds_metadata_domain_list:
             raise ValueError('GDAL ≥ 1.11 is required for using the metadata property.')
-
         # The initial metadata domain list contains the default domain.
         # The default is returned if domain name is None.
         domain_list = ['DEFAULT']
-
         # Get additional metadata domains from the raster.
         meta_list = capi.get_ds_metadata_domain_list(self._ptr)
         if meta_list:
@@ -31,18 +30,13 @@ class GDALRasterBase(GDALBase):
                 domain_list.append(domain.decode())
                 counter += 1
                 domain = meta_list[counter]
-
         # Free domain list array.
         capi.free_dsl(meta_list)
-
         # Retrieve metadata values for each domain.
         result = {}
         for domain in domain_list:
             # Get metadata for this domain.
-            data = capi.get_ds_metadata(
-                self._ptr,
-                (None if domain == 'DEFAULT' else domain.encode()),
-            )
+            data = capi.get_ds_metadata(self._ptr, None if domain == 'DEFAULT' else domain.encode())
             if not data:
                 continue
             # The number of metadata items is unknown, so retrieve data until
@@ -61,18 +55,14 @@ class GDALRasterBase(GDALBase):
 
     @metadata.setter
     def metadata(self, value):
-        """
+        '''
         Set the metadata. Update only the domains that are contained in the
         value dictionary.
-        """
+        '''
         # Loop through domains.
         for domain, metadata in value.items():
             # Set the domain to None for the default, otherwise encode.
             domain = None if domain == 'DEFAULT' else domain.encode()
             # Set each metadata entry separately.
             for meta_name, meta_value in metadata.items():
-                capi.set_ds_metadata_item(
-                    self._ptr, meta_name.encode(),
-                    meta_value.encode() if meta_value else None,
-                    domain,
-                )
+                capi.set_ds_metadata_item(self._ptr, meta_name.encode(), meta_value.encode() if meta_value else None, domain)

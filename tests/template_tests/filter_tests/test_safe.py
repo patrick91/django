@@ -4,7 +4,6 @@ from ..utils import setup
 
 
 class SafeTests(SimpleTestCase):
-
     @setup({'safe01': '{{ a }} -- {{ a|safe }}'})
     def test_safe01(self):
         output = self.engine.render_to_string('safe01', {'a': '<b>hello</b>'})

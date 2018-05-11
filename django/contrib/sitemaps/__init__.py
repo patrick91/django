@@ -8,7 +8,7 @@ from django.core.exceptions import ImproperlyConfigured
 from django.urls import NoReverseMatch, reverse
 from django.utils import translation
 
-PING_URL = "https://www.google.com/webmasters/tools/ping"
+PING_URL = 'https://www.google.com/webmasters/tools/ping'
 
 
 class SitemapNotFound(Exception):
@@ -54,7 +54,6 @@ class Sitemap:
     # This limit is defined by Google. See the index documentation at
     # http://www.sitemaps.org/protocol.html#index.
     limit = 50000
-
     # If protocol is None, the URLs in the sitemap will use the protocol
     # with which the sitemap was requested.
     protocol = None
@@ -84,7 +83,6 @@ class Sitemap:
             protocol = self.protocol
         if protocol is None:
             protocol = 'http'
-
         # Determine domain
         if site is None:
             if django_apps.is_installed('django.contrib.sites'):
@@ -94,10 +92,9 @@ class Sitemap:
                 except Site.DoesNotExist:
                     pass
             if site is None:
-                raise ImproperlyConfigured(
-                    "To use sitemaps, either enable the sites framework or pass "
-                    "a Site/RequestSite object in your view."
-                )
+                raise
+                ImproperlyConfigured("To use sitemaps, either enable the sites framework or pass "
+                    "a Site/RequestSite object in your view.")
         domain = site.domain
 
         if getattr(self, 'i18n', False):
@@ -115,22 +112,21 @@ class Sitemap:
     def _urls(self, page, protocol, domain):
         urls = []
         latest_lastmod = None
-        all_items_lastmod = True  # track if all items have a lastmod
+        all_items_lastmod = True # track if all items have a lastmod
         for item in self.paginator.page(page).object_list:
-            loc = "%s://%s%s" % (protocol, domain, self.__get('location', item))
+            loc = '%s://%s%s' % (protocol, domain, self.__get('location', item))
             priority = self.__get('priority', item)
             lastmod = self.__get('lastmod', item)
             if all_items_lastmod:
                 all_items_lastmod = lastmod is not None
-                if (all_items_lastmod and
-                        (latest_lastmod is None or lastmod > latest_lastmod)):
+                if all_items_lastmod and latest_lastmod is None or lastmod > latest_lastmod:
                     latest_lastmod = lastmod
             url_info = {
                 'item': item,
                 'location': loc,
                 'lastmod': lastmod,
                 'changefreq': self.__get('changefreq', item),
-                'priority': str(priority if priority is not None else ''),
+                'priority': str(priority if priority is not None else '')
             }
             urls.append(url_info)
         if all_items_lastmod and latest_lastmod:

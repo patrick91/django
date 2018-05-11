@@ -5,7 +5,6 @@ from django.test import SimpleTestCase
 
 
 class TestContextProcessor(SimpleTestCase):
-
     def test_force_token_to_string(self):
         request = HttpRequest()
         test_token = '1bcdefghij2bcdefghij3bcdefghij4bcdefghij5bcdefghij6bcdefghijABCD'

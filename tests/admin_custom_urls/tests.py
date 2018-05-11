@@ -7,7 +7,7 @@ from django.urls import reverse
 from .models import Action, Car, Person
 
 
-@override_settings(ROOT_URLCONF='admin_custom_urls.urls',)
+@override_settings(ROOT_URLCONF='admin_custom_urls.urls')
 class AdminCustomUrlsTest(TestCase):
     """
     Remember that:
@@ -23,22 +23,16 @@ class AdminCustomUrlsTest(TestCase):
         Action.objects.create(name='rename', description='Gives things other names.')
         Action.objects.create(name='add', description='Add things.')
         Action.objects.create(name='path/to/file/', description="An action with '/' in its name.")
-        Action.objects.create(
-            name='path/to/html/document.html',
-            description='An action with a name similar to a HTML doc path.'
-        )
-        Action.objects.create(
-            name='javascript:alert(\'Hello world\');">Click here</a>',
-            description='An action with a name suspected of being a XSS attempt'
-        )
+        Action.objects.create(name='path/to/html/document.html', description='An action with a name similar to a HTML doc path.')
+        Action.objects.create(name="javascript:alert('Hello world');\">Click here</a>", description='An action with a name suspected of being a XSS attempt')
 
     def setUp(self):
         self.client.force_login(self.superuser)
 
     def test_basic_add_GET(self):
-        """
+        '''
         Ensure GET on the add_view works.
-        """
+        '''
         add_url = reverse('admin_custom_urls:admin_custom_urls_action_add')
         self.assertTrue(add_url.endswith('/!add/'))
         response = self.client.get(add_url)
@@ -46,21 +40,21 @@ class AdminCustomUrlsTest(TestCase):
         self.assertEqual(response.status_code, 200)
 
     def test_add_with_GET_args(self):
-        """
+        '''
         Ensure GET on the add_view plus specifying a field value in the query
         string works.
-        """
+        '''
         response = self.client.get(reverse('admin_custom_urls:admin_custom_urls_action_add'), {'name': 'My Action'})
         self.assertContains(response, 'value="My Action"')
 
     def test_basic_add_POST(self):
-        """
+        '''
         Ensure POST on add_view works.
-        """
+        '''
         post_data = {
             '_popup': '1',
-            "name": 'Action added through a popup',
-            "description": "Description of added action",
+            'name': 'Action added through a popup',
+            'description': 'Description of added action'
         }
         response = self.client.post(reverse('admin_custom_urls:admin_custom_urls_action_add'), post_data)
         self.assertContains(response, 'Action added through a popup')
@@ -71,13 +65,11 @@ class AdminCustomUrlsTest(TestCase):
         url = reverse('admin_custom_urls:%s_action_change' % Action._meta.app_label, args=(quote('add'),))
         response = self.client.get(url)
         self.assertContains(response, 'Change action')
-
         # Should correctly get the change_view for the model instance with the
         # funny-looking PK (the one with a 'path/to/html/document.html' value)
-        url = reverse(
-            'admin_custom_urls:%s_action_change' % Action._meta.app_label,
-            args=(quote("path/to/html/document.html"),)
-        )
+        url = reverse('admin_custom_urls:%s_action_change' % Action._meta.app_label, args=(
+            quote('path/to/html/document.html'),
+        ))
         response = self.client.get(url)
         self.assertContains(response, 'Change action')
         self.assertContains(response, 'value="path/to/html/document.html"')

@@ -2,16 +2,12 @@ import os
 import tempfile
 import uuid
 
-from django.contrib.contenttypes.fields import (
-    GenericForeignKey, GenericRelation,
-)
+from django.contrib.contenttypes.fields import GenericForeignKey, GenericRelation
 from django.contrib.contenttypes.models import ContentType
 from django.core.files.storage import FileSystemStorage
 from django.db import models
 from django.db.models.fields.files import ImageField, ImageFieldFile
-from django.db.models.fields.related import (
-    ForeignKey, ForeignObject, ManyToManyField, OneToOneField,
-)
+from django.db.models.fields.related import ForeignKey, ForeignObject, ManyToManyField, OneToOneField
 
 try:
     from PIL import Image
@@ -34,19 +30,7 @@ class Bar(models.Model):
 
 
 class Whiz(models.Model):
-    CHOICES = (
-        ('Group 1', (
-            (1, 'First'),
-            (2, 'Second'),
-        )
-        ),
-        ('Group 2', (
-            (3, 'Third'),
-            (4, 'Fourth'),
-        )
-        ),
-        (0, 'Other'),
-    )
+    CHOICES = (('Group 1', ((1, 'First'), (2, 'Second'))), ('Group 2', ((3, 'Third'), (4, 'Fourth'))), (0, 'Other'))
     c = models.IntegerField(choices=CHOICES, null=True)
 
 
@@ -135,40 +119,40 @@ class FksToBooleans(models.Model):
 
 
 class FkToChar(models.Model):
-    """Model with FK to a model with a CharField primary key, #19299"""
+    '''Model with FK to a model with a CharField primary key, #19299'''
     out = models.ForeignKey(PrimaryKeyCharModel, models.CASCADE)
 
 
 class RenamedField(models.Model):
-    modelname = models.IntegerField(name="fieldname", choices=((1, 'One'),))
+    modelname = models.IntegerField(name='fieldname', choices=((1, 'One'),))
 
 
 class VerboseNameField(models.Model):
-    id = models.AutoField("verbose pk", primary_key=True)
-    field1 = models.BigIntegerField("verbose field1")
-    field2 = models.BooleanField("verbose field2", default=False)
-    field3 = models.CharField("verbose field3", max_length=10)
-    field4 = models.DateField("verbose field4")
-    field5 = models.DateTimeField("verbose field5")
-    field6 = models.DecimalField("verbose field6", max_digits=6, decimal_places=1)
-    field7 = models.EmailField("verbose field7")
-    field8 = models.FileField("verbose field8", upload_to="unused")
-    field9 = models.FilePathField("verbose field9")
-    field10 = models.FloatField("verbose field10")
+    id = models.AutoField('verbose pk', primary_key=True)
+    field1 = models.BigIntegerField('verbose field1')
+    field2 = models.BooleanField('verbose field2', default=False)
+    field3 = models.CharField('verbose field3', max_length=10)
+    field4 = models.DateField('verbose field4')
+    field5 = models.DateTimeField('verbose field5')
+    field6 = models.DecimalField('verbose field6', max_digits=6, decimal_places=1)
+    field7 = models.EmailField('verbose field7')
+    field8 = models.FileField('verbose field8', upload_to='unused')
+    field9 = models.FilePathField('verbose field9')
+    field10 = models.FloatField('verbose field10')
     # Don't want to depend on Pillow in this test
     # field_image = models.ImageField("verbose field")
-    field11 = models.IntegerField("verbose field11")
-    field12 = models.GenericIPAddressField("verbose field12", protocol="ipv4")
-    field13 = models.NullBooleanField("verbose field13")
-    field14 = models.PositiveIntegerField("verbose field14")
-    field15 = models.PositiveSmallIntegerField("verbose field15")
-    field16 = models.SlugField("verbose field16")
-    field17 = models.SmallIntegerField("verbose field17")
-    field18 = models.TextField("verbose field18")
-    field19 = models.TimeField("verbose field19")
-    field20 = models.URLField("verbose field20")
-    field21 = models.UUIDField("verbose field21")
-    field22 = models.DurationField("verbose field22")
+    field11 = models.IntegerField('verbose field11')
+    field12 = models.GenericIPAddressField('verbose field12', protocol='ipv4')
+    field13 = models.NullBooleanField('verbose field13')
+    field14 = models.PositiveIntegerField('verbose field14')
+    field15 = models.PositiveSmallIntegerField('verbose field15')
+    field16 = models.SlugField('verbose field16')
+    field17 = models.SmallIntegerField('verbose field17')
+    field18 = models.TextField('verbose field18')
+    field19 = models.TimeField('verbose field19')
+    field20 = models.URLField('verbose field20')
+    field21 = models.UUIDField('verbose field21')
+    field22 = models.DurationField('verbose field22')
 
 
 class GenericIPAddress(models.Model):
@@ -188,16 +172,16 @@ class DecimalLessThanOne(models.Model):
 class FieldClassAttributeModel(models.Model):
     field_class = models.CharField
 
-###############################################################################
 
+###############################################################################
 
 class DataModel(models.Model):
     short_data = models.BinaryField(max_length=10, default=b'\x08')
     data = models.BinaryField()
 
+
 ###############################################################################
 # FileField
-
 
 class Document(models.Model):
     myfile = models.FileField(upload_to='unused', unique=True)
@@ -209,10 +193,11 @@ class Document(models.Model):
 # If Pillow available, do these tests.
 if Image:
     class TestImageFieldFile(ImageFieldFile):
-        """
+        '''
         Custom Field File class that records whether or not the underlying file
         was opened.
-        """
+        '''
+
         def __init__(self, *args, **kwargs):
             self.was_opened = False
             super().__init__(*args, **kwargs)
@@ -230,75 +215,63 @@ if Image:
     temp_upload_to_dir = os.path.join(temp_storage.location, 'tests')
 
     class Person(models.Model):
-        """
+        '''
         Model that defines an ImageField with no dimension fields.
-        """
+        '''
         name = models.CharField(max_length=50)
         mugshot = TestImageField(storage=temp_storage, upload_to='tests')
 
     class AbstractPersonWithHeight(models.Model):
-        """
+        '''
         Abstract model that defines an ImageField with only one dimension field
         to make sure the dimension update is correctly run on concrete subclass
         instance post-initialization.
-        """
-        mugshot = TestImageField(storage=temp_storage, upload_to='tests',
-                                 height_field='mugshot_height')
+        '''
+        mugshot = TestImageField(storage=temp_storage, upload_to='tests', height_field='mugshot_height')
         mugshot_height = models.PositiveSmallIntegerField()
 
         class Meta:
             abstract = True
 
     class PersonWithHeight(AbstractPersonWithHeight):
-        """
+        '''
         Concrete model that subclass an abstract one with only on dimension
         field.
-        """
+        '''
         name = models.CharField(max_length=50)
 
     class PersonWithHeightAndWidth(models.Model):
-        """
+        '''
         Model that defines height and width fields after the ImageField.
-        """
+        '''
         name = models.CharField(max_length=50)
-        mugshot = TestImageField(storage=temp_storage, upload_to='tests',
-                                 height_field='mugshot_height',
-                                 width_field='mugshot_width')
+        mugshot = TestImageField(storage=temp_storage, upload_to='tests', height_field='mugshot_height', width_field='mugshot_width')
         mugshot_height = models.PositiveSmallIntegerField()
         mugshot_width = models.PositiveSmallIntegerField()
 
     class PersonDimensionsFirst(models.Model):
-        """
+        '''
         Model that defines height and width fields before the ImageField.
-        """
+        '''
         name = models.CharField(max_length=50)
         mugshot_height = models.PositiveSmallIntegerField()
         mugshot_width = models.PositiveSmallIntegerField()
-        mugshot = TestImageField(storage=temp_storage, upload_to='tests',
-                                 height_field='mugshot_height',
-                                 width_field='mugshot_width')
+        mugshot = TestImageField(storage=temp_storage, upload_to='tests', height_field='mugshot_height', width_field='mugshot_width')
 
     class PersonTwoImages(models.Model):
-        """
+        '''
         Model that:
         * Defines two ImageFields
         * Defines the height/width fields before the ImageFields
         * Has a nullable ImageField
-        """
+        '''
         name = models.CharField(max_length=50)
         mugshot_height = models.PositiveSmallIntegerField()
         mugshot_width = models.PositiveSmallIntegerField()
-        mugshot = TestImageField(storage=temp_storage, upload_to='tests',
-                                 height_field='mugshot_height',
-                                 width_field='mugshot_width')
-        headshot_height = models.PositiveSmallIntegerField(
-            blank=True, null=True)
-        headshot_width = models.PositiveSmallIntegerField(
-            blank=True, null=True)
-        headshot = TestImageField(blank=True, null=True,
-                                  storage=temp_storage, upload_to='tests',
-                                  height_field='headshot_height',
-                                  width_field='headshot_width')
+        mugshot = TestImageField(storage=temp_storage, upload_to='tests', height_field='mugshot_height', width_field='mugshot_width')
+        headshot_height = models.PositiveSmallIntegerField(blank=True, null=True)
+        headshot_width = models.PositiveSmallIntegerField(blank=True, null=True)
+        headshot = TestImageField(blank=True, null=True, storage=temp_storage, upload_to='tests', height_field='headshot_height', width_field='headshot_width')
 
 
 class AllFieldsModel(models.Model):
@@ -325,18 +298,10 @@ class AllFieldsModel(models.Model):
     url = models.URLField()
     uuid = models.UUIDField()
 
-    fo = ForeignObject(
-        'self',
-        on_delete=models.CASCADE,
-        from_fields=['abstract_non_concrete_id'],
-        to_fields=['id'],
-        related_name='reverse'
-    )
-    fk = ForeignKey(
-        'self',
-        models.CASCADE,
-        related_name='reverse2'
-    )
+    fo = ForeignObject('self', on_delete=models.CASCADE, from_fields=['abstract_non_concrete_id'], to_fields=[
+        'id'
+    ], related_name='reverse')
+    fk = ForeignKey('self', models.CASCADE, related_name='reverse2')
     m2m = ManyToManyField('self')
     oto = OneToOneField('self', models.CASCADE)
 
@@ -351,7 +316,6 @@ class ManyToMany(models.Model):
 
 
 ###############################################################################
-
 
 class UUIDModel(models.Model):
     field = models.UUIDField()

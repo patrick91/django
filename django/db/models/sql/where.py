@@ -12,7 +12,7 @@ OR = 'OR'
 
 
 class WhereNode(tree.Node):
-    """
+    '''
     An SQL WHERE clause.
 
     The class is tied to the Query class that created it (in order to create
@@ -24,25 +24,23 @@ class WhereNode(tree.Node):
     However, a child could also be any class with as_sql() and either
     relabeled_clone() method or relabel_aliases() and clone() methods and
     contains_aggregate attribute.
-    """
+    '''
     default = AND
     resolved = False
     conditional = True
 
     def split_having(self, negated=False):
-        """
+        '''
         Return two possibly None nodes: one for those parts of self that
         should be included in the WHERE clause and one for those parts of
         self that must be included in the HAVING clause.
-        """
+        '''
         if not self.contains_aggregate:
             return self, None
         in_negated = negated ^ self.negated
         # If the effective connector is OR and this node contains an aggregate,
         # then we need to push the whole branch to HAVING clause.
-        may_need_split = (
-            (in_negated and self.connector == AND) or
-            (not in_negated and self.connector == OR))
+        may_need_split = in_negated and self.connector == AND or not in_negated and self.connector == OR
         if may_need_split and self.contains_aggregate:
             return None, self
         where_parts = []
@@ -140,13 +138,12 @@ class WhereNode(tree.Node):
                 self.children[pos] = child.relabeled_clone(change_map)
 
     def clone(self):
-        """
+        '''
         Create a clone of the tree. Must only be called on root nodes (nodes
         with empty subtree_parents). Childs must be either (Contraint, lookup,
         value) tuples, or objects supporting .clone().
-        """
-        clone = self.__class__._new_instance(
-            children=[], connector=self.connector, negated=self.negated)
+        '''
+        clone = self.__class__._new_instance(children=[], connector=self.connector, negated=self.negated)
         for child in self.children:
             if hasattr(child, 'clone'):
                 clone.children.append(child.clone())
@@ -190,7 +187,7 @@ class WhereNode(tree.Node):
 
 
 class NothingNode:
-    """A node that matches nothing."""
+    '''A node that matches nothing.'''
     contains_aggregate = False
 
     def as_sql(self, compiler=None, connection=None):
@@ -206,8 +203,8 @@ class ExtraWhere:
         self.params = params
 
     def as_sql(self, compiler=None, connection=None):
-        sqls = ["(%s)" % sql for sql in self.sqls]
-        return " AND ".join(sqls), list(self.params or ())
+        sqls = ['(%s)' % sql for sql in self.sqls]
+        return ' AND '.join(sqls), list(self.params or ())
 
 
 class SubqueryConstraint:

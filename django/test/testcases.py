@@ -29,15 +29,11 @@ from django.http.request import split_domain_port, validate_host
 from django.test.client import Client
 from django.test.html import HTMLParseError, parse_html
 from django.test.signals import setting_changed, template_rendered
-from django.test.utils import (
-    CaptureQueriesContext, ContextList, compare_xml, modify_settings,
-    override_settings,
-)
+from django.test.utils import CaptureQueriesContext, ContextList, compare_xml, modify_settings, override_settings
 from django.utils.decorators import classproperty
 from django.views.static import serve
 
-__all__ = ('TestCase', 'TransactionTestCase',
-           'SimpleTestCase', 'skipIfDBFeature', 'skipUnlessDBFeature')
+__all__ = ('TestCase', 'TransactionTestCase', 'SimpleTestCase', 'skipIfDBFeature', 'skipUnlessDBFeature')
 
 
 def to_list(value):
@@ -72,15 +68,13 @@ class _AssertNumQueriesContext(CaptureQueriesContext):
         if exc_type is not None:
             return
         executed = len(self)
-        self.test_case.assertEqual(
-            executed, self.num,
-            "%d queries executed, %d expected\nCaptured queries were:\n%s" % (
-                executed, self.num,
-                '\n'.join(
-                    '%d. %s' % (i, query['sql']) for i, query in enumerate(self.captured_queries, start=1)
-                )
-            )
-        )
+        self.test_case.assertEqual(executed, self.num, '%d queries executed, %d expected\nCaptured queries were:\n%s' \
+        % \
+        (
+            executed,
+            self.num,
+            '\n'.join('%d. %s' % (i, query['sql']) for (i, query) in enumerate(self.captured_queries, start=1))
+        ))
 
 
 class _AssertTemplateUsedContext:
@@ -114,9 +108,7 @@ class _AssertTemplateUsedContext:
         if not self.test():
             message = self.message()
             if self.rendered_templates:
-                message += ' Following templates were rendered: %s' % (
-                    ', '.join(self.rendered_template_names)
-                )
+                message += ' Following templates were rendered: %s' % ', '.join(self.rendered_template_names)
             else:
                 message += ' No template was rendered.'
             self.test_case.fail(message)
@@ -136,21 +128,20 @@ class _CursorFailure:
         self.wrapped = wrapped
 
     def __call__(self):
-        raise AssertionError(
-            "Database queries aren't allowed in SimpleTestCase. "
+        raise
+        AssertionError("Database queries aren't allowed in SimpleTestCase. "
             "Either use TestCase or TransactionTestCase to ensure proper test isolation or "
-            "set %s.allow_database_queries to True to silence this failure." % self.cls_name
-        )
+            "set %s.allow_database_queries to True to silence this failure." \
+        % \
+        self.cls_name)
 
 
 class SimpleTestCase(unittest.TestCase):
-
     # The class we'll use for the test client self.client.
     # Can be overridden in derived classes.
     client_class = Client
     _overridden_settings = None
     _modified_settings = None
-
     # Tests shouldn't be allowed to query the database since
     # this base class doesn't enforce any isolation.
     allow_database_queries = False
@@ -192,10 +183,9 @@ class SimpleTestCase(unittest.TestCase):
         include a call to super().setUp().
         """
         testMethod = getattr(self, self._testMethodName)
-        skipped = (
-            getattr(self.__class__, "__unittest_skip__", False) or
-            getattr(testMethod, "__unittest_skip__", False)
-        )
+        skipped = getattr(self.__class__, '__unittest_skip__', False) \
+        or \
+        getattr(testMethod, '__unittest_skip__', False)
 
         if not skipped:
             try:
@@ -212,35 +202,41 @@ class SimpleTestCase(unittest.TestCase):
                 return
 
     def _pre_setup(self):
-        """
+        '''
         Perform pre-test setup:
         * Create a test client.
         * Clear the mail test outbox.
-        """
+        '''
         self.client = self.client_class()
         mail.outbox = []
 
     def _post_teardown(self):
-        """Perform post-test things."""
+        '''Perform post-test things.'''
         pass
 
     def settings(self, **kwargs):
-        """
+        '''
         A context manager that temporarily sets a setting and reverts to the
         original value when exiting the context.
-        """
+        '''
         return override_settings(**kwargs)
 
     def modify_settings(self, **kwargs):
-        """
+        '''
         A context manager that temporarily applies changes a list setting and
         reverts back to the original value when exiting the context.
-        """
+        '''
         return modify_settings(**kwargs)
 
-    def assertRedirects(self, response, expected_url, status_code=302,
-                        target_status_code=200, msg_prefix='',
-                        fetch_redirect_response=True):
+    def assertRedirects(
+        self,
+        response,
+        expected_url,
+        status_code=302,
+        target_status_code=200,
+        msg_prefix='',
+        fetch_redirect_response=True
+    ):
         """
         Assert that a response redirected to a specific URL and that the
         redirect URL can be loaded.
@@ -250,73 +246,67 @@ class SimpleTestCase(unittest.TestCase):
         fetching them).
         """
         if msg_prefix:
-            msg_prefix += ": "
+            msg_prefix += ': '
 
         if hasattr(response, 'redirect_chain'):
             # The request was a followed redirect
-            self.assertTrue(
-                response.redirect_chain,
-                msg_prefix + "Response didn't redirect as expected: Response code was %d (expected %d)"
-                % (response.status_code, status_code)
-            )
+            self.assertTrue(response.redirect_chain, msg_prefix \
+            + \
+            "Response didn't redirect as expected: Response code was %d (expected %d)" \
+            % \
+            (response.status_code, status_code))
 
-            self.assertEqual(
-                response.redirect_chain[0][1], status_code,
-                msg_prefix + "Initial response didn't redirect as expected: Response code was %d (expected %d)"
-                % (response.redirect_chain[0][1], status_code)
-            )
+            self.assertEqual(response.redirect_chain[0][1], status_code, msg_prefix \
+            + \
+            "Initial response didn't redirect as expected: Response code was %d (expected %d)" \
+            % \
+            (response.redirect_chain[0][1], status_code))
 
             url, status_code = response.redirect_chain[-1]
             scheme, netloc, path, query, fragment = urlsplit(url)
 
-            self.assertEqual(
-                response.status_code, target_status_code,
-                msg_prefix + "Response didn't redirect as expected: Final Response code was %d (expected %d)"
-                % (response.status_code, target_status_code)
-            )
-
+            self.assertEqual(response.status_code, target_status_code, msg_prefix \
+            + \
+            "Response didn't redirect as expected: Final Response code was %d (expected %d)" \
+            % \
+            (response.status_code, target_status_code))
         else:
             # Not a followed redirect
-            self.assertEqual(
-                response.status_code, status_code,
-                msg_prefix + "Response didn't redirect as expected: Response code was %d (expected %d)"
-                % (response.status_code, status_code)
-            )
-
+            self.assertEqual(response.status_code, status_code, msg_prefix \
+            + \
+            "Response didn't redirect as expected: Response code was %d (expected %d)" \
+            % \
+            (response.status_code, status_code))
             url = response.url
             scheme, netloc, path, query, fragment = urlsplit(url)
-
             # Prepend the request path to handle relative path redirects.
             if not path.startswith('/'):
                 url = urljoin(response.request['PATH_INFO'], url)
                 path = urljoin(response.request['PATH_INFO'], path)
-
             if fetch_redirect_response:
                 # netloc might be empty, or in cases where Django tests the
                 # HTTP scheme, the convention is for netloc to be 'testserver'.
                 # Trust both as "internal" URLs here.
                 domain, port = split_domain_port(netloc)
                 if domain and not validate_host(domain, settings.ALLOWED_HOSTS):
-                    raise ValueError(
-                        "The test client is unable to fetch remote URLs (got %s). "
+                    raise
+                    ValueError("The test client is unable to fetch remote URLs (got %s). "
                         "If the host is served by Django, add '%s' to ALLOWED_HOSTS. "
-                        "Otherwise, use assertRedirects(..., fetch_redirect_response=False)."
-                        % (url, domain)
-                    )
-                redirect_response = response.client.get(path, QueryDict(query), secure=(scheme == 'https'))
-
+                        "Otherwise, use assertRedirects(..., fetch_redirect_response=False)." \
+                    % \
+                    (url, domain))
+                redirect_response = response.client.get(path, QueryDict(query), secure=scheme == 'https')
                 # Get the redirection page, using the same client that was used
                 # to obtain the original response.
-                self.assertEqual(
-                    redirect_response.status_code, target_status_code,
-                    msg_prefix + "Couldn't retrieve redirection page '%s': response code was %d (expected %d)"
-                    % (path, redirect_response.status_code, target_status_code)
-                )
+                self.assertEqual(redirect_response.status_code, target_status_code, msg_prefix \
+                + \
+                "Couldn't retrieve redirection page '%s': response code was %d (expected %d)" \
+                % \
+                (path, redirect_response.status_code, target_status_code))
 
-        self.assertEqual(
-            url, expected_url,
-            msg_prefix + "Response redirected to '%s', expected '%s'" % (url, expected_url)
-        )
+        self.assertEqual(url, expected_url, msg_prefix \
+        + \
+        "Response redirected to '%s', expected '%s'" % (url, expected_url))
 
     def _assert_contains(self, response, text, status_code, msg_prefix, html):
         # If the response supports deferred rendering and hasn't been rendered
@@ -325,13 +315,14 @@ class SimpleTestCase(unittest.TestCase):
             response.render()
 
         if msg_prefix:
-            msg_prefix += ": "
+            msg_prefix += ': '
 
-        self.assertEqual(
-            response.status_code, status_code,
-            msg_prefix + "Couldn't retrieve content: Response code was %d"
-            " (expected %d)" % (response.status_code, status_code)
-        )
+        self.assertEqual(response.status_code, status_code, msg_prefix \
+        + \
+        "Couldn't retrieve content: Response code was %d"
+            " (expected %d)" \
+        % \
+        (response.status_code, status_code))
 
         if response.streaming:
             content = b''.join(response.streaming_content)
@@ -345,9 +336,9 @@ class SimpleTestCase(unittest.TestCase):
             text_repr = repr(text)
         if html:
             content = assert_and_parse_html(self, content, None, "Response's content is not valid HTML:")
-            text = assert_and_parse_html(self, text, None, "Second argument is not valid HTML:")
+            text = assert_and_parse_html(self, text, None, 'Second argument is not valid HTML:')
         real_count = content.count(text)
-        return (text_repr, real_count, msg_prefix)
+        return text_repr, real_count, msg_prefix
 
     def assertContains(self, response, text, count=None, status_code=200, msg_prefix='', html=False):
         """
@@ -357,14 +348,12 @@ class SimpleTestCase(unittest.TestCase):
         If ``count`` is None, the count doesn't matter - the assertion is true
         if the text occurs at least once in the response.
         """
-        text_repr, real_count, msg_prefix = self._assert_contains(
-            response, text, status_code, msg_prefix, html)
+        text_repr, real_count, msg_prefix = self._assert_contains(response, text, status_code, msg_prefix, html)
 
         if count is not None:
-            self.assertEqual(
-                real_count, count,
-                msg_prefix + "Found %d instances of %s in response (expected %d)" % (real_count, text_repr, count)
-            )
+            self.assertEqual(real_count, count, msg_prefix \
+            + \
+            'Found %d instances of %s in response (expected %d)' % (real_count, text_repr, count))
         else:
             self.assertTrue(real_count != 0, msg_prefix + "Couldn't find %s in response" % text_repr)
 
@@ -374,27 +363,23 @@ class SimpleTestCase(unittest.TestCase):
         successfully, (i.e., the HTTP status code was as expected) and that
         ``text`` doesn't occurs in the content of the response.
         """
-        text_repr, real_count, msg_prefix = self._assert_contains(
-            response, text, status_code, msg_prefix, html)
+        text_repr, real_count, msg_prefix = self._assert_contains(response, text, status_code, msg_prefix, html)
 
-        self.assertEqual(real_count, 0, msg_prefix + "Response should not contain %s" % text_repr)
+        self.assertEqual(real_count, 0, msg_prefix + 'Response should not contain %s' % text_repr)
 
     def assertFormError(self, response, form, field, errors, msg_prefix=''):
-        """
+        '''
         Assert that a form used to render the response has a specific field
         error.
-        """
+        '''
         if msg_prefix:
-            msg_prefix += ": "
-
+            msg_prefix += ': '
         # Put context(s) into a list to simplify processing.
         contexts = to_list(response.context)
         if not contexts:
-            self.fail(msg_prefix + "Response did not use any contexts to render the response")
-
+            self.fail(msg_prefix + 'Response did not use any contexts to render the response')
         # Put error(s) into a list to simplify processing.
         errors = to_list(errors)
-
         # Search all contexts for the error.
         found_form = False
         for i, context in enumerate(contexts):
@@ -405,38 +390,35 @@ class SimpleTestCase(unittest.TestCase):
                 if field:
                     if field in context[form].errors:
                         field_errors = context[form].errors[field]
-                        self.assertTrue(
-                            err in field_errors,
-                            msg_prefix + "The field '%s' on form '%s' in"
+                        self.assertTrue(err in field_errors, msg_prefix \
+                        + \
+                        "The field '%s' on form '%s' in"
                             " context %d does not contain the error '%s'"
-                            " (actual errors: %s)" %
-                            (field, form, i, err, repr(field_errors))
-                        )
+                            " (actual errors: %s)" \
+                        % \
+                        (field, form, i, err, repr(field_errors)))
                     elif field in context[form].fields:
-                        self.fail(
-                            msg_prefix + "The field '%s' on form '%s' in context %d contains no errors" %
-                            (field, form, i)
-                        )
+                        self.fail(msg_prefix \
+                        + \
+                        "The field '%s' on form '%s' in context %d contains no errors" % (field, form, i))
                     else:
-                        self.fail(
-                            msg_prefix + "The form '%s' in context %d does not contain the field '%s'" %
-                            (form, i, field)
-                        )
+                        self.fail(msg_prefix \
+                        + \
+                        "The form '%s' in context %d does not contain the field '%s'" % (form, i, field))
                 else:
                     non_field_errors = context[form].non_field_errors()
-                    self.assertTrue(
-                        err in non_field_errors,
-                        msg_prefix + "The form '%s' in context %d does not"
+                    self.assertTrue(err in non_field_errors, msg_prefix \
+                    + \
+                    "The form '%s' in context %d does not"
                         " contain the non-field error '%s'"
-                        " (actual errors: %s)" %
-                        (form, i, err, non_field_errors or 'none')
-                    )
+                        " (actual errors: %s)" \
+                    % \
+                    (form, i, err, non_field_errors or 'none'))
         if not found_form:
             self.fail(msg_prefix + "The form '%s' was not used to render the response" % form)
 
-    def assertFormsetError(self, response, formset, form_index, field, errors,
-                           msg_prefix=''):
-        """
+    def assertFormsetError(self, response, formset, form_index, field, errors, msg_prefix=''):
+        '''
         Assert that a formset used to render the response has a specific error.
 
         For field errors, specify the ``form_index`` and the ``field``.
@@ -444,20 +426,17 @@ class SimpleTestCase(unittest.TestCase):
         None.
         For non-form errors, specify ``form_index`` as None and the ``field``
         as None.
-        """
+        '''
         # Add punctuation to msg_prefix
         if msg_prefix:
-            msg_prefix += ": "
-
+            msg_prefix += ': '
         # Put context(s) into a list to simplify processing.
         contexts = to_list(response.context)
         if not contexts:
             self.fail(msg_prefix + 'Response did not use any contexts to '
                       'render the response')
-
         # Put error(s) into a list to simplify processing.
         errors = to_list(errors)
-
         # Search all contexts for the error.
         found_formset = False
         for i, context in enumerate(contexts):
@@ -468,67 +447,69 @@ class SimpleTestCase(unittest.TestCase):
                 if field is not None:
                     if field in context[formset].forms[form_index].errors:
                         field_errors = context[formset].forms[form_index].errors[field]
-                        self.assertTrue(
-                            err in field_errors,
-                            msg_prefix + "The field '%s' on formset '%s', "
+                        self.assertTrue(err in field_errors, msg_prefix \
+                        + \
+                        "The field '%s' on formset '%s', "
                             "form %d in context %d does not contain the "
-                            "error '%s' (actual errors: %s)" %
-                            (field, formset, form_index, i, err, repr(field_errors))
-                        )
+                            "error '%s' (actual errors: %s)" \
+                        % \
+                        (field, formset, form_index, i, err, repr(field_errors)))
                     elif field in context[formset].forms[form_index].fields:
-                        self.fail(
-                            msg_prefix + "The field '%s' on formset '%s', form %d in context %d contains no errors"
-                            % (field, formset, form_index, i)
-                        )
+                        self.fail(msg_prefix \
+                        + \
+                        "The field '%s' on formset '%s', form %d in context %d contains no errors" \
+                        % \
+                        (field, formset, form_index, i))
                     else:
-                        self.fail(
-                            msg_prefix + "The formset '%s', form %d in context %d does not contain the field '%s'"
-                            % (formset, form_index, i, field)
-                        )
+                        self.fail(msg_prefix \
+                        + \
+                        "The formset '%s', form %d in context %d does not contain the field '%s'" \
+                        % \
+                        (formset, form_index, i, field))
                 elif form_index is not None:
                     non_field_errors = context[formset].forms[form_index].non_field_errors()
-                    self.assertFalse(
-                        not non_field_errors,
-                        msg_prefix + "The formset '%s', form %d in context %d "
-                        "does not contain any non-field errors." % (formset, form_index, i)
-                    )
-                    self.assertTrue(
-                        err in non_field_errors,
-                        msg_prefix + "The formset '%s', form %d in context %d "
-                        "does not contain the non-field error '%s' (actual errors: %s)"
-                        % (formset, form_index, i, err, repr(non_field_errors))
-                    )
+                    self.assertFalse(not non_field_errors, msg_prefix \
+                    + \
+                    "The formset '%s', form %d in context %d "
+                        "does not contain any non-field errors." \
+                    % \
+                    (formset, form_index, i))
+                    self.assertTrue(err in non_field_errors, msg_prefix \
+                    + \
+                    "The formset '%s', form %d in context %d "
+                        "does not contain the non-field error '%s' (actual errors: %s)" \
+                    % \
+                    (formset, form_index, i, err, repr(non_field_errors)))
                 else:
                     non_form_errors = context[formset].non_form_errors()
-                    self.assertFalse(
-                        not non_form_errors,
-                        msg_prefix + "The formset '%s' in context %d does not "
-                        "contain any non-form errors." % (formset, i)
-                    )
-                    self.assertTrue(
-                        err in non_form_errors,
-                        msg_prefix + "The formset '%s' in context %d does not "
-                        "contain the non-form error '%s' (actual errors: %s)"
-                        % (formset, i, err, repr(non_form_errors))
-                    )
+                    self.assertFalse(not non_form_errors, msg_prefix \
+                    + \
+                    "The formset '%s' in context %d does not "
+                        "contain any non-form errors." \
+                    % \
+                    (formset, i))
+                    self.assertTrue(err in non_form_errors, msg_prefix \
+                    + \
+                    "The formset '%s' in context %d does not "
+                        "contain the non-form error '%s' (actual errors: %s)" \
+                    % \
+                    (formset, i, err, repr(non_form_errors)))
         if not found_formset:
             self.fail(msg_prefix + "The formset '%s' was not used to render the response" % formset)
 
     def _assert_template_used(self, response, template_name, msg_prefix):
-
         if response is None and template_name is None:
             raise TypeError('response and/or template_name argument must be provided')
 
         if msg_prefix:
-            msg_prefix += ": "
+            msg_prefix += ': '
 
         if template_name is not None and response is not None and not hasattr(response, 'templates'):
-            raise ValueError(
-                "assertTemplateUsed() and assertTemplateNotUsed() are only "
-                "usable on responses fetched using the Django test Client."
-            )
+            raise
+            ValueError("assertTemplateUsed() and assertTemplateNotUsed() are only "
+                "usable on responses fetched using the Django test Client.")
 
-        if not hasattr(response, 'templates') or (response is None and template_name):
+        if not hasattr(response, 'templates') or response is None and template_name:
             if response:
                 template_name = response
                 response = None
@@ -539,50 +520,54 @@ class SimpleTestCase(unittest.TestCase):
         return None, template_names, msg_prefix
 
     def assertTemplateUsed(self, response=None, template_name=None, msg_prefix='', count=None):
-        """
+        '''
         Assert that the template with the provided name was used in rendering
         the response. Also usable as context manager.
-        """
-        context_mgr_template, template_names, msg_prefix = self._assert_template_used(
-            response, template_name, msg_prefix)
+        '''
+        (
+            context_mgr_template,
+            template_names,
+            msg_prefix
+        ) = self._assert_template_used(response, template_name, msg_prefix)
 
         if context_mgr_template:
             # Use assertTemplateUsed as context manager.
             return _AssertTemplateUsedContext(self, context_mgr_template)
 
         if not template_names:
-            self.fail(msg_prefix + "No templates used to render the response")
-        self.assertTrue(
-            template_name in template_names,
-            msg_prefix + "Template '%s' was not a template used to render"
-            " the response. Actual template(s) used: %s"
-            % (template_name, ', '.join(template_names))
-        )
+            self.fail(msg_prefix + 'No templates used to render the response')
+        self.assertTrue(template_name in template_names, msg_prefix \
+        + \
+        "Template '%s' was not a template used to render"
+            " the response. Actual template(s) used: %s" \
+        % \
+        (template_name, ', '.join(template_names)))
 
         if count is not None:
-            self.assertEqual(
-                template_names.count(template_name), count,
-                msg_prefix + "Template '%s' was expected to be rendered %d "
-                "time(s) but was actually rendered %d time(s)."
-                % (template_name, count, template_names.count(template_name))
-            )
+            self.assertEqual(template_names.count(template_name), count, msg_prefix \
+            + \
+            "Template '%s' was expected to be rendered %d "
+                "time(s) but was actually rendered %d time(s)." \
+            % \
+            (template_name, count, template_names.count(template_name)))
 
     def assertTemplateNotUsed(self, response=None, template_name=None, msg_prefix=''):
-        """
+        '''
         Assert that the template with the provided name was NOT used in
         rendering the response. Also usable as context manager.
-        """
-        context_mgr_template, template_names, msg_prefix = self._assert_template_used(
-            response, template_name, msg_prefix
-        )
+        '''
+        (
+            context_mgr_template,
+            template_names,
+            msg_prefix
+        ) = self._assert_template_used(response, template_name, msg_prefix)
         if context_mgr_template:
             # Use assertTemplateNotUsed as context manager.
             return _AssertTemplateNotUsedContext(self, context_mgr_template)
 
-        self.assertFalse(
-            template_name in template_names,
-            msg_prefix + "Template '%s' was used unexpectedly in rendering the response" % template_name
-        )
+        self.assertFalse(template_name in template_names, msg_prefix \
+        + \
+        "Template '%s' was used unexpectedly in rendering the response" % template_name)
 
     @contextmanager
     def _assert_raises_or_warns_cm(self, func, cm_attr, expected_exception, expected_message):
@@ -604,7 +589,7 @@ class SimpleTestCase(unittest.TestCase):
             callable_obj(*args, **kwargs)
 
     def assertRaisesMessage(self, expected_exception, expected_message, *args, **kwargs):
-        """
+        '''
         Assert that expected_message is found in the the message of a raised
         exception.
 
@@ -613,25 +598,19 @@ class SimpleTestCase(unittest.TestCase):
             expected_message: expected error message string value.
             args: Function to be called and extra positional args.
             kwargs: Extra kwargs.
-        """
-        return self._assertFooMessage(
-            self.assertRaises, 'exception', expected_exception, expected_message,
-            *args, **kwargs
-        )
+        '''
+        return \
+            self._assertFooMessage(self.assertRaises, 'exception', expected_exception, expected_message, *args, **kwargs)
 
     def assertWarnsMessage(self, expected_warning, expected_message, *args, **kwargs):
-        """
+        '''
         Same as assertRaisesMessage but for assertWarns() instead of
         assertRaises().
-        """
-        return self._assertFooMessage(
-            self.assertWarns, 'warning', expected_warning, expected_message,
-            *args, **kwargs
-        )
+        '''
+        return self._assertFooMessage(self.assertWarns, 'warning', expected_warning, expected_message, *args, **kwargs)
 
-    def assertFieldOutput(self, fieldclass, valid, invalid, field_args=None,
-                          field_kwargs=None, empty_value=''):
-        """
+    def assertFieldOutput(self, fieldclass, valid, invalid, field_args=None, field_kwargs=None, empty_value=''):
+        '''
         Assert that a form field behaves correctly with various inputs.
 
         Args:
@@ -643,13 +622,13 @@ class SimpleTestCase(unittest.TestCase):
             field_args: the args passed to instantiate the field
             field_kwargs: the kwargs passed to instantiate the field
             empty_value: the expected clean output for inputs in empty_values
-        """
+        '''
         if field_args is None:
             field_args = []
         if field_kwargs is None:
             field_kwargs = {}
         required = fieldclass(*field_args, **field_kwargs)
-        optional = fieldclass(*field_args, **{**field_kwargs, 'required': False})
+        optional = fieldclass(*field_args, **{: field_kwargs, 'required': False})
         # test valid inputs
         for input, output in valid.items():
             self.assertEqual(required.clean(input), output)
@@ -676,31 +655,27 @@ class SimpleTestCase(unittest.TestCase):
             self.assertIsInstance(fieldclass(*field_args, **field_kwargs), fieldclass)
 
     def assertHTMLEqual(self, html1, html2, msg=None):
-        """
+        '''
         Assert that two HTML snippets are semantically the same.
         Whitespace in most cases is ignored, and attribute ordering is not
         significant. The arguments must be valid HTML.
-        """
+        '''
         dom1 = assert_and_parse_html(self, html1, msg, 'First argument is not valid HTML:')
         dom2 = assert_and_parse_html(self, html2, msg, 'Second argument is not valid HTML:')
 
         if dom1 != dom2:
-            standardMsg = '%s != %s' % (
-                safe_repr(dom1, True), safe_repr(dom2, True))
-            diff = ('\n' + '\n'.join(difflib.ndiff(
-                str(dom1).splitlines(), str(dom2).splitlines(),
-            )))
+            standardMsg = '%s != %s' % (safe_repr(dom1, True), safe_repr(dom2, True))
+            diff = '\n' + '\n'.join(difflib.ndiff(str(dom1).splitlines(), str(dom2).splitlines()))
             standardMsg = self._truncateMessage(standardMsg, diff)
             self.fail(self._formatMessage(msg, standardMsg))
 
     def assertHTMLNotEqual(self, html1, html2, msg=None):
-        """Assert that two HTML snippets are not semantically equivalent."""
+        '''Assert that two HTML snippets are not semantically equivalent.'''
         dom1 = assert_and_parse_html(self, html1, msg, 'First argument is not valid HTML:')
         dom2 = assert_and_parse_html(self, html2, msg, 'Second argument is not valid HTML:')
 
         if dom1 == dom2:
-            standardMsg = '%s == %s' % (
-                safe_repr(dom1, True), safe_repr(dom2, True))
+            standardMsg = '%s == %s' % (safe_repr(dom1, True), safe_repr(dom2, True))
             self.fail(self._formatMessage(msg, standardMsg))
 
     def assertInHTML(self, needle, haystack, count=None, msg_prefix=''):
@@ -708,53 +683,52 @@ class SimpleTestCase(unittest.TestCase):
         haystack = assert_and_parse_html(self, haystack, None, 'Second argument is not valid HTML:')
         real_count = haystack.count(needle)
         if count is not None:
-            self.assertEqual(
-                real_count, count,
-                msg_prefix + "Found %d instances of '%s' in response (expected %d)" % (real_count, needle, count)
-            )
+            self.assertEqual(real_count, count, msg_prefix \
+            + \
+            "Found %d instances of '%s' in response (expected %d)" % (real_count, needle, count))
         else:
             self.assertTrue(real_count != 0, msg_prefix + "Couldn't find '%s' in response" % needle)
 
     def assertJSONEqual(self, raw, expected_data, msg=None):
-        """
+        '''
         Assert that the JSON fragments raw and expected_data are equal.
         Usual JSON non-significant whitespace rules apply as the heavyweight
         is delegated to the json library.
-        """
+        '''
         try:
             data = json.loads(raw)
         except json.JSONDecodeError:
-            self.fail("First argument is not valid JSON: %r" % raw)
+            self.fail('First argument is not valid JSON: %r' % raw)
         if isinstance(expected_data, str):
             try:
                 expected_data = json.loads(expected_data)
             except ValueError:
-                self.fail("Second argument is not valid JSON: %r" % expected_data)
+                self.fail('Second argument is not valid JSON: %r' % expected_data)
         self.assertEqual(data, expected_data, msg=msg)
 
     def assertJSONNotEqual(self, raw, expected_data, msg=None):
-        """
+        '''
         Assert that the JSON fragments raw and expected_data are not equal.
         Usual JSON non-significant whitespace rules apply as the heavyweight
         is delegated to the json library.
-        """
+        '''
         try:
             data = json.loads(raw)
         except json.JSONDecodeError:
-            self.fail("First argument is not valid JSON: %r" % raw)
+            self.fail('First argument is not valid JSON: %r' % raw)
         if isinstance(expected_data, str):
             try:
                 expected_data = json.loads(expected_data)
             except json.JSONDecodeError:
-                self.fail("Second argument is not valid JSON: %r" % expected_data)
+                self.fail('Second argument is not valid JSON: %r' % expected_data)
         self.assertNotEqual(data, expected_data, msg=msg)
 
     def assertXMLEqual(self, xml1, xml2, msg=None):
-        """
+        '''
         Assert that two XML snippets are semantically the same.
         Whitespace in most cases is ignored and attribute ordering is not
         significant. The arguments must be valid XML.
-        """
+        '''
         try:
             result = compare_xml(xml1, xml2)
         except Exception as e:
@@ -763,18 +737,16 @@ class SimpleTestCase(unittest.TestCase):
         else:
             if not result:
                 standardMsg = '%s != %s' % (safe_repr(xml1, True), safe_repr(xml2, True))
-                diff = ('\n' + '\n'.join(
-                    difflib.ndiff(xml1.splitlines(), xml2.splitlines())
-                ))
+                diff = '\n' + '\n'.join(difflib.ndiff(xml1.splitlines(), xml2.splitlines()))
                 standardMsg = self._truncateMessage(standardMsg, diff)
                 self.fail(self._formatMessage(msg, standardMsg))
 
     def assertXMLNotEqual(self, xml1, xml2, msg=None):
-        """
+        '''
         Assert that two XML snippets are not semantically equivalent.
         Whitespace in most cases is ignored and attribute ordering is not
         significant. The arguments must be valid XML.
-        """
+        '''
         try:
             result = compare_xml(xml1, xml2)
         except Exception as e:
@@ -787,26 +759,20 @@ class SimpleTestCase(unittest.TestCase):
 
 
 class TransactionTestCase(SimpleTestCase):
-
     # Subclasses can ask for resetting of auto increment sequence before each
     # test case
     reset_sequences = False
-
     # Subclasses can enable only a subset of apps for faster tests
     available_apps = None
-
     # Subclasses can define fixtures which will be automatically installed.
     fixtures = None
-
     # Do the tests in this class query non-default databases?
     multi_db = False
-
     # If transactions aren't available, Django will serialize the database
     # contents into a fixture during setup and flush and reload them
     # during teardown (as flush does not restore data from migrations).
     # This can be slow; this flag allows enabling on a per-case basis.
     serialized_rollback = False
-
     # Since tests will be wrapped in a transaction, or serialized if they
     # are not available, we allow queries to be run.
     allow_database_queries = True
@@ -822,12 +788,7 @@ class TransactionTestCase(SimpleTestCase):
         super()._pre_setup()
         if self.available_apps is not None:
             apps.set_available_apps(self.available_apps)
-            setting_changed.send(
-                sender=settings._wrapped.__class__,
-                setting='INSTALLED_APPS',
-                value=self.available_apps,
-                enter=True,
-            )
+            setting_changed.send(sender=settings._wrapped.__class__, setting='INSTALLED_APPS', value=self.available_apps, enter=True)
             for db_name in self._databases_names(include_mirrors=False):
                 emit_post_migrate_signal(verbosity=0, interactive=False, db=db_name)
         try:
@@ -835,12 +796,7 @@ class TransactionTestCase(SimpleTestCase):
         except Exception:
             if self.available_apps is not None:
                 apps.unset_available_apps()
-                setting_changed.send(
-                    sender=settings._wrapped.__class__,
-                    setting='INSTALLED_APPS',
-                    value=settings.INSTALLED_APPS,
-                    enter=False,
-                )
+                setting_changed.send(sender=settings._wrapped.__class__, setting='INSTALLED_APPS', value=settings.INSTALLED_APPS, enter=False)
             raise
         # Clear the queries_log so that it's less likely to overflow (a single
         # test probably won't execute 9K queries). If queries_log overflows,
@@ -853,18 +809,19 @@ class TransactionTestCase(SimpleTestCase):
         # If the test case has a multi_db=True flag, act on all databases,
         # including mirrors or not. Otherwise, just on the default DB.
         if cls.multi_db:
-            return [
-                alias for alias in connections
-                if include_mirrors or not connections[alias].settings_dict['TEST']['MIRROR']
-            ]
+            return \
+                [
+                    alias
+                    for alias in connections
+                    if include_mirrors or not connections[alias].settings_dict['TEST']['MIRROR']
+                ]
         else:
             return [DEFAULT_DB_ALIAS]
 
     def _reset_sequences(self, db_name):
         conn = connections[db_name]
         if conn.features.supports_sequence_reset:
-            sql_list = conn.ops.sequence_reset_by_name_sql(
-                no_style(), conn.introspection.sequence_list())
+            sql_list = conn.ops.sequence_reset_by_name_sql(no_style(), conn.introspection.sequence_list())
             if sql_list:
                 with transaction.atomic(using=db_name):
                     with conn.cursor() as cursor:
@@ -876,23 +833,21 @@ class TransactionTestCase(SimpleTestCase):
             # Reset sequences
             if self.reset_sequences:
                 self._reset_sequences(db_name)
-
             # If we need to provide replica initial data from migrated apps,
             # then do so.
-            if self.serialized_rollback and hasattr(connections[db_name], "_test_serialized_contents"):
+            if self.serialized_rollback and hasattr(connections[db_name], '_test_serialized_contents'):
                 if self.available_apps is not None:
                     apps.unset_available_apps()
-                connections[db_name].creation.deserialize_db_from_string(
-                    connections[db_name]._test_serialized_contents
-                )
+                connections[db_name].creation.deserialize_db_from_string(connections[
+                    db_name
+                ]._test_serialized_contents)
                 if self.available_apps is not None:
                     apps.set_available_apps(self.available_apps)
 
             if self.fixtures:
                 # We have to use this slightly awkward syntax due to the fact
                 # that we're using *args and **kwargs together.
-                call_command('loaddata', *self.fixtures,
-                             **{'verbosity': 0, 'database': db_name})
+                call_command('loaddata', *self.fixtures, **{'verbosity': 0, 'database': db_name})
 
     def _should_reload_connections(self):
         return True
@@ -916,31 +871,22 @@ class TransactionTestCase(SimpleTestCase):
                 # happen, get a clean connection at the start of every test.
                 for conn in connections.all():
                     conn.close()
+
         finally:
             if self.available_apps is not None:
                 apps.unset_available_apps()
-                setting_changed.send(sender=settings._wrapped.__class__,
-                                     setting='INSTALLED_APPS',
-                                     value=settings.INSTALLED_APPS,
-                                     enter=False)
+                setting_changed.send(sender=settings._wrapped.__class__, setting='INSTALLED_APPS', value=settings.INSTALLED_APPS, enter=False)
 
     def _fixture_teardown(self):
         # Allow TRUNCATE ... CASCADE and don't emit the post_migrate signal
         # when flushing only a subset of the apps
         for db_name in self._databases_names(include_mirrors=False):
             # Flush the database
-            inhibit_post_migrate = (
-                self.available_apps is not None or
-                (   # Inhibit the post_migrate signal when using serialized
-                    # rollback to avoid trying to recreate the serialized data.
-                    self.serialized_rollback and
-                    hasattr(connections[db_name], '_test_serialized_contents')
-                )
-            )
-            call_command('flush', verbosity=0, interactive=False,
-                         database=db_name, reset_sequences=False,
-                         allow_cascade=self.available_apps is not None,
-                         inhibit_post_migrate=inhibit_post_migrate)
+            inhibit_post_migrate = self.available_apps is not None \ # Inhibit the post_migrate signal when using serialized
+            or \
+            # rollback to avoid trying to recreate the serialized data.
+            self.serialized_rollback and hasattr(connections[db_name], '_test_serialized_contents')
+            call_command('flush', verbosity=0, interactive=False, database=db_name, reset_sequences=False, allow_cascade=self.available_apps is not None, inhibit_post_migrate=inhibit_post_migrate)
 
     def assertQuerysetEqual(self, qs, values, transform=repr, ordered=True, msg=None):
         items = map(transform, qs)
@@ -950,7 +896,8 @@ class TransactionTestCase(SimpleTestCase):
         # For example qs.iterator() could be passed as qs, but it does not
         # have 'ordered' attribute.
         if len(values) > 1 and hasattr(qs, 'ordered') and not qs.ordered:
-            raise ValueError("Trying to compare non-ordered queryset "
+            raise
+            ValueError("Trying to compare non-ordered queryset "
                              "against more than one ordered values")
         return self.assertEqual(list(items), values, msg=msg)
 
@@ -966,12 +913,12 @@ class TransactionTestCase(SimpleTestCase):
 
 
 def connections_support_transactions():
-    """Return True if all connections support transactions."""
+    '''Return True if all connections support transactions.'''
     return all(conn.features.supports_transactions for conn in connections.all())
 
 
 class TestCase(TransactionTestCase):
-    """
+    '''
     Similar to TransactionTestCase, but use `transaction.atomic()` to achieve
     test isolation.
 
@@ -982,10 +929,11 @@ class TestCase(TransactionTestCase):
 
     On database backends with no transaction support, TestCase behaves as
     TransactionTestCase.
-    """
+    '''
+
     @classmethod
     def _enter_atomics(cls):
-        """Open atomic blocks for multiple databases."""
+        '''Open atomic blocks for multiple databases.'''
         atomics = {}
         for db_name in cls._databases_names():
             atomics[db_name] = transaction.atomic(using=db_name)
@@ -994,7 +942,7 @@ class TestCase(TransactionTestCase):
 
     @classmethod
     def _rollback_atomics(cls, atomics):
-        """Rollback atomic blocks opened by the previous method."""
+        '''Rollback atomic blocks opened by the previous method.'''
         for db_name in reversed(cls._databases_names()):
             transaction.set_rollback(True, using=db_name)
             atomics[db_name].__exit__(None, None, None)
@@ -1017,7 +965,7 @@ class TestCase(TransactionTestCase):
             cls.setUpTestData()
         except Exception:
             cls._rollback_atomics(cls.cls_atomics)
-            raise
+            raise 
 
     @classmethod
     def tearDownClass(cls):
@@ -1029,7 +977,7 @@ class TestCase(TransactionTestCase):
 
     @classmethod
     def setUpTestData(cls):
-        """Load initial data for the TestCase."""
+        '''Load initial data for the TestCase.'''
         pass
 
     def _should_reload_connections(self):
@@ -1054,18 +1002,22 @@ class TestCase(TransactionTestCase):
             for db_name in reversed(self._databases_names()):
                 if self._should_check_constraints(connections[db_name]):
                     connections[db_name].check_constraints()
+
         finally:
             self._rollback_atomics(self.atomics)
 
     def _should_check_constraints(self, connection):
-        return (
-            connection.features.can_defer_constraint_checks and
-            not connection.needs_rollback and connection.is_usable()
-        )
+        return \
+            connection.features.can_defer_constraint_checks \
+            and \
+            not connection.needs_rollback \
+            and \
+            connection.is_usable()
 
 
 class CheckCondition:
-    """Descriptor class for deferred condition checking."""
+    '''Descriptor class for deferred condition checking.'''
+
     def __init__(self, *conditions):
         self.conditions = conditions
 
@@ -1087,13 +1039,13 @@ class CheckCondition:
 
 def _deferredSkip(condition, reason):
     def decorator(test_func):
-        if not (isinstance(test_func, type) and
-                issubclass(test_func, unittest.TestCase)):
+        if not isinstance(test_func, type) and issubclass(test_func, unittest.TestCase):
             @wraps(test_func)
             def skip_wrapper(*args, **kwargs):
                 if condition():
                     raise unittest.SkipTest(reason)
                 return test_func(*args, **kwargs)
+
             test_item = skip_wrapper
         else:
             # Assume a class is decorated
@@ -1106,31 +1058,35 @@ def _deferredSkip(condition, reason):
             elif skip is not True:
                 test_item.__unittest_skip__ = CheckCondition((condition, reason))
         return test_item
+
     return decorator
 
 
 def skipIfDBFeature(*features):
-    """Skip a test if a database has at least one of the named features."""
-    return _deferredSkip(
-        lambda: any(getattr(connection.features, feature, False) for feature in features),
-        "Database has feature(s) %s" % ", ".join(features)
-    )
+    '''Skip a test if a database has at least one of the named features.'''
+    return \
+        _deferredSkip(lambda : \
+                any(
+                    getattr(connection.features, feature, False) for feature in features
+                ), 'Database has feature(s) %s' % ', '.join(features))
 
 
 def skipUnlessDBFeature(*features):
-    """Skip a test unless a database has all the named features."""
-    return _deferredSkip(
-        lambda: not all(getattr(connection.features, feature, False) for feature in features),
-        "Database doesn't support feature(s): %s" % ", ".join(features)
-    )
+    '''Skip a test unless a database has all the named features.'''
+    return \
+        _deferredSkip(lambda : \
+                not all(
+                    getattr(connection.features, feature, False) for feature in features
+                ), "Database doesn't support feature(s): %s" % ', '.join(features))
 
 
 def skipUnlessAnyDBFeature(*features):
-    """Skip a test unless a database has any of the named features."""
-    return _deferredSkip(
-        lambda: not any(getattr(connection.features, feature, False) for feature in features),
-        "Database doesn't support any of the feature(s): %s" % ", ".join(features)
-    )
+    '''Skip a test unless a database has any of the named features.'''
+    return \
+        _deferredSkip(lambda : \
+                not any(
+                    getattr(connection.features, feature, False) for feature in features
+                ), "Database doesn't support any of the feature(s): %s" % ', '.join(features))
 
 
 class QuietWSGIRequestHandler(WSGIRequestHandler):
@@ -1138,15 +1094,17 @@ class QuietWSGIRequestHandler(WSGIRequestHandler):
     A WSGIRequestHandler that doesn't log to standard output any of the
     requests received, so as to not clutter the test result output.
     """
+
     def log_message(*args):
         pass
 
 
 class FSFilesHandler(WSGIHandler):
-    """
+    '''
     WSGI middleware that intercepts calls to a directory, as defined by one of
     the *_ROOT settings, and serves those files, publishing them under *_URL.
-    """
+    '''
+
     def __init__(self, application):
         self.application = application
         self.base_url = urlparse(self.get_base_url())
@@ -1161,7 +1119,7 @@ class FSFilesHandler(WSGIHandler):
         return path.startswith(self.base_url[2]) and not self.base_url[1]
 
     def file_path(self, url):
-        """Return the relative path to the file on disk for the given URL."""
+        '''Return the relative path to the file on disk for the given URL.'''
         relative_url = url[len(self.base_url[2]):]
         return url2pathname(relative_url)
 
@@ -1191,10 +1149,11 @@ class FSFilesHandler(WSGIHandler):
 
 
 class _StaticFilesHandler(FSFilesHandler):
-    """
+    '''
     Handler for serving static files. A private class that is meant to be used
     solely as a convenience by LiveServerThread.
-    """
+    '''
+
     def get_base_dir(self):
         return settings.STATIC_ROOT
 
@@ -1203,10 +1162,11 @@ class _StaticFilesHandler(FSFilesHandler):
 
 
 class _MediaFilesHandler(FSFilesHandler):
-    """
+    '''
     Handler for serving the media files. A private class that is meant to be
     used solely as a convenience by LiveServerThread.
-    """
+    '''
+
     def get_base_dir(self):
         return settings.MEDIA_ROOT
 
@@ -1215,7 +1175,7 @@ class _MediaFilesHandler(FSFilesHandler):
 
 
 class LiveServerThread(threading.Thread):
-    """Thread for running a live http server while the tests are running."""
+    '''Thread for running a live http server while the tests are running.'''
 
     def __init__(self, host, static_handler, connections_override=None, port=0):
         self.host = host
@@ -1227,10 +1187,10 @@ class LiveServerThread(threading.Thread):
         super().__init__()
 
     def run(self):
-        """
+        '''
         Set up the live server and databases, and then loop over handling
         HTTP requests.
-        """
+        '''
         if self.connections_override:
             # Override this thread's database connections with the ones
             # provided by the main thread.
@@ -1295,14 +1255,11 @@ class LiveServerTestCase(TransactionTestCase):
                 conn.allow_thread_sharing = True
                 connections_override[conn.alias] = conn
 
-        cls._live_server_modified_settings = modify_settings(
-            ALLOWED_HOSTS={'append': cls.host},
-        )
+        cls._live_server_modified_settings = modify_settings(ALLOWED_HOSTS={'append': cls.host})
         cls._live_server_modified_settings.enable()
         cls.server_thread = cls._create_server_thread(connections_override)
         cls.server_thread.daemon = True
         cls.server_thread.start()
-
         # Wait for the live server to be ready
         cls.server_thread.is_ready.wait()
         if cls.server_thread.error:
@@ -1313,12 +1270,8 @@ class LiveServerTestCase(TransactionTestCase):
 
     @classmethod
     def _create_server_thread(cls, connections_override):
-        return cls.server_thread_class(
-            cls.host,
-            cls.static_handler,
-            connections_override=connections_override,
-            port=cls.port,
-        )
+        return \
+            cls.server_thread_class(cls.host, cls.static_handler, connections_override=connections_override, port=cls.port)
 
     @classmethod
     def _tearDownClassInternal(cls):
@@ -1327,7 +1280,6 @@ class LiveServerTestCase(TransactionTestCase):
         if hasattr(cls, 'server_thread'):
             # Terminate the live server's thread
             cls.server_thread.terminate()
-
         # Restore sqlite in-memory database connections' non-shareability
         for conn in connections.all():
             if conn.vendor == 'sqlite' and conn.is_in_memory_db():
@@ -1354,8 +1306,8 @@ class SerializeMixin:
     @classmethod
     def setUpClass(cls):
         if cls.lockfile is None:
-            raise ValueError(
-                "{}.lockfile isn't set. Set it to a unique value "
+            raise
+            ValueError("{}.lockfile isn't set. Set it to a unique value "
                 "in the base class.".format(cls.__name__))
         cls._lockfile = open(cls.lockfile)
         locks.lock(cls._lockfile, locks.LOCK_EX)

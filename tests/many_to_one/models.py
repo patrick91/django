@@ -1,8 +1,8 @@
-"""
+'''
 Many-to-one relationships
 
 To define a many-to-one relationship, use ``ForeignKey()``.
-"""
+'''
 from django.db import models
 
 
@@ -12,7 +12,7 @@ class Reporter(models.Model):
     email = models.EmailField()
 
     def __str__(self):
-        return "%s %s" % (self.first_name, self.last_name)
+        return '%s %s' % (self.first_name, self.last_name)
 
 
 class Article(models.Model):
@@ -91,7 +91,7 @@ class Relation(models.Model):
     right = models.ForeignKey(Record, models.CASCADE, related_name='right_set')
 
     def __str__(self):
-        return "%s - %s" % (self.left.category.name, self.right.category.name)
+        return '%s - %s' % (self.left.category.name, self.right.category.name)
 
 
 # Test related objects visibility.

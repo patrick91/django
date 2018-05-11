@@ -7,7 +7,6 @@ from ..utils import setup
 
 
 class PluralizeTests(SimpleTestCase):
-
     def check_values(self, *tests):
         for value, expected in tests:
             with self.subTest(value=value):
@@ -28,7 +27,6 @@ class PluralizeTests(SimpleTestCase):
 
 
 class FunctionTests(SimpleTestCase):
-
     def test_integers(self):
         self.assertEqual(pluralize(1), '')
         self.assertEqual(pluralize(0), 's')

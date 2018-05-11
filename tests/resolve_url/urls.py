@@ -5,6 +5,4 @@ def some_view(request):
     pass
 
 
-urlpatterns = [
-    url(r'^some-url/$', some_view, name='some-view'),
-]
+urlpatterns = [url(r'^some-url/$', some_view, name='some-view')]

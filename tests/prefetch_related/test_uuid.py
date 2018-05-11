@@ -4,12 +4,8 @@ from .models import Flea, House, Person, Pet, Room
 
 
 class UUIDPrefetchRelated(TestCase):
-
     def test_prefetch_related_from_uuid_model(self):
-        Pet.objects.create(name='Fifi').people.add(
-            Person.objects.create(name='Ellen'),
-            Person.objects.create(name='George'),
-        )
+        Pet.objects.create(name='Fifi').people.add(Person.objects.create(name='Ellen'), Person.objects.create(name='George'))
 
         with self.assertNumQueries(2):
             pet = Pet.objects.prefetch_related('people').get(name='Fifi')
@@ -17,10 +13,7 @@ class UUIDPrefetchRelated(TestCase):
             self.assertEqual(2, len(pet.people.all()))
 
     def test_prefetch_related_to_uuid_model(self):
-        Person.objects.create(name='Bella').pets.add(
-            Pet.objects.create(name='Socks'),
-            Pet.objects.create(name='Coffee'),
-        )
+        Person.objects.create(name='Bella').pets.add(Pet.objects.create(name='Socks'), Pet.objects.create(name='Coffee'))
 
         with self.assertNumQueries(2):
             person = Person.objects.prefetch_related('pets').get(name='Bella')
@@ -44,18 +37,11 @@ class UUIDPrefetchRelated(TestCase):
 
     def test_prefetch_related_from_uuid_model_to_uuid_model_with_values_flat(self):
         pet = Pet.objects.create(name='Fifi')
-        pet.people.add(
-            Person.objects.create(name='Ellen'),
-            Person.objects.create(name='George'),
-        )
-        self.assertSequenceEqual(
-            Pet.objects.prefetch_related('fleas_hosted').values_list('id', flat=True),
-            [pet.id]
-        )
+        pet.people.add(Person.objects.create(name='Ellen'), Person.objects.create(name='George'))
+        self.assertSequenceEqual(Pet.objects.prefetch_related('fleas_hosted').values_list('id', flat=True), [pet.id])
 
 
 class UUIDPrefetchRelatedLookups(TestCase):
-
     @classmethod
     def setUpTestData(cls):
         house = House.objects.create(name='Redwood', address='Arcata')

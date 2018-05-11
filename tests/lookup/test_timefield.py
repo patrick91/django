@@ -4,7 +4,6 @@ from .models import Alarm
 
 
 class TimeFieldLookupTests(TestCase):
-
     @classmethod
     def setUpTestData(self):
         # Create a few Alarms
@@ -13,22 +12,10 @@ class TimeFieldLookupTests(TestCase):
         self.al3 = Alarm.objects.create(desc='Precise', time='12:34:56')
 
     def test_hour_lookups(self):
-        self.assertQuerysetEqual(
-            Alarm.objects.filter(time__hour=5),
-            ['<Alarm: 05:30:00 (Early)>'],
-            ordered=False
-        )
+        self.assertQuerysetEqual(Alarm.objects.filter(time__hour=5), ['<Alarm: 05:30:00 (Early)>'], ordered=False)
 
     def test_minute_lookups(self):
-        self.assertQuerysetEqual(
-            Alarm.objects.filter(time__minute=30),
-            ['<Alarm: 05:30:00 (Early)>'],
-            ordered=False
-        )
+        self.assertQuerysetEqual(Alarm.objects.filter(time__minute=30), ['<Alarm: 05:30:00 (Early)>'], ordered=False)
 
     def test_second_lookups(self):
-        self.assertQuerysetEqual(
-            Alarm.objects.filter(time__second=56),
-            ['<Alarm: 12:34:56 (Precise)>'],
-            ordered=False
-        )
+        self.assertQuerysetEqual(Alarm.objects.filter(time__second=56), ['<Alarm: 12:34:56 (Precise)>'], ordered=False)

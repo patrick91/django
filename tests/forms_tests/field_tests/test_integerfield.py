@@ -4,8 +4,7 @@ from django.test import SimpleTestCase
 from . import FormFieldAssertionsMixin
 
 
-class IntegerFieldTest(FormFieldAssertionsMixin, SimpleTestCase):
-
+class IntegerFieldTest(FormFieldAssertionsMixin,SimpleTestCase):
     def test_integerfield_1(self):
         f = IntegerField()
         self.assertWidgetRendersTo(f, '<input type="number" name="f" id="id_f" required>')
@@ -125,9 +124,10 @@ class IntegerFieldTest(FormFieldAssertionsMixin, SimpleTestCase):
         self.assertEqual(50, f.clean('５０'))
 
     def test_integerfield_subclass(self):
-        """
+        '''
         Class-defined widget is not overwritten by __init__() (#22245).
-        """
+        '''
+
         class MyIntegerField(IntegerField):
             widget = Textarea
 

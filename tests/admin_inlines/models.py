@@ -1,6 +1,6 @@
-"""
+'''
 Testing of admin inline formsets.
-"""
+'''
 import random
 
 from django.contrib.contenttypes.fields import GenericForeignKey
@@ -73,7 +73,7 @@ class Holder(models.Model):
 class Inner(models.Model):
     dummy = models.IntegerField()
     holder = models.ForeignKey(Holder, models.CASCADE)
-    readonly = models.CharField("Inner readonly label", max_length=1)
+    readonly = models.CharField('Inner readonly label', max_length=1)
 
     def get_absolute_url(self):
         return '/inner/'
@@ -96,24 +96,24 @@ class Inner3(models.Model):
     dummy = models.IntegerField()
     holder = models.ForeignKey(Holder3, models.CASCADE)
 
-# Models for ticket #8190
 
+# Models for ticket #8190
 
 class Holder4(models.Model):
     dummy = models.IntegerField()
 
 
 class Inner4Stacked(models.Model):
-    dummy = models.IntegerField(help_text="Awesome stacked help text is awesome.")
+    dummy = models.IntegerField(help_text='Awesome stacked help text is awesome.')
     holder = models.ForeignKey(Holder4, models.CASCADE)
 
 
 class Inner4Tabular(models.Model):
-    dummy = models.IntegerField(help_text="Awesome tabular help text is awesome.")
+    dummy = models.IntegerField(help_text='Awesome tabular help text is awesome.')
     holder = models.ForeignKey(Holder4, models.CASCADE)
 
-# Models for #12749
 
+# Models for #12749
 
 class Person(models.Model):
     firstname = models.CharField(max_length=15)
@@ -132,8 +132,8 @@ class ShoppingWeakness(models.Model):
     fashionista = models.ForeignKey(Fashionista, models.CASCADE)
     item = models.ForeignKey(OutfitItem, models.CASCADE)
 
-# Models for #13510
 
+# Models for #13510
 
 class TitleCollection(models.Model):
     pass
@@ -144,8 +144,8 @@ class Title(models.Model):
     title1 = models.CharField(max_length=100)
     title2 = models.CharField(max_length=100)
 
-# Models for #15424
 
+# Models for #15424
 
 class Poll(models.Model):
     name = models.CharField(max_length=40)
@@ -165,14 +165,14 @@ class Chapter(models.Model):
 
 
 class FootNote(models.Model):
-    """
+    '''
     Model added for ticket 19838
-    """
+    '''
     chapter = models.ForeignKey(Chapter, models.PROTECT)
     note = models.CharField(max_length=40)
 
-# Models for #16838
 
+# Models for #16838
 
 class CapoFamiglia(models.Model):
     name = models.CharField(max_length=100)
@@ -223,8 +223,8 @@ class BinaryTree(models.Model):
     name = models.CharField(max_length=100)
     parent = models.ForeignKey('self', models.SET_NULL, null=True, blank=True)
 
-# Models for #19524
 
+# Models for #19524
 
 class LifeForm(models.Model):
     pass
@@ -250,8 +250,8 @@ class SomeChildModel(models.Model):
     parent = models.ForeignKey(SomeParentModel, models.CASCADE)
     readonly_field = models.CharField(max_length=1)
 
-# Other models
 
+# Other models
 
 class ProfileCollection(models.Model):
     pass

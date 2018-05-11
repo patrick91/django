@@ -4,16 +4,14 @@ import unicodedata
 from gzip import GzipFile
 from io import BytesIO
 
-from django.utils.functional import (
-    SimpleLazyObject, keep_lazy, keep_lazy_text, lazy,
-)
+from django.utils.functional import SimpleLazyObject, keep_lazy, keep_lazy_text, lazy
 from django.utils.safestring import SafeText, mark_safe
 from django.utils.translation import gettext as _, gettext_lazy, pgettext
 
 
 @keep_lazy_text
 def capfirst(x):
-    """Capitalize the first letter of a string."""
+    '''Capitalize the first letter of a string.'''
     return x and str(x)[0].upper() + str(x)[1:]
 
 
@@ -21,7 +19,7 @@ def capfirst(x):
 re_words = re.compile(r'<.*?>|((?:\w[-\w]*|&.*?;)+)', re.S)
 re_chars = re.compile(r'<.*?>|(.)', re.S)
 re_tag = re.compile(r'<(/)?(\S+?)(?:(\s*/)|\s.*?)?>', re.S)
-re_newlines = re.compile(r'\r\n|\r')  # Used in normalize_newlines
+re_newlines = re.compile(r'\r\n|\r') # Used in normalize_newlines
 re_camel_case = re.compile(r'(((?<=[a-z])[A-Z])|([A-Z](?![A-Z]|$)))')
 
 
@@ -37,9 +35,10 @@ def wrap(text, width):
     Don't wrap long words, thus the output text may have lines longer than
     ``width``.
     """
+
     def _generator():
-        for line in text.splitlines(True):  # True keeps trailing linebreaks
-            max_width = min((line.endswith('\n') and width + 1 or width), width)
+        for line in text.splitlines(True): # True keeps trailing linebreaks
+            max_width = min(line.endswith('\n') and width + 1 or width, width)
             while len(line) > max_width:
                 space = line[:max_width + 1].rfind(' ') + 1
                 if space == 0:
@@ -50,24 +49,24 @@ def wrap(text, width):
                         break
                 yield '%s\n' % line[:space - 1]
                 line = line[space:]
-                max_width = min((line.endswith('\n') and width + 1 or width), width)
+                max_width = min(line.endswith('\n') and width + 1 or width, width)
             if line:
                 yield line
+
     return ''.join(_generator())
 
 
 class Truncator(SimpleLazyObject):
-    """
+    '''
     An object used to truncate text, either by characters or words.
-    """
+    '''
+
     def __init__(self, text):
-        super().__init__(lambda: str(text))
+        super().__init__(lambda : str(text))
 
     def add_truncation_text(self, text, truncate=None):
         if truncate is None:
-            truncate = pgettext(
-                'String to return when truncating text',
-                '%(truncated_text)s...')
+            truncate = pgettext('String to return when truncating text', '%(truncated_text)s...')
         if '%(truncated_text)s' in truncate:
             return truncate % {'truncated_text': text}
         # The truncation text didn't contain the %(truncated_text)s string
@@ -79,18 +78,17 @@ class Truncator(SimpleLazyObject):
         return '%s%s' % (text, truncate)
 
     def chars(self, num, truncate=None, html=False):
-        """
+        '''
         Return the text truncated to be no longer than the specified number
         of characters.
 
         `truncate` specifies what should be used to notify that the string has
         been truncated, defaulting to a translatable string of an ellipsis
         (...).
-        """
+        '''
         self._setup()
         length = int(num)
         text = unicodedata.normalize('NFC', self._wrapped)
-
         # Calculate the length to truncate to (max length - end_text length)
         truncate_len = length
         for char in self.add_truncation_text('', truncate):
@@ -103,7 +101,7 @@ class Truncator(SimpleLazyObject):
         return self._text_chars(length, truncate, text, truncate_len)
 
     def _text_chars(self, length, truncate, text, truncate_len):
-        """Truncate a string after a certain number of chars."""
+        '''Truncate a string after a certain number of chars.'''
         s_len = 0
         end_index = None
         for i, char in enumerate(text):
@@ -116,18 +114,16 @@ class Truncator(SimpleLazyObject):
                 end_index = i
             if s_len > length:
                 # Return the truncated string
-                return self.add_truncation_text(text[:end_index or 0],
-                                                truncate)
-
+                return self.add_truncation_text(text[:end_index or 0], truncate)
         # Return the original string since no truncation was necessary
         return text
 
     def words(self, num, truncate=None, html=False):
-        """
+        '''
         Truncate a string after a certain number of words. `truncate` specifies
         what should be used to notify that the string has been truncated,
         defaulting to ellipsis (...).
-        """
+        '''
         self._setup()
         length = int(num)
         if html:
@@ -135,11 +131,11 @@ class Truncator(SimpleLazyObject):
         return self._text_words(length, truncate)
 
     def _text_words(self, length, truncate):
-        """
+        '''
         Truncate a string after a certain number of words.
 
         Strip newlines in the string.
-        """
+        '''
         words = self._wrapped.split()
         if len(words) > length:
             words = words[:length]
@@ -147,21 +143,17 @@ class Truncator(SimpleLazyObject):
         return ' '.join(words)
 
     def _truncate_html(self, length, truncate, text, truncate_len, words):
-        """
+        '''
         Truncate HTML to a certain number of chars (not counting tags and
         comments), or, if words is True, then to a certain number of words.
         Close opened tags if they were correctly closed in the given HTML.
 
         Preserve newlines in the HTML.
-        """
+        '''
         if words and length <= 0:
             return ''
 
-        html4_singlets = (
-            'br', 'col', 'link', 'base', 'img',
-            'param', 'area', 'hr', 'input'
-        )
-
+        html4_singlets = ('br', 'col', 'link', 'base', 'img', 'param', 'area', 'hr', 'input')
         # Count non-HTML chars/words and keep note of open tags
         pos = 0
         end_text_pos = 0
@@ -251,26 +243,49 @@ def get_text_list(list_, last_word=gettext_lazy('or')):
         return ''
     if len(list_) == 1:
         return str(list_[0])
-    return '%s %s %s' % (
+    return \
+        '%s %s %s' \
+        % \
         # Translators: This string is used as a separator between list elements
-        _(', ').join(str(i) for i in list_[:-1]), str(last_word), str(list_[-1])
-    )
+        (_(', ').join(str(i) for i in list_[:-1]), str(last_word), str(list_[-1]))
 
 
 @keep_lazy_text
 def normalize_newlines(text):
-    """Normalize CRLF and CR newlines to just LF."""
+    '''Normalize CRLF and CR newlines to just LF.'''
     return re_newlines.sub('\n', str(text))
 
 
 @keep_lazy_text
 def phone2numeric(phone):
-    """Convert a phone number with letters into its numeric equivalent."""
+    '''Convert a phone number with letters into its numeric equivalent.'''
     char2number = {
-        'a': '2', 'b': '2', 'c': '2', 'd': '3', 'e': '3', 'f': '3', 'g': '4',
-        'h': '4', 'i': '4', 'j': '5', 'k': '5', 'l': '5', 'm': '6', 'n': '6',
-        'o': '6', 'p': '7', 'q': '7', 'r': '7', 's': '7', 't': '8', 'u': '8',
-        'v': '8', 'w': '9', 'x': '9', 'y': '9', 'z': '9',
+        'a': '2',
+        'b': '2',
+        'c': '2',
+        'd': '3',
+        'e': '3',
+        'f': '3',
+        'g': '4',
+        'h': '4',
+        'i': '4',
+        'j': '5',
+        'k': '5',
+        'l': '5',
+        'm': '6',
+        'n': '6',
+        'o': '6',
+        'p': '7',
+        'q': '7',
+        'r': '7',
+        's': '7',
+        't': '8',
+        'u': '8',
+        'v': '8',
+        'w': '9',
+        'x': '9',
+        'y': '9',
+        'z': '9'
     }
     return ''.join(char2number.get(c, c) for c in phone.lower())
 
@@ -321,7 +336,7 @@ def compress_sequence(sequence):
 
 # Expression to match some_token and some_token="with spaces" (and similarly
 # for single-quoted strings).
-smart_split_re = re.compile(r"""
+smart_split_re = re.compile(r'''
     ((?:
         [^\s'"]*
         (?:
@@ -329,7 +344,7 @@ smart_split_re = re.compile(r"""
             [^\s'"]*
         )+
     ) | \S+)
-""", re.VERBOSE)
+''', re.VERBOSE)
 
 
 def smart_split(text):
@@ -344,7 +359,7 @@ def smart_split(text):
     ['This', 'is', '"a person\\\'s"', 'test.']
     >>> list(smart_split(r"Another 'person\'s' test."))
     ['Another', "'person\\'s'", 'test.']
-    >>> list(smart_split(r'A "\"funky\" style" test.'))
+    >>> list(smart_split(r'A ""funky" style" test.'))
     ['A', '"\\"funky\\" style"', 'test.']
     """
     for bit in smart_split_re.finditer(str(text)):
@@ -370,7 +385,7 @@ def _replace_entity(match):
             return match.group(0)
 
 
-_entity_re = re.compile(r"&(#?[xX]?(?:[0-9a-fA-F]+|\w{1,8}));")
+_entity_re = re.compile(r'&(#?[xX]?(?:[0-9a-fA-F]+|\w{1,8}));')
 
 
 @keep_lazy_text
@@ -388,13 +403,13 @@ def unescape_string_literal(s):
         'abc'
         >>> unescape_string_literal("'abc'")
         'abc'
-        >>> unescape_string_literal('"a \"bc\""')
+        >>> unescape_string_literal('"a "bc""')
         'a "bc"'
         >>> unescape_string_literal("'\'ab\' c'")
         "'ab' c"
     """
-    if s[0] not in "\"'" or s[-1] != s[0]:
-        raise ValueError("Not a string literal: %r" % s)
+    if s[0] not in '"\'' or s[-1] != s[0]:
+        raise ValueError('Not a string literal: %r' % s)
     quote = s[0]
     return s[1:-1].replace(r'\%s' % quote, quote).replace(r'\\', '\\')
 
@@ -416,9 +431,9 @@ def slugify(value, allow_unicode=False):
 
 
 def camel_case_to_spaces(value):
-    """
+    '''
     Split CamelCase and convert to lower case. Strip surrounding whitespace.
-    """
+    '''
     return re_camel_case.sub(r' \1', value).strip().lower()
 
 

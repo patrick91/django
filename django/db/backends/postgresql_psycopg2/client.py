@@ -1,1 +1,1 @@
-from ..postgresql.client import *  # NOQA
+from ..postgresql.client import * # NOQA

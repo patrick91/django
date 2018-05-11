@@ -1,4 +1,4 @@
-"""
+'''
 Callable defaults
 
 You can pass callable objects as the ``default`` parameter to a field. When
@@ -7,7 +7,7 @@ the method to determine the default value.
 
 This example uses ``datetime.datetime.now`` as the default for the ``pub_date``
 field.
-"""
+'''
 
 from datetime import datetime
 

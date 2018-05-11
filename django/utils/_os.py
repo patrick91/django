@@ -10,15 +10,15 @@ abspathu = abspath
 
 
 def upath(path):
-    """Always return a unicode path (did something for Python 2)."""
+    '''Always return a unicode path (did something for Python 2).'''
     return path
 
 
 def npath(path):
-    """
+    '''
     Always return a native path, that is unicode on Python 3 and bytestring on
     Python 2. Noop for Python 3.
-    """
+    '''
     return path
 
 
@@ -41,21 +41,23 @@ def safe_join(base, *paths):
     #     safe_join("/dir", "/../d"))
     #  b) The final path must be the same as the base path.
     #  c) The base path must be the most root path (meaning either "/" or "C:\\")
-    if (not normcase(final_path).startswith(normcase(base_path + sep)) and
-            normcase(final_path) != normcase(base_path) and
-            dirname(normcase(base_path)) != normcase(base_path)):
-        raise SuspiciousFileOperation(
-            'The joined path ({}) is located outside of the base path '
+    if not normcase(final_path).startswith(normcase(base_path + sep)) \
+    and \
+    normcase(final_path) != normcase(base_path) \
+    and \
+    dirname(normcase(base_path)) != normcase(base_path):
+        raise
+        SuspiciousFileOperation('The joined path ({}) is located outside of the base path '
             'component ({})'.format(final_path, base_path))
     return final_path
 
 
 def symlinks_supported():
-    """
+    '''
     Return whether or not creating symlinks are supported in the host platform
     and/or if they are allowed to be created (e.g. on Windows it requires admin
     permissions).
-    """
+    '''
     with tempfile.TemporaryDirectory() as temp_dir:
         original_path = os.path.join(temp_dir, 'original')
         symlink_path = os.path.join(temp_dir, 'symlink')

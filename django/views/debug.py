@@ -19,10 +19,7 @@ from django.utils.version import get_docs_version
 # regardless of the project's TEMPLATES setting. Templates are
 # read directly from the filesystem so that the error handler
 # works even if the template loader is broken.
-DEBUG_ENGINE = Engine(
-    debug=True,
-    libraries={'i18n': 'django.templatetags.i18n'},
-)
+DEBUG_ENGINE = Engine(debug=True, libraries={'i18n': 'django.templatetags.i18n'})
 
 HIDDEN_SETTINGS = re.compile('API|TOKEN|KEY|SECRET|PASS|SIGNATURE', flags=re.IGNORECASE)
 
@@ -32,12 +29,13 @@ CURRENT_DIR = Path(__file__).parent
 
 
 class CallableSettingWrapper:
-    """
+    '''
     Object to wrap callable appearing in settings.
     * Not to call in the debug page (#21345).
     * Not to break the debug page if the callable forbidding to set attributes
       (#23070).
-    """
+    '''
+
     def __init__(self, callable_setting):
         self._wrapped = callable_setting
 
@@ -46,18 +44,17 @@ class CallableSettingWrapper:
 
 
 def cleanse_setting(key, value):
-    """
+    '''
     Cleanse an individual setting key/value of sensitive content. If the value
     is a dictionary, recursively cleanse the keys in that dictionary.
-    """
+    '''
     try:
         if HIDDEN_SETTINGS.search(key):
             cleansed = CLEANSED_SUBSTITUTE
+        elif isinstance(value, dict):
+            cleansed = {k: cleanse_setting(k, v) for (k, v) in value.items()}
         else:
-            if isinstance(value, dict):
-                cleansed = {k: cleanse_setting(k, v) for k, v in value.items()}
-            else:
-                cleansed = value
+            cleansed = value
     except TypeError:
         # If the key isn't regex-able, just return as-is.
         cleansed = value
@@ -70,10 +67,10 @@ def cleanse_setting(key, value):
 
 
 def get_safe_settings():
-    """
+    '''
     Return a dictionary of the settings module with values of sensitive
     settings replaced with stars (*********).
-    """
+    '''
     settings_dict = {}
     for k in dir(settings):
         if k.isupper():
@@ -82,10 +79,10 @@ def get_safe_settings():
 
 
 def technical_500_response(request, exc_type, exc_value, tb, status_code=500):
-    """
+    '''
     Create a technical server error response. The last three arguments are
     the values returned from sys.exc_info() and friends.
-    """
+    '''
     reporter = ExceptionReporter(request, exc_type, exc_value, tb)
     if request.is_ajax():
         text = reporter.get_traceback_text()
@@ -107,10 +104,10 @@ def get_exception_reporter_filter(request):
 
 
 class ExceptionReporterFilter:
-    """
+    '''
     Base for all exception reporter filter classes. All overridable hooks
     contain lenient default behaviors.
-    """
+    '''
 
     def get_post_parameters(self, request):
         if request is None:
@@ -123,18 +120,18 @@ class ExceptionReporterFilter:
 
 
 class SafeExceptionReporterFilter(ExceptionReporterFilter):
-    """
+    '''
     Use annotations made by the sensitive_post_parameters and
     sensitive_variables decorators to filter out sensitive information.
-    """
+    '''
 
     def is_active(self, request):
-        """
+        '''
         This filter is to add safety in production environments (i.e. DEBUG
         is False). If DEBUG is True then your site is not safe anyway.
         This hook is provided as a convenience to easily activate or
         deactivate the filter on a per request basis.
-        """
+        '''
         return settings.DEBUG is False
 
     def get_cleansed_multivaluedict(self, request, multivaluedict):
@@ -152,10 +149,10 @@ class SafeExceptionReporterFilter(ExceptionReporterFilter):
         return multivaluedict
 
     def get_post_parameters(self, request):
-        """
+        '''
         Replace the values of POST parameters marked as sensitive with
         stars (*********).
-        """
+        '''
         if request is None:
             return {}
         else:
@@ -191,17 +188,18 @@ class SafeExceptionReporterFilter(ExceptionReporterFilter):
         return value
 
     def get_traceback_frame_variables(self, request, tb_frame):
-        """
+        '''
         Replace the values of variables marked as sensitive with
         stars (*********).
-        """
+        '''
         # Loop through the frame's callers to see if the sensitive_variables
         # decorator was used.
         current_frame = tb_frame.f_back
         sensitive_variables = None
         while current_frame is not None:
-            if (current_frame.f_code.co_name == 'sensitive_variables_wrapper' and
-                    'sensitive_variables_wrapper' in current_frame.f_locals):
+            if current_frame.f_code.co_name == 'sensitive_variables_wrapper' \
+            and \
+            'sensitive_variables_wrapper' in current_frame.f_locals:
                 # The sensitive_variables decorator was used, so we take note
                 # of the sensitive variables' names.
                 wrapper = current_frame.f_locals['sensitive_variables_wrapper']
@@ -229,8 +227,9 @@ class SafeExceptionReporterFilter(ExceptionReporterFilter):
             for name, value in tb_frame.f_locals.items():
                 cleansed[name] = self.cleanse_special_types(request, value)
 
-        if (tb_frame.f_code.co_name == 'sensitive_variables_wrapper' and
-                'sensitive_variables_wrapper' in tb_frame.f_locals):
+        if tb_frame.f_code.co_name == 'sensitive_variables_wrapper' \
+        and \
+        'sensitive_variables_wrapper' in tb_frame.f_locals:
             # For good measure, obfuscate the decorated function's arguments in
             # the sensitive_variables decorator's frame, in case the variables
             # associated with those arguments were meant to be obfuscated from
@@ -242,7 +241,8 @@ class SafeExceptionReporterFilter(ExceptionReporterFilter):
 
 
 class ExceptionReporter:
-    """Organize and coordinate reporting on exceptions."""
+    '''Organize and coordinate reporting on exceptions.'''
+
     def __init__(self, request, exc_type, exc_value, tb, is_email=False):
         self.request = request
         self.filter = get_exception_reporter_filter(self.request)
@@ -256,7 +256,7 @@ class ExceptionReporter:
         self.postmortem = None
 
     def get_traceback_data(self):
-        """Return a dictionary containing traceback information."""
+        '''Return a dictionary containing traceback information.'''
         if self.exc_type and issubclass(self.exc_type, TemplateDoesNotExist):
             self.template_does_not_exist = True
             self.postmortem = self.exc_value.chain or [self.exc_value]
@@ -280,10 +280,9 @@ class ExceptionReporter:
             end = getattr(self.exc_value, 'end', None)
             if start is not None and end is not None:
                 unicode_str = self.exc_value.args[1]
-                unicode_hint = force_text(
-                    unicode_str[max(start - 5, 0):min(end + 5, len(unicode_str))],
-                    'ascii', errors='replace'
-                )
+                unicode_hint = force_text(unicode_str[
+                    max(start - 5, 0):min(end + 5, len(unicode_str))
+                ], 'ascii', errors='replace')
         from django import get_version
 
         if self.request is None:
@@ -311,7 +310,7 @@ class ExceptionReporter:
             'sys_path': sys.path,
             'template_info': self.template_info,
             'template_does_not_exist': self.template_does_not_exist,
-            'postmortem': self.postmortem,
+            'postmortem': self.postmortem
         }
         if self.request is not None:
             c['request_GET_items'] = self.request.GET.items()
@@ -327,24 +326,24 @@ class ExceptionReporter:
         return c
 
     def get_traceback_html(self):
-        """Return HTML version of debug 500 HTTP error page."""
+        '''Return HTML version of debug 500 HTTP error page.'''
         with Path(CURRENT_DIR, 'templates', 'technical_500.html').open() as fh:
             t = DEBUG_ENGINE.from_string(fh.read())
         c = Context(self.get_traceback_data(), use_l10n=False)
         return t.render(c)
 
     def get_traceback_text(self):
-        """Return plain text version of debug 500 HTTP error page."""
+        '''Return plain text version of debug 500 HTTP error page.'''
         with Path(CURRENT_DIR, 'templates', 'technical_500.txt').open() as fh:
             t = DEBUG_ENGINE.from_string(fh.read())
         c = Context(self.get_traceback_data(), autoescape=False, use_l10n=False)
         return t.render(c)
 
     def _get_lines_from_file(self, filename, lineno, context_lines, loader=None, module_name=None):
-        """
+        '''
         Return context_lines before and after lineno from file.
         Return (pre_context_lineno, pre_context, context_line, post_context).
-        """
+        '''
         source = None
         if hasattr(loader, 'get_source'):
             try:
@@ -361,7 +360,6 @@ class ExceptionReporter:
                 pass
         if source is None:
             return None, [], None, []
-
         # If we just read the source from a file, or if the loader did not
         # apply tokenize.detect_encoding to decode the source into a
         # string, then we should do that ourselves.
@@ -370,7 +368,7 @@ class ExceptionReporter:
             for line in source[:2]:
                 # File coding may be specified. Match pattern from PEP-263
                 # (http://www.python.org/dev/peps/pep-0263/)
-                match = re.search(br'coding[:=]\s*([-\w.]+)', line)
+                match = re.search(b'coding[:=]\\s*([-\\w.]+)', line)
                 if match:
                     encoding = match.group(1).decode('ascii')
                     break
@@ -402,7 +400,6 @@ class ExceptionReporter:
         # No exceptions were supplied to ExceptionReporter
         if not exceptions:
             return frames
-
         # In case there's just one exception, take the traceback from self.tb
         exc_value = exceptions.pop()
         tb = self.tb if not exceptions else exc_value.__traceback__
@@ -418,9 +415,12 @@ class ExceptionReporter:
             lineno = tb.tb_lineno - 1
             loader = tb.tb_frame.f_globals.get('__loader__')
             module_name = tb.tb_frame.f_globals.get('__name__') or ''
-            pre_context_lineno, pre_context, context_line, post_context = self._get_lines_from_file(
-                filename, lineno, 7, loader, module_name,
-            )
+            (
+                pre_context_lineno,
+                pre_context,
+                context_line,
+                post_context
+            ) = self._get_lines_from_file(filename, lineno, 7, loader, module_name)
             if pre_context_lineno is None:
                 pre_context_lineno = lineno
                 pre_context = []
@@ -439,9 +439,8 @@ class ExceptionReporter:
                 'pre_context': pre_context,
                 'context_line': context_line,
                 'post_context': post_context,
-                'pre_context_lineno': pre_context_lineno + 1,
+                'pre_context_lineno': pre_context_lineno + 1
             })
-
             # If the traceback for current exception is consumed, try the
             # other exception.
             if not tb.tb_next and exceptions:
@@ -454,23 +453,26 @@ class ExceptionReporter:
 
 
 def technical_404_response(request, exception):
-    """Create a technical 404 error response. `exception` is the Http404."""
+    '''Create a technical 404 error response. `exception` is the Http404.'''
     try:
         error_url = exception.args[0]['path']
     except (IndexError, TypeError, KeyError):
-        error_url = request.path_info[1:]  # Trim leading slash
+        error_url = request.path_info[1:] # Trim leading slash
 
     try:
         tried = exception.args[0]['tried']
     except (IndexError, TypeError, KeyError):
         tried = []
     else:
-        if (not tried or (                  # empty URLconf
-            request.path == '/' and
-            len(tried) == 1 and             # default URLconf
-            len(tried[0]) == 1 and
-            getattr(tried[0][0], 'app_name', '') == getattr(tried[0][0], 'namespace', '') == 'admin'
-        )):
+        if not tried \ # empty URLconf
+        or \
+        request.path == '/' \
+        and \
+        len(tried) == 1 \ # default URLconf
+        and \
+        len(tried[0]) == 1 \
+        and \
+        getattr(tried[0][0], 'app_name', '') == getattr(tried[0][0], 'namespace', '') == 'admin':
             return default_urlconf(request)
 
     urlconf = getattr(request, 'urlconf', settings.ROOT_URLCONF)
@@ -483,14 +485,10 @@ def technical_404_response(request, exception):
     except Resolver404:
         pass
     else:
-        obj = resolver_match.func
-
-        if hasattr(obj, '__name__'):
+        obj = resolver_match.funcif hasattr(obj, '__name__'):
             caller = obj.__name__
         elif hasattr(obj, '__class__') and hasattr(obj.__class__, '__name__'):
-            caller = obj.__class__.__name__
-
-        if hasattr(obj, '__module__'):
+            caller = obj.__class__.__name__if hasattr(obj, '__module__'):
             module = obj.__module__
             caller = '%s.%s' % (module, caller)
 
@@ -504,17 +502,15 @@ def technical_404_response(request, exception):
         'reason': str(exception),
         'request': request,
         'settings': get_safe_settings(),
-        'raising_view_name': caller,
+        'raising_view_name': caller
     })
     return HttpResponseNotFound(t.render(c), content_type='text/html')
 
 
 def default_urlconf(request):
-    """Create an empty URLconf 404 error response."""
+    '''Create an empty URLconf 404 error response.'''
     with Path(CURRENT_DIR, 'templates', 'default_urlconf.html').open() as fh:
         t = DEBUG_ENGINE.from_string(fh.read())
-    c = Context({
-        'version': get_docs_version(),
-    })
+    c = Context({'version': get_docs_version()})
 
     return HttpResponse(t.render(c), content_type='text/html')

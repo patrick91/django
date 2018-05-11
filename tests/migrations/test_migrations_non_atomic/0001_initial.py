@@ -12,18 +12,10 @@ class Migration(migrations.Migration):
     atomic = False
 
     operations = [
-        migrations.CreateModel(
-            "Publisher",
-            [
-                ("name", models.CharField(primary_key=True, max_length=255)),
-            ],
-        ),
+        migrations.CreateModel('Publisher', [('name', models.CharField(primary_key=True, max_length=255))]),
         migrations.RunPython(raise_error),
-        migrations.CreateModel(
-            "Book",
-            [
-                ("title", models.CharField(primary_key=True, max_length=255)),
-                ("publisher", models.ForeignKey("migrations.Publisher", models.SET_NULL, null=True)),
-            ],
-        ),
+        migrations.CreateModel('Book', [
+            ('title', models.CharField(primary_key=True, max_length=255)),
+            ('publisher', models.ForeignKey('migrations.Publisher', models.SET_NULL, null=True))
+        ])
     ]

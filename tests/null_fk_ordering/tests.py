@@ -4,7 +4,6 @@ from .models import Article, Author, Comment, Forum, Post, SystemInfo
 
 
 class NullFkOrderingTests(TestCase):
-
     def test_ordering_across_null_fk(self):
         """
         Regression test for #7512
@@ -16,7 +15,6 @@ class NullFkOrderingTests(TestCase):
         Article.objects.create(title='No author on this article')
         Article.objects.create(author=author_1, title='This article written by Tom Jones')
         Article.objects.create(author=author_2, title='This article written by Bob Smith')
-
         # We can't compare results directly (since different databases sort NULLs to
         # different ends of the ordering), but we can check that all results are
         # returned.
@@ -32,7 +30,6 @@ class NullFkOrderingTests(TestCase):
         p2 = Post.objects.create(forum=f2, title='Second Post')
         Comment.objects.create(comment_text='Another first comment')
         Comment.objects.create(post=p2, comment_text='Another second comment')
-
         # We have to test this carefully. Some databases sort NULL values before
         # everything else, some sort them afterwards. So we extract the ordered list
         # and check the length. Before the fix, this list was too short (some values

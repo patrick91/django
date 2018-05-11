@@ -23,9 +23,9 @@ class TestRouter:
 
 
 class AuthRouter:
-    """
+    '''
     Control all database operations on models in the contrib.auth application.
-    """
+    '''
 
     def db_for_read(self, model, **hints):
         "Point all read operations on auth models to 'default'"
@@ -42,7 +42,7 @@ class AuthRouter:
         return None
 
     def allow_relation(self, obj1, obj2, **hints):
-        "Allow any relation if a model in Auth is involved"
+        'Allow any relation if a model in Auth is involved'
         return obj1._meta.app_label == 'auth' or obj2._meta.app_label == 'auth' or None
 
     def allow_migrate(self, db, app_label, **hints):

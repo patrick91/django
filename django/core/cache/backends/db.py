@@ -1,4 +1,4 @@
-"Database cache backend."
+'Database cache backend.'
 import base64
 import pickle
 from datetime import datetime
@@ -11,10 +11,11 @@ from django.utils.inspect import func_supports_parameter
 
 
 class Options:
-    """A class that will quack like a Django model _meta class.
+    '''A class that will quack like a Django model _meta class.
 
     This allows cache operations to be controlled by the router
-    """
+    '''
+
     def __init__(self, table):
         self.db_table = table
         self.app_label = 'django_cache'
@@ -35,11 +36,11 @@ class BaseDatabaseCache(BaseCache):
 
         class CacheEntry:
             _meta = Options(table)
+
         self.cache_model_class = CacheEntry
 
 
 class DatabaseCache(BaseDatabaseCache):
-
     # This class uses cursors provided by the database connection. This means
     # it reads expiration values as aware or naive datetimes, depending on the
     # value of USE_TZ and whether the database supports time zones. The ORM's
@@ -55,25 +56,19 @@ class DatabaseCache(BaseDatabaseCache):
         table = quote_name(self._table)
 
         with connection.cursor() as cursor:
-            cursor.execute(
-                'SELECT %s, %s, %s FROM %s WHERE %s = %%s' % (
-                    quote_name('cache_key'),
-                    quote_name('value'),
-                    quote_name('expires'),
-                    table,
-                    quote_name('cache_key'),
-                ),
-                [key]
-            )
+            cursor.execute('SELECT %s, %s, %s FROM %s WHERE %s = %%s' \
+            % \
+            (quote_name('cache_key'), quote_name('value'), quote_name('expires'), table, quote_name('cache_key')), [
+                key
+            ])
             row = cursor.fetchone()
         if row is None:
             return default
 
         expires = row[2]
         expression = models.Expression(output_field=models.DateTimeField())
-        for converter in (connection.ops.get_db_converters(expression) +
-                          expression.get_db_converters(connection)):
-            if func_supports_parameter(converter, 'context'):  # RemovedInDjango30Warning
+        for converter in connection.ops.get_db_converters(expression) + expression.get_db_converters(connection):
+            if func_supports_parameter(converter, 'context'): # RemovedInDjango30Warning
                 expires = converter(expires, expression, connection, {})
             else:
                 expires = converter(expires, expression, connection)
@@ -82,13 +77,7 @@ class DatabaseCache(BaseDatabaseCache):
             db = router.db_for_write(self.cache_model_class)
             connection = connections[db]
             with connection.cursor() as cursor:
-                cursor.execute(
-                    'DELETE FROM %s WHERE %s = %%s' % (
-                        table,
-                        quote_name('cache_key'),
-                    ),
-                    [key]
-                )
+                cursor.execute('DELETE FROM %s WHERE %s = %%s' % (table, quote_name('cache_key')), [key])
             return default
 
         value = connection.ops.process_clob(row[1])
@@ -117,7 +106,7 @@ class DatabaseCache(BaseDatabaseCache):
         table = quote_name(self._table)
 
         with connection.cursor() as cursor:
-            cursor.execute("SELECT COUNT(*) FROM %s" % table)
+            cursor.execute('SELECT COUNT(*) FROM %s' % table)
             num = cursor.fetchone()[0]
             now = timezone.now()
             now = now.replace(microsecond=0)
@@ -140,59 +129,45 @@ class DatabaseCache(BaseDatabaseCache):
                 # so be careful about changes here - test suite will NOT pick
                 # regressions.
                 with transaction.atomic(using=db):
-                    cursor.execute(
-                        'SELECT %s, %s FROM %s WHERE %s = %%s' % (
-                            quote_name('cache_key'),
-                            quote_name('expires'),
-                            table,
-                            quote_name('cache_key'),
-                        ),
-                        [key]
-                    )
+                    cursor.execute('SELECT %s, %s FROM %s WHERE %s = %%s' \
+                    % \
+                    (quote_name('cache_key'), quote_name('expires'), table, quote_name('cache_key')), [key])
                     result = cursor.fetchone()
 
                     if result:
                         current_expires = result[1]
                         expression = models.Expression(output_field=models.DateTimeField())
-                        for converter in (connection.ops.get_db_converters(expression) +
-                                          expression.get_db_converters(connection)):
-                            if func_supports_parameter(converter, 'context'):  # RemovedInDjango30Warning
+                        for converter in connection.ops.get_db_converters(expression) \
+                        + \
+                        expression.get_db_converters(connection):
+                            if func_supports_parameter(converter, 'context'): # RemovedInDjango30Warning
                                 current_expires = converter(current_expires, expression, connection, {})
                             else:
                                 current_expires = converter(current_expires, expression, connection)
 
                     exp = connection.ops.adapt_datetimefield_value(exp)
                     if result and mode == 'touch':
-                        cursor.execute(
-                            'UPDATE %s SET %s = %%s WHERE %s = %%s' % (
-                                table,
-                                quote_name('expires'),
-                                quote_name('cache_key')
-                            ),
-                            [exp, key]
-                        )
-                    elif result and (mode == 'set' or (mode == 'add' and current_expires < now)):
-                        cursor.execute(
-                            'UPDATE %s SET %s = %%s, %s = %%s WHERE %s = %%s' % (
-                                table,
-                                quote_name('value'),
-                                quote_name('expires'),
-                                quote_name('cache_key'),
-                            ),
-                            [b64encoded, exp, key]
-                        )
+                        cursor.execute('UPDATE %s SET %s = %%s WHERE %s = %%s' \
+                        % \
+                        (table, quote_name('expires'), quote_name('cache_key')), [exp, key])
+                    elif result and mode == 'set' or mode == 'add' and current_expires < now:
+                        cursor.execute('UPDATE %s SET %s = %%s, %s = %%s WHERE %s = %%s' \
+                        % \
+                        (table, quote_name('value'), quote_name('expires'), quote_name('cache_key')), [
+                            b64encoded,
+                            exp,
+                            key
+                        ])
                     elif mode != 'touch':
-                        cursor.execute(
-                            'INSERT INTO %s (%s, %s, %s) VALUES (%%s, %%s, %%s)' % (
-                                table,
-                                quote_name('cache_key'),
-                                quote_name('value'),
-                                quote_name('expires'),
-                            ),
-                            [key, b64encoded, exp]
-                        )
+                        cursor.execute('INSERT INTO %s (%s, %s, %s) VALUES (%%s, %%s, %%s)' \
+                        % \
+                        (table, quote_name('cache_key'), quote_name('value'), quote_name('expires')), [
+                            key,
+                            b64encoded,
+                            exp
+                        ])
                     else:
-                        return False  # touch failed.
+                        return False # touch failed.
             except DatabaseError:
                 # To be threadsafe, updates/inserts are allowed to fail silently
                 return False
@@ -208,7 +183,7 @@ class DatabaseCache(BaseDatabaseCache):
         table = connection.ops.quote_name(self._table)
 
         with connection.cursor() as cursor:
-            cursor.execute("DELETE FROM %s WHERE cache_key = %%s" % table, [key])
+            cursor.execute('DELETE FROM %s WHERE cache_key = %%s' % table, [key])
 
     def has_key(self, key, version=None):
         key = self.make_key(key, version=version)
@@ -225,14 +200,12 @@ class DatabaseCache(BaseDatabaseCache):
         now = now.replace(microsecond=0)
 
         with connection.cursor() as cursor:
-            cursor.execute(
-                'SELECT %s FROM %s WHERE %s = %%s and expires > %%s' % (
-                    quote_name('cache_key'),
-                    quote_name(self._table),
-                    quote_name('cache_key'),
-                ),
-                [key, connection.ops.adapt_datetimefield_value(now)]
-            )
+            cursor.execute('SELECT %s FROM %s WHERE %s = %%s and expires > %%s' \
+            % \
+            (quote_name('cache_key'), quote_name(self._table), quote_name('cache_key')), [
+                key,
+                connection.ops.adapt_datetimefield_value(now)
+            ])
             return cursor.fetchone() is not None
 
     def _cull(self, db, cursor, now):
@@ -241,18 +214,18 @@ class DatabaseCache(BaseDatabaseCache):
         else:
             connection = connections[db]
             table = connection.ops.quote_name(self._table)
-            cursor.execute("DELETE FROM %s WHERE expires < %%s" % table,
-                           [connection.ops.adapt_datetimefield_value(now)])
-            cursor.execute("SELECT COUNT(*) FROM %s" % table)
+            cursor.execute('DELETE FROM %s WHERE expires < %%s' % table, [
+                connection.ops.adapt_datetimefield_value(now)
+            ])
+            cursor.execute('SELECT COUNT(*) FROM %s' % table)
             num = cursor.fetchone()[0]
             if num > self._max_entries:
                 cull_num = num // self._cull_frequency
-                cursor.execute(
-                    connection.ops.cache_key_culling_sql() % table,
-                    [cull_num])
+                cursor.execute(connection.ops.cache_key_culling_sql() % table, [cull_num])
                 cursor.execute("DELETE FROM %s "
-                               "WHERE cache_key < %%s" % table,
-                               [cursor.fetchone()[0]])
+                               "WHERE cache_key < %%s" % table, [
+                    cursor.fetchone()[0]
+                ])
 
     def clear(self):
         db = router.db_for_write(self.cache_model_class)

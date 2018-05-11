@@ -14,14 +14,14 @@ class ArchiveTester:
     archive = None
 
     def setUp(self):
-        """
+        '''
         Create temporary directory for testing extraction.
-        """
+        '''
         self.old_cwd = os.getcwd()
         self.tmpdir = tempfile.mkdtemp()
         self.addCleanup(shutil.rmtree, self.tmpdir)
         self.archive_path = os.path.join(TEST_DIR, self.archive)
-        self.archive_lead_path = os.path.join(TEST_DIR, "leadpath_%s" % self.archive)
+        self.archive_lead_path = os.path.join(TEST_DIR, 'leadpath_%s' % self.archive)
         # Always start off in TEST_DIR.
         os.chdir(TEST_DIR)
 
@@ -45,7 +45,7 @@ class ArchiveTester:
 
     @unittest.skipIf(sys.platform == 'win32', 'Python on Windows has a limited os.chmod().')
     def test_extract_file_permissions(self):
-        """Archive.extract() preserves file permissions."""
+        '''Archive.extract() preserves file permissions.'''
         extract(self.archive_path, self.tmpdir)
         filepath = os.path.join(self.tmpdir, 'executable')
         # The file has executable permission.
@@ -73,17 +73,17 @@ class ArchiveTester:
         self.assertTrue(os.path.isfile(os.path.join(self.tmpdir, 'foo', 'bar', '2')))
 
 
-class TestZip(ArchiveTester, unittest.TestCase):
+class TestZip(ArchiveTester,unittest.TestCase):
     archive = 'foobar.zip'
 
 
-class TestTar(ArchiveTester, unittest.TestCase):
+class TestTar(ArchiveTester,unittest.TestCase):
     archive = 'foobar.tar'
 
 
-class TestGzipTar(ArchiveTester, unittest.TestCase):
+class TestGzipTar(ArchiveTester,unittest.TestCase):
     archive = 'foobar.tar.gz'
 
 
-class TestBzip2Tar(ArchiveTester, unittest.TestCase):
+class TestBzip2Tar(ArchiveTester,unittest.TestCase):
     archive = 'foobar.tar.bz2'

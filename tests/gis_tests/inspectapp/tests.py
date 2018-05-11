@@ -16,15 +16,11 @@ from .models import AllOGRFields
 
 class InspectDbTests(TestCase):
     def test_geom_columns(self):
-        """
+        '''
         Test the geo-enabled inspectdb command.
-        """
+        '''
         out = StringIO()
-        call_command(
-            'inspectdb',
-            table_name_filter=lambda tn: tn == 'inspectapp_allogrfields',
-            stdout=out
-        )
+        call_command('inspectdb', table_name_filter=lambda tn: tn == 'inspectapp_allogrfields', stdout=out)
         output = out.getvalue()
         if connection.features.supports_geometry_field_introspection:
             self.assertIn('geom = models.PolygonField()', output)
@@ -33,14 +29,10 @@ class InspectDbTests(TestCase):
             self.assertIn('geom = models.GeometryField(', output)
             self.assertIn('point = models.GeometryField(', output)
 
-    @skipUnlessDBFeature("supports_3d_storage")
+    @skipUnlessDBFeature('supports_3d_storage')
     def test_3d_columns(self):
         out = StringIO()
-        call_command(
-            'inspectdb',
-            table_name_filter=lambda tn: tn == 'inspectapp_fields3d',
-            stdout=out
-        )
+        call_command('inspectdb', table_name_filter=lambda tn: tn == 'inspectapp_fields3d', stdout=out)
         output = out.getvalue()
         if connection.features.supports_geometry_field_introspection:
             self.assertIn('point = models.PointField(dim=3)', output)
@@ -56,9 +48,7 @@ class InspectDbTests(TestCase):
             self.assertIn('poly = models.GeometryField(', output)
 
 
-@modify_settings(
-    INSTALLED_APPS={'append': 'django.contrib.gis'},
-)
+@modify_settings(INSTALLED_APPS={'append': 'django.contrib.gis'})
 class OGRInspectTest(TestCase):
     maxDiff = 1024
 
@@ -75,7 +65,7 @@ class OGRInspectTest(TestCase):
             '    float = models.FloatField()',
             '    int = models.{}()'.format('BigIntegerField' if GDAL_VERSION >= (2, 0) else 'FloatField'),
             '    str = models.CharField(max_length=80)',
-            '    geom = models.PolygonField(srid=-1)',
+            '    geom = models.PolygonField(srid=-1)'
         ]
 
         self.assertEqual(model_def, '\n'.join(expected))
@@ -103,7 +93,7 @@ class OGRInspectTest(TestCase):
             '    population = models.{}()'.format('BigIntegerField' if GDAL_VERSION >= (2, 0) else 'FloatField'),
             '    density = models.FloatField()',
             '    created = models.DateField()',
-            '    geom = models.PointField(srid=-1)',
+            '    geom = models.PointField(srid=-1)'
         ]
 
         self.assertEqual(model_def, '\n'.join(expected))
@@ -113,25 +103,20 @@ class OGRInspectTest(TestCase):
         # GDAL does not have the support compiled in.
         ogr_db = get_ogr_db_string()
         if not ogr_db:
-            self.skipTest("Unable to setup an OGR connection to your database")
+            self.skipTest('Unable to setup an OGR connection to your database')
 
         try:
             # Writing shapefiles via GDAL currently does not support writing OGRTime
             # fields, so we need to actually use a database
-            model_def = ogrinspect(ogr_db, 'Measurement',
-                                   layer_key=AllOGRFields._meta.db_table,
-                                   decimal=['f_decimal'])
+            model_def = ogrinspect(ogr_db, 'Measurement', layer_key=AllOGRFields._meta.db_table, decimal=['f_decimal'])
         except GDALException:
-            self.skipTest("Unable to setup an OGR connection to your database")
+            self.skipTest('Unable to setup an OGR connection to your database')
 
-        self.assertTrue(model_def.startswith(
-            '# This is an auto-generated Django model module created by ogrinspect.\n'
+        self.assertTrue(model_def.startswith('# This is an auto-generated Django model module created by ogrinspect.\n'
             'from django.contrib.gis.db import models\n'
             '\n'
             '\n'
-            'class Measurement(models.Model):\n'
-        ))
-
+            'class Measurement(models.Model):\n'))
         # The ordering of model fields might vary depending on several factors (version of GDAL, etc.)
         self.assertIn('    f_decimal = models.DecimalField(max_digits=0, decimal_places=0)', model_def)
         self.assertIn('    f_int = models.IntegerField()', model_def)
@@ -140,7 +125,6 @@ class OGRInspectTest(TestCase):
         self.assertIn('    f_float = models.FloatField()', model_def)
         self.assertIn('    f_char = models.CharField(max_length=10)', model_def)
         self.assertIn('    f_date = models.DateField()', model_def)
-
         # Some backends may have srid=-1
         self.assertIsNotNone(re.search(r'    geom = models.PolygonField\(([^\)])*\)', model_def))
 
@@ -152,8 +136,7 @@ class OGRInspectTest(TestCase):
         self.assertIn('class City(models.Model):', output)
 
     def test_mapping_option(self):
-        expected = (
-            "    geom = models.PointField(srid=-1)\n"
+        expected = "    geom = models.PointField(srid=-1)\n"
             "\n"
             "\n"
             "# Auto-generated `LayerMapping` dictionary for City model\n"
@@ -163,7 +146,7 @@ class OGRInspectTest(TestCase):
             "    'density': 'Density',\n"
             "    'created': 'Created',\n"
             "    'geom': 'POINT',\n"
-            "}\n")
+            "}\n"
         shp_file = os.path.join(TEST_DATA, 'cities', 'cities.shp')
         out = StringIO()
         call_command('ogrinspect', shp_file, '--mapping', 'City', stdout=out)
@@ -171,13 +154,12 @@ class OGRInspectTest(TestCase):
 
 
 def get_ogr_db_string():
-    """
+    '''
     Construct the DB string that GDAL will use to inspect the database.
     GDAL will create its own connection to the database, so we re-use the
     connection settings from the Django test.
-    """
+    '''
     db = connections.databases['default']
-
     # Map from the django backend into the OGR driver name and database identifier
     # http://www.gdal.org/ogr/ogr_formats.html
     #
@@ -193,17 +175,14 @@ def get_ogr_db_string():
         return None
 
     drv_name, db_str, param_sep = drivers[db_engine]
-
     # Ensure that GDAL library has driver support for the database.
     try:
         Driver(drv_name)
     except GDALException:
         return None
-
     # SQLite/SpatiaLite in-memory databases
-    if db['NAME'] == ":memory:":
+    if db['NAME'] == ':memory:':
         return None
-
     # Build the params of the OGR database connection string
     params = [db_str % {'db_name': db['NAME']}]
 
@@ -212,6 +191,7 @@ def get_ogr_db_string():
         # Don't add the parameter if it is not in django's settings
         if value:
             params.append(template % value)
+
     add('HOST', "host='%s'")
     add('PORT', "port='%s'")
     add('USER', "user='%s'")

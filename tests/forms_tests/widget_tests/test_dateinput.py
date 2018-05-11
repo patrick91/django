@@ -18,17 +18,13 @@ class DateInputTest(WidgetTest):
         self.assertEqual(str(d), '2007-09-17')
 
         self.check_html(self.widget, 'date', d, html='<input type="text" name="date" value="2007-09-17">')
-        self.check_html(self.widget, 'date', date(2007, 9, 17), html=(
-            '<input type="text" name="date" value="2007-09-17">'
-        ))
+        self.check_html(self.widget, 'date', date(2007, 9, 17), html='<input type="text" name="date" value="2007-09-17">')
 
     def test_string(self):
-        """
+        '''
         Should be able to initialize from a string value.
-        """
-        self.check_html(self.widget, 'date', '2007-09-17', html=(
-            '<input type="text" name="date" value="2007-09-17">'
-        ))
+        '''
+        self.check_html(self.widget, 'date', '2007-09-17', html='<input type="text" name="date" value="2007-09-17">')
 
     def test_format(self):
         """
@@ -41,7 +37,4 @@ class DateInputTest(WidgetTest):
     @override_settings(USE_L10N=True)
     @translation.override('de-at')
     def test_l10n(self):
-        self.check_html(
-            self.widget, 'date', date(2007, 9, 17),
-            html='<input type="text" name="date" value="17.09.2007">',
-        )
+        self.check_html(self.widget, 'date', date(2007, 9, 17), html='<input type="text" name="date" value="17.09.2007">')

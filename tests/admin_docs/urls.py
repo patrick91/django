@@ -3,9 +3,7 @@ from django.contrib import admin
 
 from . import views
 
-ns_patterns = ([
-    url(r'^xview/func/$', views.xview_dec(views.xview), name='func'),
-], 'test')
+ns_patterns = ([url(r'^xview/func/$', views.xview_dec(views.xview), name='func')], 'test')
 
 urlpatterns = [
     url(r'^admin/', admin.site.urls),
@@ -14,5 +12,5 @@ urlpatterns = [
     url(r'^xview/func/$', views.xview_dec(views.xview)),
     url(r'^xview/class/$', views.xview_dec(views.XViewClass.as_view())),
     url(r'^xview/callable_object/$', views.xview_dec(views.XViewCallableObject())),
-    url(r'^xview/callable_object_without_xview/$', views.XViewCallableObject()),
+    url(r'^xview/callable_object_without_xview/$', views.XViewCallableObject())
 ]

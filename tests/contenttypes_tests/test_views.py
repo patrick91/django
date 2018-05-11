@@ -7,15 +7,11 @@ from django.db import models
 from django.test import TestCase, override_settings
 from django.test.utils import isolate_apps
 
-from .models import (
-    Article, Author, ModelWithNullFKToSite, SchemeIncludedURL,
-    Site as MockSite,
-)
+from .models import Article, Author, ModelWithNullFKToSite, SchemeIncludedURL, Site as MockSite
 
 
 @override_settings(ROOT_URLCONF='contenttypes_tests.urls')
 class ContentTypesViewsTests(TestCase):
-
     @classmethod
     def setUpTestData(cls):
         # Don't use the manager to ensure the site exists with pk=1, regardless
@@ -23,18 +19,9 @@ class ContentTypesViewsTests(TestCase):
         cls.site1 = Site(pk=1, domain='testserver', name='testserver')
         cls.site1.save()
         cls.author1 = Author.objects.create(name='Boris')
-        cls.article1 = Article.objects.create(
-            title='Old Article', slug='old_article', author=cls.author1,
-            date_created=datetime.datetime(2001, 1, 1, 21, 22, 23),
-        )
-        cls.article2 = Article.objects.create(
-            title='Current Article', slug='current_article', author=cls.author1,
-            date_created=datetime.datetime(2007, 9, 17, 21, 22, 23),
-        )
-        cls.article3 = Article.objects.create(
-            title='Future Article', slug='future_article', author=cls.author1,
-            date_created=datetime.datetime(3000, 1, 1, 21, 22, 23),
-        )
+        cls.article1 = Article.objects.create(title='Old Article', slug='old_article', author=cls.author1, date_created=datetime.datetime(2001, 1, 1, 21, 22, 23))
+        cls.article2 = Article.objects.create(title='Current Article', slug='current_article', author=cls.author1, date_created=datetime.datetime(2007, 9, 17, 21, 22, 23))
+        cls.article3 = Article.objects.create(title='Future Article', slug='future_article', author=cls.author1, date_created=datetime.datetime(3000, 1, 1, 21, 22, 23))
         cls.scheme1 = SchemeIncludedURL.objects.create(url='http://test_scheme_included_http/')
         cls.scheme2 = SchemeIncludedURL.objects.create(url='https://test_scheme_included_https/')
         cls.scheme3 = SchemeIncludedURL.objects.create(url='//test_default_scheme_kept/')
@@ -43,7 +30,7 @@ class ContentTypesViewsTests(TestCase):
         Site.objects.clear_cache()
 
     def test_shortcut_with_absolute_url(self):
-        "Can view a shortcut for an Author object that has a get_absolute_url method"
+        'Can view a shortcut for an Author object that has a get_absolute_url method'
         for obj in Author.objects.all():
             with self.subTest(obj=obj):
                 short_url = '/shortcut/%s/%s/' % (ContentType.objects.get_for_model(Author).id, obj.pk)
@@ -51,10 +38,10 @@ class ContentTypesViewsTests(TestCase):
                 self.assertRedirects(response, 'http://testserver%s' % obj.get_absolute_url(), target_status_code=404)
 
     def test_shortcut_with_absolute_url_including_scheme(self):
-        """
+        '''
         Can view a shortcut when object's get_absolute_url returns a full URL
         the tested URLs are: "http://...", "https://..." and "//..."
-        """
+        '''
         for obj in SchemeIncludedURL.objects.all():
             with self.subTest(obj=obj):
                 short_url = '/shortcut/%s/%s/' % (ContentType.objects.get_for_model(SchemeIncludedURL).id, obj.pk)
@@ -62,10 +49,10 @@ class ContentTypesViewsTests(TestCase):
                 self.assertRedirects(response, obj.get_absolute_url(), fetch_redirect_response=False)
 
     def test_shortcut_no_absolute_url(self):
-        """
+        '''
         Shortcuts for an object that has no get_absolute_url() method raise
         404.
-        """
+        '''
         for obj in Article.objects.all():
             with self.subTest(obj=obj):
                 short_url = '/shortcut/%s/%s/' % (ContentType.objects.get_for_model(Article).id, obj.pk)
@@ -112,6 +99,7 @@ class ContentTypesViewsTests(TestCase):
         ContentTypeManager.get_for_model() creates the corresponding content
         type if it doesn't exist in the database.
         """
+
         class ModelCreatedOnTheFly(models.Model):
             name = models.CharField()
 

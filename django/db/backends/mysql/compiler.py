@@ -9,17 +9,17 @@ class SQLCompiler(compiler.SQLCompiler):
         return '(%s) IN (%s)' % (', '.join('%s.%s' % (qn(alias), qn2(column)) for column in columns), sql), params
 
 
-class SQLInsertCompiler(compiler.SQLInsertCompiler, SQLCompiler):
+class SQLInsertCompiler(compiler.SQLInsertCompiler,SQLCompiler):
     pass
 
 
-class SQLDeleteCompiler(compiler.SQLDeleteCompiler, SQLCompiler):
+class SQLDeleteCompiler(compiler.SQLDeleteCompiler,SQLCompiler):
     pass
 
 
-class SQLUpdateCompiler(compiler.SQLUpdateCompiler, SQLCompiler):
+class SQLUpdateCompiler(compiler.SQLUpdateCompiler,SQLCompiler):
     pass
 
 
-class SQLAggregateCompiler(compiler.SQLAggregateCompiler, SQLCompiler):
+class SQLAggregateCompiler(compiler.SQLAggregateCompiler,SQLCompiler):
     pass

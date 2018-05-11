@@ -6,9 +6,9 @@ from ..utils import setup
 
 
 class IriencodeTests(SimpleTestCase):
-    """
+    '''
     Ensure iriencode keeps safe strings.
-    """
+    '''
 
     @setup({'iriencode01': '{{ url|iriencode }}'})
     def test_iriencode01(self):
@@ -32,7 +32,6 @@ class IriencodeTests(SimpleTestCase):
 
 
 class FunctionTests(SimpleTestCase):
-
     def test_unicode(self):
         self.assertEqual(iriencode('S\xf8r-Tr\xf8ndelag'), 'S%C3%B8r-Tr%C3%B8ndelag')
 

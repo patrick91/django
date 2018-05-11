@@ -3,7 +3,6 @@ from django.test import SimpleTestCase
 
 
 class BasicFieldsTests(SimpleTestCase):
-
     def test_field_sets_widget_is_required(self):
         self.assertTrue(Field(required=True).widget.is_required)
         self.assertFalse(Field(required=False).widget.is_required)
@@ -14,7 +13,7 @@ class BasicFieldsTests(SimpleTestCase):
                 self.class_a_var = True
                 super().__init__()
 
-        class ComplexField(Field, A):
+        class ComplexField(Field,A):
             def __init__(self):
                 super().__init__()
 

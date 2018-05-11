@@ -1,7 +1,7 @@
-"""
+'''
 This module holds simple classes to convert geospatial values from the
 database.
-"""
+'''
 from decimal import Decimal
 
 from django.contrib.gis.measure import Area, Distance
@@ -9,7 +9,8 @@ from django.db import models
 
 
 class AreaField(models.FloatField):
-    "Wrapper for Area values."
+    'Wrapper for Area values.'
+
     def __init__(self, geo_field):
         super().__init__()
         self.geo_field = geo_field
@@ -41,7 +42,8 @@ class AreaField(models.FloatField):
 
 
 class DistanceField(models.FloatField):
-    "Wrapper for Distance values."
+    'Wrapper for Distance values.'
+
     def __init__(self, geo_field):
         super().__init__()
         self.geo_field = geo_field

@@ -34,20 +34,20 @@ class DatabaseFeatures(BaseDatabaseFeatures):
     supports_slicing_ordering_in_compound = True
     supports_index_on_text_field = False
     has_case_insensitive_like = False
-    create_test_procedure_without_params_sql = """
+    create_test_procedure_without_params_sql = '''
         CREATE PROCEDURE test_procedure ()
         BEGIN
             DECLARE V_I INTEGER;
             SET V_I = 1;
         END;
-    """
-    create_test_procedure_with_int_param_sql = """
+    '''
+    create_test_procedure_with_int_param_sql = '''
         CREATE PROCEDURE test_procedure (P_I INTEGER)
         BEGIN
             DECLARE V_I INTEGER;
             SET V_I = P_I;
         END;
-    """
+    '''
     db_functions_convert_bytes_to_str = True
     # Alias MySQL's TRADITIONAL to TEXT for consistency with other backends.
     supported_explain_formats = {'JSON', 'TEXT', 'TRADITIONAL'}
@@ -62,14 +62,14 @@ class DatabaseFeatures(BaseDatabaseFeatures):
 
     @cached_property
     def can_introspect_foreign_keys(self):
-        "Confirm support for introspected foreign keys"
+        'Confirm support for introspected foreign keys'
         return self._mysql_storage_engine != 'MyISAM'
 
     @cached_property
     def has_zoneinfo_database(self):
         # Test if the time zone definitions are installed.
         with self.connection.cursor() as cursor:
-            cursor.execute("SELECT 1 FROM mysql.time_zone LIMIT 1")
+            cursor.execute('SELECT 1 FROM mysql.time_zone LIMIT 1')
             return cursor.fetchone() is not None
 
     @cached_property
@@ -90,9 +90,9 @@ class DatabaseFeatures(BaseDatabaseFeatures):
 
     @cached_property
     def supports_transactions(self):
-        """
+        '''
         All storage engines except MyISAM support transactions.
-        """
+        '''
         return self._mysql_storage_engine != 'MyISAM'
 
     @cached_property

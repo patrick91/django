@@ -38,20 +38,14 @@ class QTests(SimpleTestCase):
         q = ~Q(price__gt=F('discounted_price'))
         path, args, kwargs = q.deconstruct()
         self.assertEqual(args, ())
-        self.assertEqual(kwargs, {
-            'price__gt': F('discounted_price'),
-            '_negated': True,
-        })
+        self.assertEqual(kwargs, {'price__gt': F('discounted_price'), '_negated': True})
 
     def test_deconstruct_or(self):
         q1 = Q(price__gt=F('discounted_price'))
         q2 = Q(price=F('discounted_price'))
         q = q1 | q2
         path, args, kwargs = q.deconstruct()
-        self.assertEqual(args, (
-            ('price__gt', F('discounted_price')),
-            ('price', F('discounted_price')),
-        ))
+        self.assertEqual(args, (('price__gt', F('discounted_price')), ('price', F('discounted_price'))))
         self.assertEqual(kwargs, {'_connector': 'OR'})
 
     def test_deconstruct_and(self):
@@ -59,19 +53,13 @@ class QTests(SimpleTestCase):
         q2 = Q(price=F('discounted_price'))
         q = q1 & q2
         path, args, kwargs = q.deconstruct()
-        self.assertEqual(args, (
-            ('price__gt', F('discounted_price')),
-            ('price', F('discounted_price')),
-        ))
+        self.assertEqual(args, (('price__gt', F('discounted_price')), ('price', F('discounted_price'))))
         self.assertEqual(kwargs, {})
 
     def test_deconstruct_multiple_kwargs(self):
         q = Q(price__gt=F('discounted_price'), price=F('discounted_price'))
         path, args, kwargs = q.deconstruct()
-        self.assertEqual(args, (
-            ('price', F('discounted_price')),
-            ('price__gt', F('discounted_price')),
-        ))
+        self.assertEqual(args, (('price', F('discounted_price')), ('price__gt', F('discounted_price'))))
         self.assertEqual(kwargs, {})
 
     def test_deconstruct_nested(self):

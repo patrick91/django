@@ -16,8 +16,11 @@ class StaticTagTests(SimpleTestCase):
         output = self.engine.render_to_string('static-prefixtag01')
         self.assertEqual(output, settings.STATIC_URL)
 
-    @setup({'static-prefixtag02': '{% load static %}'
-                                  '{% get_static_prefix as static_prefix %}{{ static_prefix }}'})
+    @setup({
+        'static-prefixtag02':
+            '{% load static %}'
+                                  '{% get_static_prefix as static_prefix %}{{ static_prefix }}'
+    })
     def test_static_prefixtag02(self):
         output = self.engine.render_to_string('static-prefixtag02')
         self.assertEqual(output, settings.STATIC_URL)
@@ -27,8 +30,11 @@ class StaticTagTests(SimpleTestCase):
         output = self.engine.render_to_string('static-prefixtag03')
         self.assertEqual(output, settings.MEDIA_URL)
 
-    @setup({'static-prefixtag04': '{% load static %}'
-                                  '{% get_media_prefix as media_prefix %}{{ media_prefix }}'})
+    @setup({
+        'static-prefixtag04':
+            '{% load static %}'
+                                  '{% get_media_prefix as media_prefix %}{{ media_prefix }}'
+    })
     def test_static_prefixtag04(self):
         output = self.engine.render_to_string('static-prefixtag04')
         self.assertEqual(output, settings.MEDIA_URL)

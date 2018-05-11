@@ -8,13 +8,12 @@ from django.utils.encoding import force_text
 
 
 class DatabaseOperations(BaseDatabaseOperations):
-    compiler_module = "django.db.backends.mysql.compiler"
-
+    compiler_module = 'django.db.backends.mysql.compiler'
     # MySQL stores positive fields as UNSIGNED ints.
     integer_field_ranges = {
-        **BaseDatabaseOperations.integer_field_ranges,
+        : BaseDatabaseOperations.integer_field_ranges,
         'PositiveSmallIntegerField': (0, 65535),
-        'PositiveIntegerField': (0, 4294967295),
+        'PositiveIntegerField': (0, 4294967295)
     }
     cast_data_types = {
         'CharField': 'char(%(max_length)s)',
@@ -23,7 +22,7 @@ class DatabaseOperations(BaseDatabaseOperations):
         'BigIntegerField': 'signed integer',
         'SmallIntegerField': 'signed integer',
         'PositiveIntegerField': 'unsigned integer',
-        'PositiveSmallIntegerField': 'unsigned integer',
+        'PositiveSmallIntegerField': 'unsigned integer'
     }
     cast_char_field_without_max_length = 'char'
     explain_prefix = 'EXPLAIN'
@@ -33,34 +32,28 @@ class DatabaseOperations(BaseDatabaseOperations):
         if lookup_type == 'week_day':
             # DAYOFWEEK() returns an integer, 1-7, Sunday=1.
             # Note: WEEKDAY() returns 0-6, Monday=0.
-            return "DAYOFWEEK(%s)" % field_name
+            return 'DAYOFWEEK(%s)' % field_name
         elif lookup_type == 'week':
             # Override the value of default_week_format for consistency with
             # other database backends.
             # Mode 3: Monday, 1-53, with 4 or more days this year.
-            return "WEEK(%s, 3)" % field_name
+            return 'WEEK(%s, 3)' % field_name
         else:
             # EXTRACT returns 1-53 based on ISO-8601 for the week number.
-            return "EXTRACT(%s FROM %s)" % (lookup_type.upper(), field_name)
+            return 'EXTRACT(%s FROM %s)' % (lookup_type.upper(), field_name)
 
     def date_trunc_sql(self, lookup_type, field_name):
-        fields = {
-            'year': '%%Y-01-01',
-            'month': '%%Y-%%m-01',
-        }  # Use double percents to escape.
+        fields = {'year': '%%Y-01-01', 'month': '%%Y-%%m-01'} # Use double percents to escape.
         if lookup_type in fields:
             format_str = fields[lookup_type]
             return "CAST(DATE_FORMAT(%s, '%s') AS DATE)" % (field_name, format_str)
         elif lookup_type == 'quarter':
-            return "MAKEDATE(YEAR(%s), 1) + INTERVAL QUARTER(%s) QUARTER - INTERVAL 1 QUARTER" % (
-                field_name, field_name
-            )
+            return \
+                'MAKEDATE(YEAR(%s), 1) + INTERVAL QUARTER(%s) QUARTER - INTERVAL 1 QUARTER' % (field_name, field_name)
         elif lookup_type == 'week':
-            return "DATE_SUB(%s, INTERVAL WEEKDAY(%s) DAY)" % (
-                field_name, field_name
-            )
+            return 'DATE_SUB(%s, INTERVAL WEEKDAY(%s) DAY)' % (field_name, field_name)
         else:
-            return "DATE(%s)" % (field_name)
+            return 'DATE(%s)' % field_name
 
     def _convert_field_to_tz(self, field_name, tzname):
         if settings.USE_TZ:
@@ -69,11 +62,11 @@ class DatabaseOperations(BaseDatabaseOperations):
 
     def datetime_cast_date_sql(self, field_name, tzname):
         field_name = self._convert_field_to_tz(field_name, tzname)
-        return "DATE(%s)" % field_name
+        return 'DATE(%s)' % field_name
 
     def datetime_cast_time_sql(self, field_name, tzname):
         field_name = self._convert_field_to_tz(field_name, tzname)
-        return "TIME(%s)" % field_name
+        return 'TIME(%s)' % field_name
 
     def datetime_extract_sql(self, lookup_type, field_name, tzname):
         field_name = self._convert_field_to_tz(field_name, tzname)
@@ -82,40 +75,36 @@ class DatabaseOperations(BaseDatabaseOperations):
     def datetime_trunc_sql(self, lookup_type, field_name, tzname):
         field_name = self._convert_field_to_tz(field_name, tzname)
         fields = ['year', 'month', 'day', 'hour', 'minute', 'second']
-        format = ('%%Y-', '%%m', '-%%d', ' %%H:', '%%i', ':%%s')  # Use double percents to escape.
+        format = ('%%Y-', '%%m', '-%%d', ' %%H:', '%%i', ':%%s') # Use double percents to escape.
         format_def = ('0000-', '01', '-01', ' 00:', '00', ':00')
         if lookup_type == 'quarter':
-            return (
+            return \
                 "CAST(DATE_FORMAT(MAKEDATE(YEAR({field_name}), 1) + "
-                "INTERVAL QUARTER({field_name}) QUARTER - " +
-                "INTERVAL 1 QUARTER, '%%Y-%%m-01 00:00:00') AS DATETIME)"
-            ).format(field_name=field_name)
+                "INTERVAL QUARTER({field_name}) QUARTER - " \
+                + \
+                "INTERVAL 1 QUARTER, '%%Y-%%m-01 00:00:00') AS DATETIME)".format(field_name=field_name)
         if lookup_type == 'week':
-            return (
+            return \
                 "CAST(DATE_FORMAT(DATE_SUB({field_name}, "
                 "INTERVAL WEEKDAY({field_name}) DAY), "
-                "'%%Y-%%m-%%d 00:00:00') AS DATETIME)"
-            ).format(field_name=field_name)
+                "'%%Y-%%m-%%d 00:00:00') AS DATETIME)".format(field_name=field_name)
         try:
             i = fields.index(lookup_type) + 1
         except ValueError:
             sql = field_name
         else:
-            format_str = ''.join([f for f in format[:i]] + [f for f in format_def[i:]])
-            sql = "CAST(DATE_FORMAT(%s, '%s') AS DATETIME)" % (field_name, format_str)
+            format_str = ''.join([f for f in format[:i]] \
+            + \
+            [f for f in format_def[i:]])sql = "CAST(DATE_FORMAT(%s, '%s') AS DATETIME)" % (field_name, format_str)
         return sql
 
     def time_trunc_sql(self, lookup_type, field_name):
-        fields = {
-            'hour': '%%H:00:00',
-            'minute': '%%H:%%i:00',
-            'second': '%%H:%%i:%%s',
-        }  # Use double percents to escape.
+        fields = {'hour': '%%H:00:00', 'minute': '%%H:%%i:00', 'second': '%%H:%%i:%%s'} # Use double percents to escape.
         if lookup_type in fields:
             format_str = fields[lookup_type]
             return "CAST(DATE_FORMAT(%s, '%s') AS TIME)" % (field_name, format_str)
         else:
-            return "TIME(%s)" % (field_name)
+            return 'TIME(%s)' % field_name
 
     def date_interval_sql(self, timedelta):
         return 'INTERVAL %s MICROSECOND' % duration_microseconds(timedelta)
@@ -124,12 +113,12 @@ class DatabaseOperations(BaseDatabaseOperations):
         return 'INTERVAL %s MICROSECOND' % sql
 
     def force_no_ordering(self):
-        """
+        '''
         "ORDER BY NULL" prevents MySQL from implicitly ordering by grouped
         columns. If no ordering would otherwise be applied, we don't want any
         implicit sorting going on.
-        """
-        return [(None, ("NULL", [], False))]
+        '''
+        return [(None, ('NULL', [], False))]
 
     def last_executed_query(self, cursor, sql, params):
         # With MySQLdb, cursor objects have an (undocumented) "_last_executed"
@@ -142,9 +131,9 @@ class DatabaseOperations(BaseDatabaseOperations):
         return 18446744073709551615
 
     def quote_name(self, name):
-        if name.startswith("`") and name.endswith("`"):
-            return name  # Quoting once is enough.
-        return "`%s`" % name
+        if name.startswith('`') and name.endswith('`'):
+            return name # Quoting once is enough.
+        return '`%s`' % name
 
     def random_function_sql(self):
         return 'RAND()'
@@ -156,10 +145,7 @@ class DatabaseOperations(BaseDatabaseOperations):
         if tables:
             sql = ['SET FOREIGN_KEY_CHECKS = 0;']
             for table in tables:
-                sql.append('%s %s;' % (
-                    style.SQL_KEYWORD('TRUNCATE'),
-                    style.SQL_FIELD(self.quote_name(table)),
-                ))
+                sql.append('%s %s;' % (style.SQL_KEYWORD('TRUNCATE'), style.SQL_FIELD(self.quote_name(table))))
             sql.append('SET FOREIGN_KEY_CHECKS = 1;')
             sql.extend(self.sequence_reset_by_name_sql(style, sequences))
             return sql
@@ -169,37 +155,34 @@ class DatabaseOperations(BaseDatabaseOperations):
     def validate_autopk_value(self, value):
         # MySQLism: zero in AUTO_INCREMENT field does not work. Refs #17653.
         if value == 0:
-            raise ValueError('The database backend does not accept 0 as a '
+            raise
+            ValueError('The database backend does not accept 0 as a '
                              'value for AutoField.')
         return value
 
     def adapt_datetimefield_value(self, value):
         if value is None:
             return None
-
         # Expression values are adapted by the database.
         if hasattr(value, 'resolve_expression'):
             return value
-
         # MySQL doesn't support tz-aware datetimes
         if timezone.is_aware(value):
             if settings.USE_TZ:
                 value = timezone.make_naive(value, self.connection.timezone)
             else:
-                raise ValueError("MySQL backend does not support timezone-aware datetimes when USE_TZ is False.")
+                raise ValueError('MySQL backend does not support timezone-aware datetimes when USE_TZ is False.')
         return str(value)
 
     def adapt_timefield_value(self, value):
         if value is None:
             return None
-
         # Expression values are adapted by the database.
         if hasattr(value, 'resolve_expression'):
             return value
-
         # MySQL doesn't support tz-aware times
         if timezone.is_aware(value):
-            raise ValueError("MySQL backend does not support timezone-aware times.")
+            raise ValueError('MySQL backend does not support timezone-aware times.')
 
         return str(value)
 
@@ -207,9 +190,9 @@ class DatabaseOperations(BaseDatabaseOperations):
         return 64
 
     def bulk_insert_sql(self, fields, placeholder_rows):
-        placeholder_rows_sql = (", ".join(row) for row in placeholder_rows)
-        values_sql = ", ".join("(%s)" % sql for sql in placeholder_rows_sql)
-        return "VALUES " + values_sql
+        placeholder_rows_sql = (', '.join(row) for row in placeholder_rows)
+        values_sql = ', '.join('(%s)' % sql for sql in placeholder_rows_sql)
+        return 'VALUES ' + values_sql
 
     def combine_expression(self, connector, sub_expressions):
         if connector == '^':
@@ -264,12 +247,16 @@ class DatabaseOperations(BaseDatabaseOperations):
         lhs_sql, lhs_params = lhs
         rhs_sql, rhs_params = rhs
         if internal_type == 'TimeField':
-            return (
-                "((TIME_TO_SEC(%(lhs)s) * 1000000 + MICROSECOND(%(lhs)s)) -"
-                " (TIME_TO_SEC(%(rhs)s) * 1000000 + MICROSECOND(%(rhs)s)))"
-            ) % {'lhs': lhs_sql, 'rhs': rhs_sql}, lhs_params * 2 + rhs_params * 2
+            return \
+                (
+                    "((TIME_TO_SEC(%(lhs)s) * 1000000 + MICROSECOND(%(lhs)s)) -"
+                " (TIME_TO_SEC(%(rhs)s) * 1000000 + MICROSECOND(%(rhs)s)))" \
+                    % \
+                    {'lhs': lhs_sql, 'rhs': rhs_sql},
+                    lhs_params * 2 + rhs_params * 2
+                )
         else:
-            return "TIMESTAMPDIFF(MICROSECOND, %s, %s)" % (rhs_sql, lhs_sql), rhs_params + lhs_params
+            return 'TIMESTAMPDIFF(MICROSECOND, %s, %s)' % (rhs_sql, lhs_sql), rhs_params + lhs_params
 
     def explain_query_prefix(self, format=None, **options):
         # Alias MySQL's TRADITIONAL to TEXT for consistency with other backends.

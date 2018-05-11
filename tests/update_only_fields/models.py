@@ -1,10 +1,6 @@
-
 from django.db import models
 
-GENDER_CHOICES = (
-    ('M', 'Male'),
-    ('F', 'Female'),
-)
+GENDER_CHOICES = (('M', 'Male'), ('F', 'Female'))
 
 
 class Account(models.Model):

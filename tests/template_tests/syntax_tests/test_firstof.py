@@ -5,7 +5,6 @@ from ..utils import setup
 
 
 class FirstOfTagTests(SimpleTestCase):
-
     @setup({'firstof01': '{% firstof a b c %}'})
     def test_firstof01(self):
         output = self.engine.render_to_string('firstof01', {'a': 0, 'c': 0, 'b': 0})

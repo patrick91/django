@@ -2,22 +2,27 @@ import os
 import re
 
 from django.contrib.gis.db.models import Extent3D, Union
-from django.contrib.gis.db.models.functions import (
-    AsGeoJSON, AsKML, Length, Perimeter, Scale, Translate,
-)
+from django.contrib.gis.db.models.functions import AsGeoJSON, AsKML, Length, Perimeter, Scale, Translate
 from django.contrib.gis.geos import GEOSGeometry, LineString, Point, Polygon
 from django.test import TestCase, skipUnlessDBFeature
 
 from ..utils import FuncTestMixin
 from .models import (
-    City3D, Interstate2D, Interstate3D, InterstateProj2D, InterstateProj3D,
-    MultiPoint3D, Point2D, Point3D, Polygon2D, Polygon3D,
+    City3D,
+    Interstate2D,
+    Interstate3D,
+    InterstateProj2D,
+    InterstateProj3D,
+    MultiPoint3D,
+    Point2D,
+    Point3D,
+    Polygon2D,
+    Polygon3D
 )
 
 data_path = os.path.realpath(os.path.join(os.path.dirname(__file__), '..', 'data'))
 city_file = os.path.join(data_path, 'cities', 'cities.shp')
 vrt_file = os.path.join(data_path, 'test_vrt', 'test_vrt.vrt')
-
 # The coordinates of each city, with Z values corresponding to their
 # altitude in meters.
 city_data = (
@@ -28,17 +33,16 @@ city_data = (
     ('Pueblo', (-104.609252, 38.255001, 1433)),
     ('Lawrence', (-95.235060, 38.971823, 251)),
     ('Chicago', (-87.650175, 41.850385, 181)),
-    ('Victoria', (-123.305196, 48.462611, 15)),
+    ('Victoria', (-123.305196, 48.462611, 15))
 )
-
 # Reference mapping of city name to its altitude (Z value).
-city_dict = {name: coords for name, coords in city_data}
-
+city_dict = {name: coords for (name, coords) in city_data}
 # 3D freeway data derived from the National Elevation Dataset:
 #  http://seamless.usgs.gov/products/9arc.php
 interstate_data = (
-    ('I-45',
-     'LINESTRING(-95.3708481 29.7765870 11.339,-95.3694580 29.7787980 4.536,'
+    (
+        'I-45',
+        'LINESTRING(-95.3708481 29.7765870 11.339,-95.3694580 29.7787980 4.536,'
      '-95.3690305 29.7797359 9.762,-95.3691886 29.7812450 12.448,'
      '-95.3696447 29.7850144 10.457,-95.3702511 29.7868518 9.418,'
      '-95.3706724 29.7881286 14.858,-95.3711632 29.7896157 15.386,'
@@ -49,13 +53,32 @@ interstate_data = (
      '-95.3722074 29.8050998 15.688,-95.3722779 29.8060430 16.099,'
      '-95.3733818 29.8076750 15.197,-95.3741563 29.8103686 17.268,'
      '-95.3749458 29.8129927 19.857,-95.3763564 29.8144557 15.435)',
-     (11.339, 4.536, 9.762, 12.448, 10.457, 9.418, 14.858,
-      15.386, 13.168, 15.104, 16.516, 13.923, 14.385, 15.16,
-      15.544, 14.975, 15.688, 16.099, 15.197, 17.268, 19.857,
-      15.435),
-     ),
+        (
+            11.339,
+            4.536,
+            9.762,
+            12.448,
+            10.457,
+            9.418,
+            14.858,
+            15.386,
+            13.168,
+            15.104,
+            16.516,
+            13.923,
+            14.385,
+            15.16,
+            15.544,
+            14.975,
+            15.688,
+            16.099,
+            15.197,
+            17.268,
+            19.857,
+            15.435
+        )
+    ),
 )
-
 # Bounding box polygon for inner-loop of Houston (in projected coordinate
 # system 32140), with elevation values from the National Elevation Dataset
 # (see above).
@@ -72,7 +95,6 @@ class Geo3DLoadingHelper:
         for name, line, exp_z in interstate_data:
             line_3d = GEOSGeometry(line, srid=4269)
             line_2d = LineString([l[:2] for l in line_3d.coords], srid=4269)
-
             # Creating a geographic and projected version of the
             # interstate in both 2D and 3D.
             Interstate3D.objects.create(name=name, line=line_3d)
@@ -82,28 +104,26 @@ class Geo3DLoadingHelper:
 
     def _load_city_data(self):
         for name, pnt_data in city_data:
-            City3D.objects.create(
-                name=name, point=Point(*pnt_data, srid=4326), pointg=Point(*pnt_data, srid=4326),
-            )
+            City3D.objects.create(name=name, point=Point(*pnt_data, srid=4326), pointg=Point(*pnt_data, srid=4326))
 
     def _load_polygon_data(self):
         bbox_wkt, bbox_z = bbox_data
         bbox_2d = GEOSGeometry(bbox_wkt, srid=32140)
-        bbox_3d = Polygon(tuple((x, y, z) for (x, y), z in zip(bbox_2d[0].coords, bbox_z)), srid=32140)
+        bbox_3d = Polygon(tuple((x, y, z) for ((x, y), z) in zip(bbox_2d[0].coords, bbox_z)), srid=32140)
         Polygon2D.objects.create(name='2D BBox', poly=bbox_2d)
         Polygon3D.objects.create(name='3D BBox', poly=bbox_3d)
 
 
-@skipUnlessDBFeature("supports_3d_storage")
-class Geo3DTest(Geo3DLoadingHelper, TestCase):
-    """
+@skipUnlessDBFeature('supports_3d_storage')
+class Geo3DTest(Geo3DLoadingHelper,TestCase):
+    '''
     Only a subset of the PostGIS routines are 3D-enabled, and this TestCase
     tries to test the features that can handle 3D and that are also
     available within GeoDjango.  For more information, see the PostGIS docs
     on the routines that support 3D:
 
     https://postgis.net/docs/PostGIS_Special_Functions_Index.html#PostGIS_3D_Functions
-    """
+    '''
 
     def test_3d_hasz(self):
         """
@@ -128,9 +148,9 @@ class Geo3DTest(Geo3DLoadingHelper, TestCase):
             self.assertEqual(city.pointg.z, pnt_data[2])
 
     def test_3d_polygons(self):
-        """
+        '''
         Test the creation of polygon 3D models.
-        """
+        '''
         self._load_polygon_data()
         p3d = Polygon3D.objects.get(name='3D BBox')
         self.assertTrue(p3d.poly.hasz)
@@ -138,60 +158,54 @@ class Geo3DTest(Geo3DLoadingHelper, TestCase):
         self.assertEqual(p3d.poly.srid, 32140)
 
     def test_3d_layermapping(self):
-        """
+        '''
         Testing LayerMapping on 3D models.
-        """
+        '''
         # Import here as GDAL is required for those imports
         from django.contrib.gis.utils import LayerMapping, LayerMapError
 
         point_mapping = {'point': 'POINT'}
         mpoint_mapping = {'mpoint': 'MULTIPOINT'}
-
         # The VRT is 3D, but should still be able to map sans the Z.
         lm = LayerMapping(Point2D, vrt_file, point_mapping, transform=False)
         lm.save()
         self.assertEqual(3, Point2D.objects.count())
-
         # The city shapefile is 2D, and won't be able to fill the coordinates
         # in the 3D model -- thus, a LayerMapError is raised.
         with self.assertRaises(LayerMapError):
             LayerMapping(Point3D, city_file, point_mapping, transform=False)
-
         # 3D model should take 3D data just fine.
         lm = LayerMapping(Point3D, vrt_file, point_mapping, transform=False)
         lm.save()
         self.assertEqual(3, Point3D.objects.count())
-
         # Making sure LayerMapping.make_multi works right, by converting
         # a Point25D into a MultiPoint25D.
         lm = LayerMapping(MultiPoint3D, vrt_file, mpoint_mapping, transform=False)
         lm.save()
         self.assertEqual(3, MultiPoint3D.objects.count())
 
-    @skipUnlessDBFeature("supports_3d_functions")
+    @skipUnlessDBFeature('supports_3d_functions')
     def test_union(self):
-        """
+        '''
         Testing the Union aggregate of 3D models.
-        """
+        '''
         # PostGIS query that returned the reference EWKT for this test:
         #  `SELECT ST_AsText(ST_Union(point)) FROM geo3d_city3d;`
         self._load_city_data()
-        ref_ewkt = (
-            'SRID=4326;MULTIPOINT(-123.305196 48.462611 15,-104.609252 38.255001 1433,'
+        ref_ewkt = 'SRID=4326;MULTIPOINT(-123.305196 48.462611 15,-104.609252 38.255001 1433,'
             '-97.521157 34.464642 380,-96.801611 32.782057 147,-95.363151 29.763374 18,'
             '-95.23506 38.971823 251,-87.650175 41.850385 181,174.783117 -41.315268 14)'
-        )
         ref_union = GEOSGeometry(ref_ewkt)
         union = City3D.objects.aggregate(Union('point'))['point__union']
         self.assertTrue(union.hasz)
         # Ordering of points in the resulting geometry may vary between implementations
         self.assertEqual({p.ewkt for p in ref_union}, {p.ewkt for p in union})
 
-    @skipUnlessDBFeature("supports_3d_functions")
+    @skipUnlessDBFeature('supports_3d_functions')
     def test_extent(self):
-        """
+        '''
         Testing the Extent3D aggregate for 3D models.
-        """
+        '''
         self._load_city_data()
         # `SELECT ST_Extent3D(point) FROM geo3d_city3d;`
         ref_extent3d = (-123.305196, -41.315268, 14, 174.783117, 48.462611, 1433)
@@ -205,12 +219,12 @@ class Geo3DTest(Geo3DLoadingHelper, TestCase):
         self.assertIsNone(City3D.objects.none().aggregate(Extent3D('point'))['point__extent3d'])
 
 
-@skipUnlessDBFeature("supports_3d_functions")
-class Geo3DFunctionsTests(FuncTestMixin, Geo3DLoadingHelper, TestCase):
+@skipUnlessDBFeature('supports_3d_functions')
+class Geo3DFunctionsTests(FuncTestMixin,Geo3DLoadingHelper,TestCase):
     def test_kml(self):
-        """
+        '''
         Test KML() function with Z values.
-        """
+        '''
         self._load_city_data()
         h = City3D.objects.annotate(kml=AsKML('point', precision=6)).get(name='Houston')
         # KML should be 3D.
@@ -219,9 +233,9 @@ class Geo3DFunctionsTests(FuncTestMixin, Geo3DLoadingHelper, TestCase):
         self.assertTrue(ref_kml_regex.match(h.kml))
 
     def test_geojson(self):
-        """
+        '''
         Test GeoJSON() function with Z values.
-        """
+        '''
         self._load_city_data()
         h = City3D.objects.annotate(geojson=AsGeoJSON('point', precision=6)).get(name='Houston')
         # GeoJSON should be 3D
@@ -230,9 +244,9 @@ class Geo3DFunctionsTests(FuncTestMixin, Geo3DLoadingHelper, TestCase):
         self.assertTrue(ref_json_regex.match(h.geojson))
 
     def test_perimeter(self):
-        """
+        '''
         Testing Perimeter() function on 3D fields.
-        """
+        '''
         self._load_polygon_data()
         # Reference query for values below:
         #  `SELECT ST_Perimeter3D(poly), ST_Perimeter2D(poly) FROM geo3d_polygon3d;`
@@ -245,9 +259,9 @@ class Geo3DFunctionsTests(FuncTestMixin, Geo3DLoadingHelper, TestCase):
         self.assertAlmostEqual(ref_perim_3d, poly3d.perimeter.m, tol)
 
     def test_length(self):
-        """
+        '''
         Testing Length() function on 3D fields.
-        """
+        '''
         # ST_Length_Spheroid Z-aware, and thus does not need to use
         # a separate function internally.
         # `SELECT ST_Length_Spheroid(line, 'SPHEROID["GRS 1980",6378137,298.257222101]')
@@ -260,7 +274,6 @@ class Geo3DFunctionsTests(FuncTestMixin, Geo3DLoadingHelper, TestCase):
         self.assertAlmostEqual(ref_length_2d, inter2d.length.m, tol)
         inter3d = Interstate3D.objects.annotate(length=Length('line')).get(name='I-45')
         self.assertAlmostEqual(ref_length_3d, inter3d.length.m, tol)
-
         # Making sure `ST_Length3D` is used on for a projected
         # and 3D model rather than `ST_Length`.
         # `SELECT ST_Length(line) FROM geo3d_interstateproj2d;`
@@ -273,9 +286,9 @@ class Geo3DFunctionsTests(FuncTestMixin, Geo3DLoadingHelper, TestCase):
         self.assertAlmostEqual(ref_length_3d, inter3d.length.m, tol)
 
     def test_scale(self):
-        """
+        '''
         Testing Scale() function on Z values.
-        """
+        '''
         self._load_city_data()
         # Mapping of City name to reference Z values.
         zscales = (-3, 4, 23)
@@ -284,9 +297,9 @@ class Geo3DFunctionsTests(FuncTestMixin, Geo3DLoadingHelper, TestCase):
                 self.assertEqual(city_dict[city.name][2] * zscale, city.scale.z)
 
     def test_translate(self):
-        """
+        '''
         Testing Translate() function on Z values.
-        """
+        '''
         self._load_city_data()
         ztranslations = (5.23, 23, -17)
         for ztrans in ztranslations:

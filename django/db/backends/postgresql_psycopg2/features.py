@@ -1,1 +1,1 @@
-from ..postgresql.features import *  # NOQA
+from ..postgresql.features import * # NOQA

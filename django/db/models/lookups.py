@@ -24,9 +24,9 @@ class Lookup:
         if bilateral_transforms:
             # Warn the user as soon as possible if they are trying to apply
             # a bilateral transformation on a nested QuerySet: that won't work.
-            from django.db.models.sql.query import Query  # avoid circular import
+            from django.db.models.sql.query import Query # avoid circular import
             if isinstance(rhs, Query):
-                raise NotImplementedError("Bilateral transformations on nested querysets are not implemented.")
+                raise NotImplementedError('Bilateral transformations on nested querysets are not implemented.')
         self.bilateral_transforms = bilateral_transforms
 
     def apply_bilateral_transforms(self, value):
@@ -70,7 +70,7 @@ class Lookup:
         return self.rhs
 
     def get_db_prep_lookup(self, value, connection):
-        return ('%s', [value])
+        return '%s', [value]
 
     def process_lhs(self, compiler, connection, lhs=None):
         lhs = lhs or self.lhs
@@ -125,11 +125,11 @@ class Lookup:
         return self.lhs.is_summary or getattr(self.rhs, 'is_summary', False)
 
 
-class Transform(RegisterLookupMixin, Func):
-    """
+class Transform(RegisterLookupMixin,Func):
+    '''
     RegisterLookupMixin() is first so that get_lookup() and get_transform()
     first examine self and then check output_field.
-    """
+    '''
     bilateral = False
     arity = 1
 
@@ -152,8 +152,7 @@ class BuiltinLookup(Lookup):
         lhs_sql, params = super().process_lhs(compiler, connection, lhs)
         field_internal_type = self.lhs.output_field.get_internal_type()
         db_type = self.lhs.output_field.db_type(connection=connection)
-        lhs_sql = connection.ops.field_cast_sql(
-            db_type, field_internal_type) % lhs_sql
+        lhs_sql = connection.ops.field_cast_sql(db_type, field_internal_type) % lhs_sql
         lhs_sql = connection.ops.lookup_cast(self.lookup_name, field_internal_type) % lhs_sql
         return lhs_sql, list(params)
 
@@ -169,29 +168,32 @@ class BuiltinLookup(Lookup):
 
 
 class FieldGetDbPrepValueMixin:
-    """
+    '''
     Some lookups require Field.get_db_prep_value() to be called on their
     inputs.
-    """
+    '''
     get_db_prep_lookup_value_is_iterable = False
 
     def get_db_prep_lookup(self, value, connection):
         # For relational fields, use the output_field of the 'field' attribute.
         field = getattr(self.lhs.output_field, 'field', None)
         get_db_prep_value = getattr(field, 'get_db_prep_value', None) or self.lhs.output_field.get_db_prep_value
-        return (
-            '%s',
-            [get_db_prep_value(v, connection, prepared=True) for v in value]
-            if self.get_db_prep_lookup_value_is_iterable else
-            [get_db_prep_value(value, connection, prepared=True)]
-        )
+        return \
+            (
+                '%s',
+                [
+                    get_db_prep_value(v, connection, prepared=True) for v in value
+                ] if self.get_db_prep_lookup_value_is_iterable else [
+                    get_db_prep_value(value, connection, prepared=True)
+                ]
+            )
 
 
 class FieldGetDbPrepValueIterableMixin(FieldGetDbPrepValueMixin):
-    """
+    '''
     Some lookups require Field.get_db_prep_value() to be called on each value
     in an iterable.
-    """
+    '''
     get_db_prep_lookup_value_is_iterable = True
 
     def get_prep_lookup(self):
@@ -233,15 +235,14 @@ class FieldGetDbPrepValueIterableMixin(FieldGetDbPrepValueMixin):
         # same argument and attempt to replace them with the result of
         # compiling the param step.
         sql, params = zip(*(
-            self.resolve_expression_parameter(compiler, connection, sql, param)
-            for sql, param in zip(*pre_processed)
+            self.resolve_expression_parameter(compiler, connection, sql, param) for (sql, param) in zip(*pre_processed)
         ))
         params = itertools.chain.from_iterable(params)
         return sql, tuple(params)
 
 
 @Field.register_lookup
-class Exact(FieldGetDbPrepValueMixin, BuiltinLookup):
+class Exact(FieldGetDbPrepValueMixin,BuiltinLookup):
     lookup_name = 'exact'
 
     def process_rhs(self, compiler, connection):
@@ -252,10 +253,9 @@ class Exact(FieldGetDbPrepValueMixin, BuiltinLookup):
                 self.rhs.clear_select_clause()
                 self.rhs.add_fields(['pk'])
             else:
-                raise ValueError(
-                    'The QuerySet value for an exact lookup must be limited to '
-                    'one result using slicing.'
-                )
+                raise
+                ValueError('The QuerySet value for an exact lookup must be limited to '
+                    'one result using slicing.')
         return super().process_rhs(compiler, connection)
 
 
@@ -272,30 +272,31 @@ class IExact(BuiltinLookup):
 
 
 @Field.register_lookup
-class GreaterThan(FieldGetDbPrepValueMixin, BuiltinLookup):
+class GreaterThan(FieldGetDbPrepValueMixin,BuiltinLookup):
     lookup_name = 'gt'
 
 
 @Field.register_lookup
-class GreaterThanOrEqual(FieldGetDbPrepValueMixin, BuiltinLookup):
+class GreaterThanOrEqual(FieldGetDbPrepValueMixin,BuiltinLookup):
     lookup_name = 'gte'
 
 
 @Field.register_lookup
-class LessThan(FieldGetDbPrepValueMixin, BuiltinLookup):
+class LessThan(FieldGetDbPrepValueMixin,BuiltinLookup):
     lookup_name = 'lt'
 
 
 @Field.register_lookup
-class LessThanOrEqual(FieldGetDbPrepValueMixin, BuiltinLookup):
+class LessThanOrEqual(FieldGetDbPrepValueMixin,BuiltinLookup):
     lookup_name = 'lte'
 
 
 class IntegerFieldFloatRounding:
-    """
+    '''
     Allow floats to work as query values for IntegerField. Without this, the
     decimal portion of the float would always be discarded.
-    """
+    '''
+
     def get_prep_lookup(self):
         if isinstance(self.rhs, float):
             self.rhs = math.ceil(self.rhs)
@@ -303,46 +304,43 @@ class IntegerFieldFloatRounding:
 
 
 @IntegerField.register_lookup
-class IntegerGreaterThanOrEqual(IntegerFieldFloatRounding, GreaterThanOrEqual):
+class IntegerGreaterThanOrEqual(IntegerFieldFloatRounding,GreaterThanOrEqual):
     pass
 
 
 @IntegerField.register_lookup
-class IntegerLessThan(IntegerFieldFloatRounding, LessThan):
+class IntegerLessThan(IntegerFieldFloatRounding,LessThan):
     pass
 
 
 @Field.register_lookup
-class In(FieldGetDbPrepValueIterableMixin, BuiltinLookup):
+class In(FieldGetDbPrepValueIterableMixin,BuiltinLookup):
     lookup_name = 'in'
 
     def process_rhs(self, compiler, connection):
         db_rhs = getattr(self.rhs, '_db', None)
         if db_rhs is not None and db_rhs != connection.alias:
-            raise ValueError(
-                "Subqueries aren't allowed across different databases. Force "
-                "the inner query to be evaluated using `list(inner_query)`."
-            )
+            raise
+            ValueError("Subqueries aren't allowed across different databases. Force "
+                "the inner query to be evaluated using `list(inner_query)`.")
 
         if self.rhs_is_direct_value():
             try:
                 rhs = set(self.rhs)
-            except TypeError:  # Unhashable items in self.rhs
+            except
+            TypeError: # Unhashable items in self.rhs
                 rhs = self.rhs
 
             if not rhs:
                 raise EmptyResultSet
-
             # rhs should be an iterable; use batch_process_rhs() to
             # prepare/transform those values.
             sqls, sqls_params = self.batch_process_rhs(compiler, connection, rhs)
             placeholder = '(' + ', '.join(sqls) + ')'
-            return (placeholder, sqls_params)
-        else:
-            if not getattr(self.rhs, 'has_select_fields', True):
-                self.rhs.clear_select_clause()
-                self.rhs.add_fields(['pk'])
-            return super().process_rhs(compiler, connection)
+            return placeholder, sqls_params
+        elif not getattr(self.rhs, 'has_select_fields', True):
+            self.rhs.clear_select_clause()
+            self.rhs.add_fields(['pk'])return super().process_rhs(compiler, connection)
 
     def get_rhs_op(self, connection, rhs):
         return 'IN %s' % rhs
@@ -366,8 +364,8 @@ class In(FieldGetDbPrepValueIterableMixin, BuiltinLookup):
                 in_clause_elements.append(' OR ')
             in_clause_elements.append('%s IN (' % lhs)
             params.extend(lhs_params)
-            sqls = rhs[offset: offset + max_in_list_size]
-            sqls_params = rhs_params[offset: offset + max_in_list_size]
+            sqls = rhs[offset:offset + max_in_list_size]
+            sqls_params = rhs_params[offset:offset + max_in_list_size]
             param_group = ', '.join(sqls)
             in_clause_elements.append(param_group)
             in_clause_elements.append(')')
@@ -436,11 +434,11 @@ class IEndsWith(EndsWith):
 
 
 @Field.register_lookup
-class Range(FieldGetDbPrepValueIterableMixin, BuiltinLookup):
+class Range(FieldGetDbPrepValueIterableMixin,BuiltinLookup):
     lookup_name = 'range'
 
     def get_rhs_op(self, connection, rhs):
-        return "BETWEEN %s AND %s" % (rhs[0], rhs[1])
+        return 'BETWEEN %s AND %s' % (rhs[0], rhs[1])
 
 
 @Field.register_lookup
@@ -451,9 +449,9 @@ class IsNull(BuiltinLookup):
     def as_sql(self, compiler, connection):
         sql, params = compiler.compile(self.lhs)
         if self.rhs:
-            return "%s IS NULL" % sql, params
+            return '%s IS NULL' % sql, params
         else:
-            return "%s IS NOT NULL" % sql, params
+            return '%s IS NOT NULL' % sql, params
 
 
 @Field.register_lookup
@@ -501,12 +499,10 @@ class YearComparisonLookup(YearLookup):
         return connection.operators[self.lookup_name] % rhs
 
     def get_bound(self, start, finish):
-        raise NotImplementedError(
-            'subclasses of YearComparisonLookup must provide a get_bound() method'
-        )
+        raise NotImplementedError('subclasses of YearComparisonLookup must provide a get_bound() method')
 
 
-class YearExact(YearLookup, Exact):
+class YearExact(YearLookup,Exact):
     lookup_name = 'exact'
 
     def as_sql(self, compiler, connection):

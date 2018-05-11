@@ -20,39 +20,35 @@ SOME_INSTALLED_APPS = [
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
-    'django.contrib.staticfiles',
+    'django.contrib.staticfiles'
 ]
 
-SOME_INSTALLED_APPS_NAMES = [
-    'django.contrib.admin',
-    'django.contrib.auth',
-] + SOME_INSTALLED_APPS[2:]
+SOME_INSTALLED_APPS_NAMES = ['django.contrib.admin', 'django.contrib.auth'] + SOME_INSTALLED_APPS[2:]
 
 HERE = os.path.dirname(__file__)
 
 
 class AppsTests(SimpleTestCase):
-
     def test_singleton_master(self):
-        """
+        '''
         Only one master registry can exist.
-        """
+        '''
         with self.assertRaises(RuntimeError):
             Apps(installed_apps=None)
 
     def test_ready(self):
-        """
+        '''
         Tests the ready property of the master registry.
-        """
+        '''
         # The master app registry is always ready when the tests run.
         self.assertIs(apps.ready, True)
         # Non-master app registries are populated in __init__.
         self.assertIs(Apps().ready, True)
 
     def test_bad_app_config(self):
-        """
+        '''
         Tests when INSTALLED_APPS contains an incorrect app config.
-        """
+        '''
         msg = "'apps.apps.BadConfig' must supply a name attribute."
         with self.assertRaisesMessage(ImproperlyConfigured, msg):
             with self.settings(INSTALLED_APPS=['apps.apps.BadConfig']):
@@ -95,17 +91,17 @@ class AppsTests(SimpleTestCase):
 
     @override_settings(INSTALLED_APPS=SOME_INSTALLED_APPS)
     def test_get_app_configs(self):
-        """
+        '''
         Tests apps.get_app_configs().
-        """
+        '''
         app_configs = apps.get_app_configs()
         self.assertEqual([app_config.name for app_config in app_configs], SOME_INSTALLED_APPS_NAMES)
 
     @override_settings(INSTALLED_APPS=SOME_INSTALLED_APPS)
     def test_get_app_config(self):
-        """
+        '''
         Tests apps.get_app_config().
-        """
+        '''
         app_config = apps.get_app_config('admin')
         self.assertEqual(app_config.name, 'django.contrib.admin')
 
@@ -121,9 +117,9 @@ class AppsTests(SimpleTestCase):
 
     @override_settings(INSTALLED_APPS=SOME_INSTALLED_APPS)
     def test_is_installed(self):
-        """
+        '''
         Tests apps.is_installed().
-        """
+        '''
         self.assertIs(apps.is_installed('django.contrib.admin'), True)
         self.assertIs(apps.is_installed('django.contrib.auth'), True)
         self.assertIs(apps.is_installed('django.contrib.staticfiles'), True)
@@ -131,18 +127,16 @@ class AppsTests(SimpleTestCase):
 
     @override_settings(INSTALLED_APPS=SOME_INSTALLED_APPS)
     def test_get_model(self):
-        """
+        '''
         Tests apps.get_model().
-        """
+        '''
         self.assertEqual(apps.get_model('admin', 'LogEntry'), LogEntry)
         with self.assertRaises(LookupError):
             apps.get_model('admin', 'LogExit')
-
         # App label is case-sensitive, Model name is case-insensitive.
         self.assertEqual(apps.get_model('admin', 'loGentrY'), LogEntry)
         with self.assertRaises(LookupError):
             apps.get_model('Admin', 'LogEntry')
-
         # A single argument is accepted.
         self.assertEqual(apps.get_model('admin.LogEntry'), LogEntry)
         with self.assertRaises(LookupError):
@@ -165,24 +159,24 @@ class AppsTests(SimpleTestCase):
                 pass
 
     def test_import_exception_is_not_masked(self):
-        """
+        '''
         App discovery should preserve stack traces. Regression test for #22920.
-        """
-        with self.assertRaisesMessage(ImportError, "Oops"):
+        '''
+        with self.assertRaisesMessage(ImportError, 'Oops'):
             with self.settings(INSTALLED_APPS=['import_error_package']):
                 pass
 
     def test_models_py(self):
-        """
+        '''
         The models in the models.py file were loaded correctly.
-        """
-        self.assertEqual(apps.get_model("apps", "TotallyNormal"), TotallyNormal)
+        '''
+        self.assertEqual(apps.get_model('apps', 'TotallyNormal'), TotallyNormal)
         with self.assertRaises(LookupError):
-            apps.get_model("apps", "SoAlternative")
+            apps.get_model('apps', 'SoAlternative')
 
         with self.assertRaises(LookupError):
-            new_apps.get_model("apps", "TotallyNormal")
-        self.assertEqual(new_apps.get_model("apps", "SoAlternative"), SoAlternative)
+            new_apps.get_model('apps', 'TotallyNormal')
+        self.assertEqual(new_apps.get_model('apps', 'SoAlternative'), SoAlternative)
 
     def test_models_not_loaded(self):
         """
@@ -194,67 +188,58 @@ class AppsTests(SimpleTestCase):
             apps.get_models.cache_clear()
             with self.assertRaisesMessage(AppRegistryNotReady, "Models aren't loaded yet."):
                 apps.get_models()
+
         finally:
             apps.models_ready = True
 
     def test_dynamic_load(self):
-        """
+        '''
         Makes a new model at runtime and ensures it goes into the right place.
-        """
-        old_models = list(apps.get_app_config("apps").get_models())
+        '''
+        old_models = list(apps.get_app_config('apps').get_models())
         # Construct a new model in a new app registry
         body = {}
-        new_apps = Apps(["apps"])
-        meta_contents = {
-            'app_label': "apps",
-            'apps': new_apps,
-        }
-        meta = type("Meta", (), meta_contents)
+        new_apps = Apps(['apps'])
+        meta_contents = {'app_label': 'apps', 'apps': new_apps}
+        meta = type('Meta', (), meta_contents)
         body['Meta'] = meta
         body['__module__'] = TotallyNormal.__module__
-        temp_model = type("SouthPonies", (models.Model,), body)
+        temp_model = type('SouthPonies', (models.Model,), body)
         # Make sure it appeared in the right place!
-        self.assertEqual(list(apps.get_app_config("apps").get_models()), old_models)
+        self.assertEqual(list(apps.get_app_config('apps').get_models()), old_models)
         with self.assertRaises(LookupError):
-            apps.get_model("apps", "SouthPonies")
-        self.assertEqual(new_apps.get_model("apps", "SouthPonies"), temp_model)
+            apps.get_model('apps', 'SouthPonies')
+        self.assertEqual(new_apps.get_model('apps', 'SouthPonies'), temp_model)
 
     def test_model_clash(self):
-        """
+        '''
         Test for behavior when two models clash in the app registry.
-        """
-        new_apps = Apps(["apps"])
-        meta_contents = {
-            'app_label': "apps",
-            'apps': new_apps,
-        }
+        '''
+        new_apps = Apps(['apps'])
+        meta_contents = {'app_label': 'apps', 'apps': new_apps}
 
         body = {}
-        body['Meta'] = type("Meta", (), meta_contents)
+        body['Meta'] = type('Meta', (), meta_contents)
         body['__module__'] = TotallyNormal.__module__
-        type("SouthPonies", (models.Model,), body)
-
+        type('SouthPonies', (models.Model,), body)
         # When __name__ and __module__ match we assume the module
         # was reloaded and issue a warning. This use-case is
         # useful for REPL. Refs #23621.
         body = {}
-        body['Meta'] = type("Meta", (), meta_contents)
+        body['Meta'] = type('Meta', (), meta_contents)
         body['__module__'] = TotallyNormal.__module__
-        msg = (
-            "Model 'apps.southponies' was already registered. "
+        msg = "Model 'apps.southponies' was already registered. "
             "Reloading models is not advised as it can lead to inconsistencies, "
             "most notably with related models."
-        )
         with self.assertRaisesMessage(RuntimeWarning, msg):
-            type("SouthPonies", (models.Model,), body)
-
+            type('SouthPonies', (models.Model,), body)
         # If it doesn't appear to be a reloaded module then we expect
         # a RuntimeError.
         body = {}
-        body['Meta'] = type("Meta", (), meta_contents)
+        body['Meta'] = type('Meta', (), meta_contents)
         body['__module__'] = TotallyNormal.__module__ + '.whatever'
         with self.assertRaisesMessage(RuntimeError, "Conflicting 'southponies' models in application 'apps':"):
-            type("SouthPonies", (models.Model,), body)
+            type('SouthPonies', (models.Model,), body)
 
     def test_get_containing_app_config_apps_not_ready(self):
         """
@@ -265,14 +250,15 @@ class AppsTests(SimpleTestCase):
         try:
             with self.assertRaisesMessage(AppRegistryNotReady, "Apps aren't loaded yet"):
                 apps.get_containing_app_config('foo')
+
         finally:
             apps.apps_ready = True
 
     @isolate_apps('apps', kwarg_name='apps')
     def test_lazy_model_operation(self, apps):
-        """
+        '''
         Tests apps.lazy_model_operation().
-        """
+        '''
         model_classes = []
         initial_pending = set(apps._pending_operations)
 
@@ -285,11 +271,9 @@ class AppsTests(SimpleTestCase):
         # Test models appearing twice, and models appearing consecutively
         model_keys = [('apps', model_name) for model_name in ['lazya', 'lazyb', 'lazyb', 'lazyc', 'lazya']]
         apps.lazy_model_operation(test_func, *model_keys)
-
         # LazyModelA shouldn't be waited on since it's already registered,
         # and LazyModelC shouldn't be waited on until LazyModelB exists.
         self.assertEqual(set(apps._pending_operations) - initial_pending, {('apps', 'lazyb')})
-
         # Multiple operations can wait on the same model
         apps.lazy_model_operation(test_func, ('apps', 'lazyb'))
 
@@ -297,7 +281,6 @@ class AppsTests(SimpleTestCase):
             pass
 
         self.assertEqual(model_classes, [LazyB])
-
         # Now we are just waiting on LazyModelC.
         self.assertEqual(set(apps._pending_operations) - initial_pending, {('apps', 'lazyc')})
 
@@ -314,9 +297,11 @@ class Stub:
 
 
 class AppConfigTests(SimpleTestCase):
-    """Unit tests for AppConfig class."""
+    '''Unit tests for AppConfig class.'''
+
     def test_path_set_explicitly(self):
-        """If subclass sets path as class attr, no module attributes needed."""
+        '''If subclass sets path as class attr, no module attributes needed.'''
+
         class MyAppConfig(AppConfig):
             path = 'foo'
 
@@ -325,7 +310,8 @@ class AppConfigTests(SimpleTestCase):
         self.assertEqual(ac.path, 'foo')
 
     def test_explicit_path_overrides(self):
-        """If path set as class attr, overrides __path__ and __file__."""
+        '''If path set as class attr, overrides __path__ and __file__.'''
+
         class MyAppConfig(AppConfig):
             path = 'foo'
 
@@ -334,49 +320,49 @@ class AppConfigTests(SimpleTestCase):
         self.assertEqual(ac.path, 'foo')
 
     def test_dunder_path(self):
-        """If single element in __path__, use it (in preference to __file__)."""
+        '''If single element in __path__, use it (in preference to __file__).'''
         ac = AppConfig('label', Stub(__path__=['a'], __file__='b/__init__.py'))
 
         self.assertEqual(ac.path, 'a')
 
     def test_no_dunder_path_fallback_to_dunder_file(self):
-        """If there is no __path__ attr, use __file__."""
+        '''If there is no __path__ attr, use __file__.'''
         ac = AppConfig('label', Stub(__file__='b/__init__.py'))
 
         self.assertEqual(ac.path, 'b')
 
     def test_empty_dunder_path_fallback_to_dunder_file(self):
-        """If the __path__ attr is empty, use __file__ if set."""
+        '''If the __path__ attr is empty, use __file__ if set.'''
         ac = AppConfig('label', Stub(__path__=[], __file__='b/__init__.py'))
 
         self.assertEqual(ac.path, 'b')
 
     def test_multiple_dunder_path_fallback_to_dunder_file(self):
-        """If the __path__ attr is length>1, use __file__ if set."""
+        '''If the __path__ attr is length>1, use __file__ if set.'''
         ac = AppConfig('label', Stub(__path__=['a', 'b'], __file__='c/__init__.py'))
 
         self.assertEqual(ac.path, 'c')
 
     def test_no_dunder_path_or_dunder_file(self):
-        """If there is no __path__ or __file__, raise ImproperlyConfigured."""
+        '''If there is no __path__ or __file__, raise ImproperlyConfigured.'''
         with self.assertRaises(ImproperlyConfigured):
             AppConfig('label', Stub())
 
     def test_empty_dunder_path_no_dunder_file(self):
-        """If the __path__ attr is empty and there is no __file__, raise."""
+        '''If the __path__ attr is empty and there is no __file__, raise.'''
         with self.assertRaises(ImproperlyConfigured):
             AppConfig('label', Stub(__path__=[]))
 
     def test_multiple_dunder_path_no_dunder_file(self):
-        """If the __path__ attr is length>1 and there is no __file__, raise."""
+        '''If the __path__ attr is length>1 and there is no __file__, raise.'''
         with self.assertRaises(ImproperlyConfigured):
             AppConfig('label', Stub(__path__=['a', 'b']))
 
     def test_duplicate_dunder_path_no_dunder_file(self):
-        """
+        '''
         If the __path__ attr contains duplicate paths and there is no
         __file__, they duplicates should be deduplicated (#25246).
-        """
+        '''
         ac = AppConfig('label', Stub(__path__=['a', 'a']))
         self.assertEqual(ac.path, 'a')
 
@@ -395,9 +381,9 @@ class NamespacePackageAppTests(SimpleTestCase):
     app_path = os.path.join(base_location, 'nsapp')
 
     def test_single_path(self):
-        """
+        '''
         A Py3.3+ namespace package can be an app if it has only one path.
-        """
+        '''
         with extend_sys_path(self.base_location):
             with self.settings(INSTALLED_APPS=['nsapp']):
                 app_config = apps.get_app_config('nsapp')
@@ -418,9 +404,9 @@ class NamespacePackageAppTests(SimpleTestCase):
                     pass
 
     def test_multiple_paths_explicit_path(self):
-        """
+        '''
         Multiple locations are ok only if app-config has explicit path.
-        """
+        '''
         # Temporarily add two directories to sys.path that both contain
         # components of the "nsapp" package.
         with extend_sys_path(self.base_location, self.other_location):

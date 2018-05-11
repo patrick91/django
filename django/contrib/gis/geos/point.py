@@ -12,14 +12,14 @@ class Point(GEOSGeometry):
     has_cs = True
 
     def __init__(self, x=None, y=None, z=None, srid=None):
-        """
+        '''
         The Point object may be initialized with either a tuple, or individual
         parameters.
 
         For example:
         >>> p = Point((5, 23))  # 2D point, passed in as a tuple
         >>> p = Point(5, 23, 8)  # 3D point, passed in with individual parameters
-        """
+        '''
         if x is None:
             coords = []
         elif isinstance(x, (tuple, list)):
@@ -35,7 +35,6 @@ class Point(GEOSGeometry):
             raise TypeError('Invalid parameters given for Point initialization.')
 
         point = self._create_point(len(coords), coords)
-
         # Initializing using the address returned from the GEOS
         #  createPoint factory.
         super().__init__(point, srid=srid)
@@ -49,9 +48,9 @@ class Point(GEOSGeometry):
 
     @classmethod
     def _create_point(cls, ndim, coords):
-        """
+        '''
         Create a coordinate sequence, set X, Y, [Z], and create point
-        """
+        '''
         if not ndim:
             return capi.create_point(None)
 
@@ -81,12 +80,12 @@ class Point(GEOSGeometry):
         self._cs.setOrdinate(index, 0, value)
 
     def __iter__(self):
-        "Iterate over coordinates of this Point."
+        'Iterate over coordinates of this Point.'
         for i in range(len(self)):
             yield self[i]
 
     def __len__(self):
-        "Return the number of dimensions for this Point (either 0, 2 or 3)."
+        'Return the number of dimensions for this Point (either 0, 2 or 3).'
         if self.empty:
             return 0
         if self.hasz:
@@ -106,32 +105,32 @@ class Point(GEOSGeometry):
 
     @property
     def x(self):
-        "Return the X component of the Point."
+        'Return the X component of the Point.'
         return self._cs.getOrdinate(0, 0)
 
     @x.setter
     def x(self, value):
-        "Set the X component of the Point."
+        'Set the X component of the Point.'
         self._cs.setOrdinate(0, 0, value)
 
     @property
     def y(self):
-        "Return the Y component of the Point."
+        'Return the Y component of the Point.'
         return self._cs.getOrdinate(1, 0)
 
     @y.setter
     def y(self, value):
-        "Set the Y component of the Point."
+        'Set the Y component of the Point.'
         self._cs.setOrdinate(1, 0, value)
 
     @property
     def z(self):
-        "Return the Z component of the Point."
+        'Return the Z component of the Point.'
         return self._cs.getOrdinate(2, 0) if self.hasz else None
 
     @z.setter
     def z(self, value):
-        "Set the Z component of the Point."
+        'Set the Z component of the Point.'
         if not self.hasz:
             raise GEOSException('Cannot set Z on 2D Point.')
         self._cs.setOrdinate(2, 0, value)
@@ -139,12 +138,12 @@ class Point(GEOSGeometry):
     # ### Tuple setting and retrieval routines. ###
     @property
     def tuple(self):
-        "Return a tuple of the point."
+        'Return a tuple of the point.'
         return self._cs.tuple
 
     @tuple.setter
     def tuple(self, tup):
-        "Set the coordinates of the point with the given tuple."
+        'Set the coordinates of the point with the given tuple.'
         self._cs[0] = tup
 
     # The tuple and coords properties

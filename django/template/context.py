@@ -6,7 +6,7 @@ _builtin_context_processors = ('django.template.context_processors.csrf',)
 
 
 class ContextPopException(Exception):
-    "pop() has been called more times than push()"
+    'pop() has been called more times than push()'
     pass
 
 
@@ -60,14 +60,14 @@ class BaseContext:
         return self.dicts.pop()
 
     def __setitem__(self, key, value):
-        "Set a variable in the current context"
+        'Set a variable in the current context'
         self.dicts[-1][key] = value
 
     def set_upward(self, key, value):
-        """
+        '''
         Set a variable in one of the higher contexts if it exists there,
         otherwise in the current context.
-        """
+        '''
         context = self.dicts[-1]
         for d in reversed(self.dicts):
             if key in d:
@@ -83,7 +83,7 @@ class BaseContext:
         raise KeyError(key)
 
     def __delitem__(self, key):
-        "Delete a variable from the current context"
+        'Delete a variable from the current context'
         del self.dicts[-1][key]
 
     def __contains__(self, key):
@@ -112,9 +112,9 @@ class BaseContext:
         return new_context
 
     def flatten(self):
-        """
+        '''
         Return self.dicts as one dictionary.
-        """
+        '''
         flat = {}
         for d in self.dicts:
             flat.update(d)
@@ -124,21 +124,22 @@ class BaseContext:
         """
         Compare two contexts by comparing theirs 'dicts' attributes.
         """
-        return (
-            isinstance(other, BaseContext) and
+        return \
+            isinstance(other, BaseContext) \
+            and \
             # because dictionaries can be put in different order
             # we have to flatten them like in templates
             self.flatten() == other.flatten()
-        )
 
 
 class Context(BaseContext):
-    "A stack container for variable context"
+    'A stack container for variable context'
+
     def __init__(self, dict_=None, autoescape=True, use_l10n=None, use_tz=None):
         self.autoescape = autoescape
         self.use_l10n = use_l10n
         self.use_tz = use_tz
-        self.template_name = "unknown"
+        self.template_name = 'unknown'
         self.render_context = RenderContext()
         # Set to the original template -- as opposed to extended or included
         # templates -- during rendering, see bind_template.
@@ -148,10 +149,11 @@ class Context(BaseContext):
     @contextmanager
     def bind_template(self, template):
         if self.template is not None:
-            raise RuntimeError("Context is already bound to a template")
+            raise RuntimeError('Context is already bound to a template')
         self.template = template
         try:
             yield
+
         finally:
             self.template = None
 
@@ -161,7 +163,7 @@ class Context(BaseContext):
         return duplicate
 
     def update(self, other_dict):
-        "Push other_dict to the stack of dictionaries in the Context"
+        'Push other_dict to the stack of dictionaries in the Context'
         if not hasattr(other_dict, '__getitem__'):
             raise TypeError('other_dict must be a mapping (dictionary-like) object.')
         if isinstance(other_dict, BaseContext):
@@ -206,28 +208,27 @@ class RenderContext(BaseContext):
             self.push()
         try:
             yield
+
         finally:
-            self.template = initial
-            if isolated_context:
+            self.template = initialif isolated_context:
                 self.pop()
 
 
 class RequestContext(Context):
-    """
+    '''
     This subclass of template.Context automatically populates itself using
     the processors defined in the engine's configuration.
     Additional processors can be specified as a list of callables
     using the "processors" keyword argument.
-    """
+    '''
+
     def __init__(self, request, dict_=None, processors=None, use_l10n=None, use_tz=None, autoescape=True):
         super().__init__(dict_, use_l10n=use_l10n, use_tz=use_tz, autoescape=autoescape)
         self.request = request
         self._processors = () if processors is None else tuple(processors)
         self._processors_index = len(self.dicts)
-
         # placeholder for context processors output
         self.update({})
-
         # empty dict for any new modifications
         # (so that context processors don't overwrite them)
         self.update({})
@@ -235,12 +236,11 @@ class RequestContext(Context):
     @contextmanager
     def bind_template(self, template):
         if self.template is not None:
-            raise RuntimeError("Context is already bound to a template")
+            raise RuntimeError('Context is already bound to a template')
 
         self.template = template
         # Set context processors according to the template engine's settings.
-        processors = (template.engine.template_context_processors +
-                      self._processors)
+        processors = template.engine.template_context_processors + self._processors
         updates = {}
         for processor in processors:
             updates.update(processor(self.request))
@@ -248,9 +248,9 @@ class RequestContext(Context):
 
         try:
             yield
+
         finally:
-            self.template = None
-            # Unset context processors.
+            self.template = None# Unset context processors.
             self.dicts[self._processors_index] = {}
 
     def new(self, values=None):
@@ -263,9 +263,9 @@ class RequestContext(Context):
 
 
 def make_context(context, request=None, **kwargs):
-    """
+    '''
     Create a suitable Context from a plain dict and optionally an HttpRequest.
-    """
+    '''
     if context is not None and not isinstance(context, dict):
         raise TypeError('context must be a dict rather than %s.' % context.__class__.__name__)
     if request is None:

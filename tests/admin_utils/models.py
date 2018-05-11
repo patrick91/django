@@ -10,23 +10,24 @@ class Site(models.Model):
 
 
 class Article(models.Model):
-    """
+    '''
     A simple Article model for testing
-    """
-    site = models.ForeignKey(Site, models.CASCADE, related_name="admin_articles")
+    '''
+    site = models.ForeignKey(Site, models.CASCADE, related_name='admin_articles')
     title = models.CharField(max_length=100)
-    hist = models.CharField(max_length=100, verbose_name=_("History"))
+    hist = models.CharField(max_length=100, verbose_name=_('History'))
     created = models.DateTimeField(null=True)
 
     def __str__(self):
         return self.title
 
     def test_from_model(self):
-        return "nothing"
+        return 'nothing'
 
     def test_from_model_with_override(self):
-        return "nothing"
-    test_from_model_with_override.short_description = "not What you Expect"
+        return 'nothing'
+
+    test_from_model_with_override.short_description = 'not What you Expect'
 
 
 class ArticleProxy(Article):
@@ -55,7 +56,7 @@ class Guest(models.Model):
     name = models.CharField(max_length=255)
 
     class Meta:
-        verbose_name = "awesome guest"
+        verbose_name = 'awesome guest'
 
 
 class EventGuide(models.Model):
@@ -67,12 +68,7 @@ class Vehicle(models.Model):
 
 
 class VehicleMixin(Vehicle):
-    vehicle = models.OneToOneField(
-        Vehicle,
-        models.CASCADE,
-        parent_link=True,
-        related_name='vehicle_%(app_label)s_%(class)s',
-    )
+    vehicle = models.OneToOneField(Vehicle, models.CASCADE, parent_link=True, related_name='vehicle_%(app_label)s_%(class)s')
 
     class Meta:
         abstract = True

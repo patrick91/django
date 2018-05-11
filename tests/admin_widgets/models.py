@@ -48,7 +48,6 @@ class Inventory(models.Model):
     parent = models.ForeignKey('self', models.SET_NULL, to_field='barcode', blank=True, null=True)
     name = models.CharField(blank=False, max_length=20)
     hidden = models.BooleanField(default=False)
-
     # see #9258
     default_manager = models.Manager()
     objects = HiddenInventoryManager()
@@ -58,18 +57,8 @@ class Inventory(models.Model):
 
 
 class Event(models.Model):
-    main_band = models.ForeignKey(
-        Band,
-        models.CASCADE,
-        limit_choices_to=models.Q(pk__gt=0),
-        related_name='events_main_band_at',
-    )
-    supporting_bands = models.ManyToManyField(
-        Band,
-        blank=True,
-        related_name='events_supporting_band_at',
-        help_text='Supporting Bands.',
-    )
+    main_band = models.ForeignKey(Band, models.CASCADE, limit_choices_to=models.Q(pk__gt=0), related_name='events_main_band_at')
+    supporting_bands = models.ManyToManyField(Band, blank=True, related_name='events_supporting_band_at', help_text='Supporting Bands.')
     start_date = models.DateField(blank=True, null=True)
     start_time = models.TimeField(blank=True, null=True)
     description = models.TextField(blank=True)
@@ -83,13 +72,13 @@ class Car(models.Model):
     model = models.CharField(max_length=30)
 
     def __str__(self):
-        return "%s %s" % (self.make, self.model)
+        return '%s %s' % (self.make, self.model)
 
 
 class CarTire(models.Model):
-    """
+    '''
     A single car tire. This to test that a user can only select their own cars.
-    """
+    '''
     car = models.ForeignKey(Car, models.CASCADE)
 
 

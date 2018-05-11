@@ -38,14 +38,20 @@ class ForTagTests(SimpleTestCase):
         output = self.engine.render_to_string('for-tag-vars04', {'values': [6, 6, 6]})
         self.assertEqual(output, '210')
 
-    @setup({'for-tag-vars05': '{% for val in values %}'
-                              '{% if forloop.first %}f{% else %}x{% endif %}{% endfor %}'})
+    @setup({
+        'for-tag-vars05':
+            '{% for val in values %}'
+                              '{% if forloop.first %}f{% else %}x{% endif %}{% endfor %}'
+    })
     def test_for_tag_vars05(self):
         output = self.engine.render_to_string('for-tag-vars05', {'values': [6, 6, 6]})
         self.assertEqual(output, 'fxx')
 
-    @setup({'for-tag-vars06': '{% for val in values %}'
-                              '{% if forloop.last %}l{% else %}x{% endif %}{% endfor %}'})
+    @setup({
+        'for-tag-vars06':
+            '{% for val in values %}'
+                              '{% if forloop.last %}l{% else %}x{% endif %}{% endfor %}'
+    })
     def test_for_tag_vars06(self):
         output = self.engine.render_to_string('for-tag-vars06', {'values': [6, 6, 6]})
         self.assertEqual(output, 'xxl')
@@ -90,7 +96,7 @@ class ForTagTests(SimpleTestCase):
 
     @setup({'double-quote': '{% for "k" in items %}{{ "k" }}/{% endfor %}'})
     def test_unpack_double_quote(self):
-        msg = """'for' tag received an invalid argument: for "k" in items"""
+        msg = ''''for' tag received an invalid argument: for "k" in items'''
         with self.assertRaisesMessage(TemplateSyntaxError, msg):
             self.engine.render_to_string('double-quote', {'items': (1, 2)})
 
@@ -116,9 +122,9 @@ class ForTagTests(SimpleTestCase):
 
     @setup({'for-tag-unpack13': '{% for x,y,z in items %}{{ x }}:{{ y }},{{ z }}/{% endfor %}'})
     def test_for_tag_unpack13(self):
-        output = self.engine.render_to_string(
-            'for-tag-unpack13', {'items': (('one', 1, 'carrot'), ('two', 2, 'cheese'))}
-        )
+        output = self.engine.render_to_string('for-tag-unpack13', {
+            'items': (('one', 1, 'carrot'), ('two', 2, 'cheese'))
+        })
         if self.engine.string_if_invalid:
             self.assertEqual(output, 'one:1,carrot/two:2,cheese/')
         else:
@@ -134,17 +140,20 @@ class ForTagTests(SimpleTestCase):
         output = self.engine.render_to_string('for-tag-empty02', {'values': []})
         self.assertEqual(output, 'values array empty')
 
-    @setup({'for-tag-empty03': '{% for val in values %}'
-                               '{{ val }}{% empty %}values array not found{% endfor %}'})
+    @setup({
+        'for-tag-empty03':
+            '{% for val in values %}'
+                               '{{ val }}{% empty %}values array not found{% endfor %}'
+    })
     def test_for_tag_empty03(self):
         output = self.engine.render_to_string('for-tag-empty03')
         self.assertEqual(output, 'values array not found')
 
     @setup({'for-tag-filter-ws': "{% load custom %}{% for x in s|noop:'x y' %}{{ x }}{% endfor %}"})
     def test_for_tag_filter_ws(self):
-        """
+        '''
         #19882
-        """
+        '''
         output = self.engine.render_to_string('for-tag-filter-ws', {'s': 'abc'})
         self.assertEqual(output, 'abc')
 
@@ -156,26 +165,17 @@ class ForTagTests(SimpleTestCase):
     @setup({'for-tag-unpack10': '{% for x,y in items %}{{ x }}:{{ y }}/{% endfor %}'})
     def test_for_tag_unpack10(self):
         with self.assertRaisesMessage(ValueError, 'Need 2 values to unpack in for loop; got 3.'):
-            self.engine.render_to_string(
-                'for-tag-unpack10',
-                {'items': (('one', 1, 'carrot'), ('two', 2, 'orange'))},
-            )
+            self.engine.render_to_string('for-tag-unpack10', {'items': (('one', 1, 'carrot'), ('two', 2, 'orange'))})
 
     @setup({'for-tag-unpack11': '{% for x,y,z in items %}{{ x }}:{{ y }},{{ z }}/{% endfor %}'})
     def test_for_tag_unpack11(self):
         with self.assertRaisesMessage(ValueError, 'Need 3 values to unpack in for loop; got 2.'):
-            self.engine.render_to_string(
-                'for-tag-unpack11',
-                {'items': (('one', 1), ('two', 2))},
-            )
+            self.engine.render_to_string('for-tag-unpack11', {'items': (('one', 1), ('two', 2))})
 
     @setup({'for-tag-unpack12': '{% for x,y,z in items %}{{ x }}:{{ y }},{{ z }}/{% endfor %}'})
     def test_for_tag_unpack12(self):
         with self.assertRaisesMessage(ValueError, 'Need 3 values to unpack in for loop; got 2.'):
-            self.engine.render_to_string(
-                'for-tag-unpack12',
-                {'items': (('one', 1, 'carrot'), ('two', 2))}
-            )
+            self.engine.render_to_string('for-tag-unpack12', {'items': (('one', 1, 'carrot'), ('two', 2))})
 
     @setup({'for-tag-unpack14': '{% for x,y in items %}{{ x }}:{{ y }}/{% endfor %}'})
     def test_for_tag_unpack14(self):
@@ -183,19 +183,17 @@ class ForTagTests(SimpleTestCase):
             self.engine.render_to_string('for-tag-unpack14', {'items': (1, 2)})
 
     @setup({
-        'main': '{% with alpha=alpha.values %}{% include "base" %}{% endwith %}_'
+        'main':
+            '{% with alpha=alpha.values %}{% include "base" %}{% endwith %}_'
                 '{% with alpha=alpha.extra %}{% include "base" %}{% endwith %}',
         'base': '{% for x, y in alpha %}{{ x }}:{{ y }},{% endfor %}'
     })
     def test_for_tag_context(self):
-        """
+        '''
         ForNode.render() pops the values it pushes to the context (#28001).
-        """
+        '''
         output = self.engine.render_to_string('main', {
-            'alpha': {
-                'values': [('two', 2), ('four', 4)],
-                'extra': [('six', 6), ('eight', 8)],
-            },
+            'alpha': {'values': [('two', 2), ('four', 4)], 'extra': [('six', 6), ('eight', 8)]}
         })
         self.assertEqual(output, 'two:2,four:4,_six:6,eight:8,')
 

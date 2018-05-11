@@ -23,14 +23,15 @@ def check_password(environ, username, password):
         if not user.is_active:
             return None
         return user.check_password(password)
+
     finally:
         db.close_old_connections()
 
 
 def groups_for_user(environ, username):
-    """
+    '''
     Authorize a user based on groups
-    """
+    '''
     db.reset_queries()
     try:
         try:
@@ -40,5 +41,6 @@ def groups_for_user(environ, username):
         if not user.is_active:
             return []
         return [force_bytes(group.name) for group in user.groups.all()]
+
     finally:
         db.close_old_connections()

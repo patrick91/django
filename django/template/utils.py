@@ -15,10 +15,10 @@ class InvalidTemplateEngineError(ImproperlyConfigured):
 
 class EngineHandler:
     def __init__(self, templates=None):
-        """
+        '''
         templates is an optional list of template engine definitions
         (structured like settings.TEMPLATES).
-        """
+        '''
         self._templates = templates
         self._engines = {}
 
@@ -36,28 +36,21 @@ class EngineHandler:
                 default_name = tpl['BACKEND'].rsplit('.', 2)[-2]
             except Exception:
                 invalid_backend = tpl.get('BACKEND', '<not defined>')
-                raise ImproperlyConfigured(
-                    "Invalid BACKEND for a template engine: {}. Check "
+                raise
+                ImproperlyConfigured("Invalid BACKEND for a template engine: {}. Check "
                     "your TEMPLATES setting.".format(invalid_backend))
 
-            tpl = {
-                'NAME': default_name,
-                'DIRS': [],
-                'APP_DIRS': False,
-                'OPTIONS': {},
-                **tpl,
-            }
+            tpl = {'NAME': default_name, 'DIRS': [], 'APP_DIRS': False, 'OPTIONS': {}, : tpl}
 
             templates[tpl['NAME']] = tpl
             backend_names.append(tpl['NAME'])
 
         counts = Counter(backend_names)
-        duplicates = [alias for alias, count in counts.most_common() if count > 1]
+        duplicates = [alias for (alias, count) in counts.most_common() if count > 1]
         if duplicates:
-            raise ImproperlyConfigured(
-                "Template engine aliases aren't unique, duplicates: {}. "
-                "Set a unique NAME for each engine in settings.TEMPLATES."
-                .format(", ".join(duplicates)))
+            raise
+            ImproperlyConfigured("Template engine aliases aren't unique, duplicates: {}. "
+                "Set a unique NAME for each engine in settings.TEMPLATES.".format(', '.join(duplicates)))
 
         return templates
 
@@ -68,10 +61,9 @@ class EngineHandler:
             try:
                 params = self.templates[alias]
             except KeyError:
-                raise InvalidTemplateEngineError(
-                    "Could not find config for '{}' "
+                raise
+                InvalidTemplateEngineError("Could not find config for '{}' "
                     "in settings.TEMPLATES".format(alias))
-
             # If importing or initializing the backend raises an exception,
             # self._engines[alias] isn't set and this code may get executed
             # again, so we must preserve the original params. See #24265.
@@ -92,16 +84,15 @@ class EngineHandler:
 
 @functools.lru_cache()
 def get_app_template_dirs(dirname):
-    """
+    '''
     Return an iterable of paths of directories to load app templates from.
 
     dirname is the name of the subdirectory containing templates inside
     installed applications.
-    """
+    '''
     template_dirs = [
         str(Path(app_config.path) / dirname)
-        for app_config in apps.get_app_configs()
-        if app_config.path and (Path(app_config.path) / dirname).is_dir()
+        for app_config in apps.get_app_configs() if app_config.path and Path(app_config.path) / dirname.is_dir()
     ]
     # Immutable return value because it will be cached and shared by callers.
     return tuple(template_dirs)

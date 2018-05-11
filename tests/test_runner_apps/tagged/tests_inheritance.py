@@ -9,7 +9,6 @@ class FooBase(TestCase):
 
 
 class Foo(FooBase):
-
     def test_no_new_tags(self):
         pass
 
@@ -20,7 +19,6 @@ class Foo(FooBase):
 
 @tag('bar')
 class FooBar(FooBase):
-
     def test_new_class_tag_only(self):
         pass
 

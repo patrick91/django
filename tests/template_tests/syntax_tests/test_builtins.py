@@ -4,7 +4,6 @@ from ..utils import setup
 
 
 class BuiltinsTests(SimpleTestCase):
-
     @setup({'builtins01': '{{ True }}'})
     def test_builtins01(self):
         output = self.engine.render_to_string('builtins01')

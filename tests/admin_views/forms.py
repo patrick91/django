@@ -4,7 +4,6 @@ from django.contrib.admin.helpers import ActionForm
 
 
 class CustomAdminAuthenticationForm(AdminAuthenticationForm):
-
     class Media:
         css = {'all': ('path/to/media.css',)}
 

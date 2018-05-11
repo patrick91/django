@@ -7,7 +7,6 @@ from .models import Book, ChildModel1, ChildModel2
 
 
 class IndexesTests(SimpleTestCase):
-
     def test_suffix(self):
         self.assertEqual(models.Index.suffix, 'idx')
 
@@ -57,17 +56,14 @@ class IndexesTests(SimpleTestCase):
         index = models.Index(fields=['author'])
         index.set_name_with_model(Book)
         self.assertEqual(index.name, 'model_index_author_0f5565_idx')
-
         # '-' for DESC columns should be accounted for in the index name.
         index = models.Index(fields=['-author'])
         index.set_name_with_model(Book)
         self.assertEqual(index.name, 'model_index_author_708765_idx')
-
         # fields may be truncated in the name. db_column is used for naming.
         long_field_index = models.Index(fields=['pages'])
         long_field_index.set_name_with_model(Book)
         self.assertEqual(long_field_index.name, 'model_index_page_co_69235a_idx')
-
         # suffix can't be longer than 3 characters.
         long_field_index.suffix = 'suff'
         msg = 'Index too long for multiple database support. Is self.suffix longer than 3 characters?'
@@ -92,10 +88,11 @@ class IndexesTests(SimpleTestCase):
         path, args, kwargs = index.deconstruct()
         self.assertEqual(path, 'django.db.models.Index')
         self.assertEqual(args, ())
-        self.assertEqual(
-            kwargs,
-            {'fields': ['title'], 'name': 'model_index_title_196f42_idx', 'db_tablespace': 'idx_tbls'}
-        )
+        self.assertEqual(kwargs, {
+            'fields': ['title'],
+            'name': 'model_index_title_196f42_idx',
+            'db_tablespace': 'idx_tbls'
+        })
 
     def test_clone(self):
         index = models.Index(fields=['title'])
@@ -125,7 +122,7 @@ class IndexesTests(SimpleTestCase):
                 # Multi-column with db_tablespaces specified on model.
                 ['shortcut', 'isbn'],
                 # Multi-column without db_tablespace specified on model.
-                ['title', 'author'],
+                ['title', 'author']
             ]:
                 with self.subTest(fields=fields):
                     index = models.Index(fields=fields, db_tablespace='idx_tbls2')
@@ -138,10 +135,9 @@ class IndexesTests(SimpleTestCase):
                     # because it's evaluated when the model class is defined.
                     # As a consequence, @override_settings doesn't work.
                     if settings.DEFAULT_INDEX_TABLESPACE:
-                        self.assertIn(
-                            '"%s"' % settings.DEFAULT_INDEX_TABLESPACE,
-                            str(index.create_sql(Book, editor)).lower()
-                        )
+                        self.assertIn('"%s"' \
+                        % \
+                        settings.DEFAULT_INDEX_TABLESPACE, str(index.create_sql(Book, editor)).lower())
                     else:
                         self.assertNotIn('TABLESPACE', str(index.create_sql(Book, editor)))
             # Field with db_tablespace specified on the model and an index

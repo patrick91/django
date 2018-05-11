@@ -1,5 +1,3 @@
 from django.conf.urls import include, url
 
-urlpatterns = [
-    url(r'^include-with-dollar$', include([])),
-]
+urlpatterns = [url(r'^include-with-dollar$', include([]))]

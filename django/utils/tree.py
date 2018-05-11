@@ -1,23 +1,23 @@
-"""
+'''
 A class for storing a tree graph. Primarily used for filter constructs in the
 ORM.
-"""
+'''
 
 import copy
 
 
 class Node:
-    """
+    '''
     A single internal node in the tree graph. A Node should be viewed as a
     connection (the root) with the children being either leaf nodes or other
     Node instances.
-    """
+    '''
     # Standard connector type. Clients usually won't use this at all and
     # subclasses will usually override the value.
     default = 'DEFAULT'
 
     def __init__(self, children=None, connector=None, negated=False):
-        """Construct a new Node. If no connector is given, use the default."""
+        '''Construct a new Node. If no connector is given, use the default.'''
         self.children = children[:] if children else []
         self.connector = connector or self.default
         self.negated = negated
@@ -43,7 +43,7 @@ class Node:
         return template % (self.connector, ', '.join(str(c) for c in self.children))
 
     def __repr__(self):
-        return "<%s: %s>" % (self.__class__.__name__, self)
+        return '<%s: %s>' % (self.__class__.__name__, self)
 
     def __deepcopy__(self, memodict):
         obj = Node(connector=self.connector, negated=self.negated)
@@ -52,11 +52,11 @@ class Node:
         return obj
 
     def __len__(self):
-        """Return the the number of children this node has."""
+        '''Return the the number of children this node has.'''
         return len(self.children)
 
     def __bool__(self):
-        """Return whether or not this node has children."""
+        '''Return whether or not this node has children.'''
         return bool(self.children)
 
     def __contains__(self, other):
@@ -64,17 +64,18 @@ class Node:
         return other in self.children
 
     def __eq__(self, other):
-        return (
-            self.__class__ == other.__class__ and
-            (self.connector, self.negated) == (other.connector, other.negated) and
+        return \
+            self.__class__ == other.__class__ \
+            and \
+            (self.connector, self.negated) == (other.connector, other.negated) \
+            and \
             self.children == other.children
-        )
 
     def __hash__(self):
         return hash((self.__class__, self.connector, self.negated) + tuple(self.children))
 
     def add(self, data, conn_type, squash=True):
-        """
+        '''
         Combine this tree and the data represented by data using the
         connector conn_type. The combine is done by squashing the node other
         away if possible.
@@ -87,7 +88,7 @@ class Node:
 
         If `squash` is False the data is prepared and added as a child to
         this tree without further logic.
-        """
+        '''
         if data in self.children:
             return data
         if not squash:
@@ -95,8 +96,7 @@ class Node:
             return data
         if self.connector == conn_type:
             # We can reuse self.children to append or squash the node other.
-            if (isinstance(data, Node) and not data.negated and
-                    (data.connector == conn_type or len(data) == 1)):
+            if isinstance(data, Node) and not data.negated and data.connector == conn_type or len(data) == 1:
                 # We can squash the other node's children directly into this
                 # node. We are just doing (AB)(CD) == (ABCD) here, with the
                 # addition that if the length of the other node is 1 the
@@ -111,12 +111,11 @@ class Node:
                 self.children.append(data)
                 return data
         else:
-            obj = self._new_instance(self.children, self.connector,
-                                     self.negated)
+            obj = self._new_instance(self.children, self.connector, self.negated)
             self.connector = conn_type
             self.children = [obj, data]
             return data
 
     def negate(self):
-        """Negate the sense of the root connector."""
+        '''Negate the sense of the root connector.'''
         self.negated = not self.negated

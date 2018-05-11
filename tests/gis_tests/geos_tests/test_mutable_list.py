@@ -55,10 +55,10 @@ nextRange.start = 0
 
 
 class ListMixinTest(unittest.TestCase):
-    """
+    '''
     Tests base class ListMixin by comparing a list clone which is
     a ListMixin subclass with a real Python list.
-    """
+    '''
     limit = 3
     listType = UserListA
 
@@ -78,8 +78,8 @@ class ListMixinTest(unittest.TestCase):
         'Slice retrieval'
         pl, ul = self.lists_of_len()
         for i in self.limits_plus(1):
-            self.assertEqual(pl[i:], ul[i:], 'slice [%d:]' % (i))
-            self.assertEqual(pl[:i], ul[:i], 'slice [:%d]' % (i))
+            self.assertEqual(pl[i:], ul[i:], 'slice [%d:]' % i)
+            self.assertEqual(pl[:i], ul[:i], 'slice [:%d]' % i)
 
             for j in self.limits_plus(1):
                 self.assertEqual(pl[i:j], ul[i:j], 'slice [%d:%d]' % (i, j))
@@ -91,12 +91,14 @@ class ListMixinTest(unittest.TestCase):
                 self.assertEqual(pl[:i:k], ul[:i:k], 'slice [:%d:%d]' % (i, k))
 
         for k in self.step_range():
-            self.assertEqual(pl[::k], ul[::k], 'slice [::%d]' % (k))
+            self.assertEqual(pl[::k], ul[::k], 'slice [::%d]' % k)
 
     def test02_setslice(self):
         'Slice assignment'
+
         def setfcn(x, i, j, k, L):
             x[i:j:k] = range(L)
+
         pl, ul = self.lists_of_len()
         for slen in range(self.limit + 1):
             ssl = nextRange(slen)
@@ -108,12 +110,12 @@ class ListMixinTest(unittest.TestCase):
                 ssl = nextRange(slen)
                 ul[i:] = ssl
                 pl[i:] = ssl
-                self.assertEqual(pl, ul[:], 'set slice [%d:]' % (i))
+                self.assertEqual(pl, ul[:], 'set slice [%d:]' % i)
 
                 ssl = nextRange(slen)
                 ul[:i] = ssl
                 pl[:i] = ssl
-                self.assertEqual(pl, ul[:], 'set slice [:%d]' % (i))
+                self.assertEqual(pl, ul[:], 'set slice [:%d]' % i)
 
                 for j in self.limits_plus(1):
                     ssl = nextRange(slen)
@@ -149,7 +151,7 @@ class ListMixinTest(unittest.TestCase):
                 ssl = nextRange(len(ul[::k]))
                 ul[::k] = ssl
                 pl[::k] = ssl
-                self.assertEqual(pl, ul[:], 'set slice [::%d]' % (k))
+                self.assertEqual(pl, ul[:], 'set slice [::%d]' % k)
 
     def test03_delslice(self):
         'Delete slice'
@@ -162,11 +164,11 @@ class ListMixinTest(unittest.TestCase):
                 pl, ul = self.lists_of_len(Len)
                 del pl[i:]
                 del ul[i:]
-                self.assertEqual(pl[:], ul[:], 'del slice [%d:]' % (i))
+                self.assertEqual(pl[:], ul[:], 'del slice [%d:]' % i)
                 pl, ul = self.lists_of_len(Len)
                 del pl[:i]
                 del ul[:i]
-                self.assertEqual(pl[:], ul[:], 'del slice [:%d]' % (i))
+                self.assertEqual(pl[:], ul[:], 'del slice [:%d]' % i)
                 for j in range(-Len - 1, Len + 1):
                     pl, ul = self.lists_of_len(Len)
                     del pl[i:j]
@@ -193,7 +195,7 @@ class ListMixinTest(unittest.TestCase):
                 pl, ul = self.lists_of_len(Len)
                 del pl[::k]
                 del ul[::k]
-                self.assertEqual(pl[:], ul[:], 'del slice [::%d]' % (k))
+                self.assertEqual(pl[:], ul[:], 'del slice [::%d]' % k)
 
     def test04_get_set_del_single(self):
         'Get/set/delete single item'
@@ -215,6 +217,7 @@ class ListMixinTest(unittest.TestCase):
 
     def test05_out_of_range_exceptions(self):
         'Out of range exceptions'
+
         def setfcn(x, i):
             x[i] = 20
 
@@ -223,13 +226,17 @@ class ListMixinTest(unittest.TestCase):
 
         def delfcn(x, i):
             del x[i]
+
         pl, ul = self.lists_of_len()
         for i in (-1 - self.limit, self.limit):
-            with self.assertRaises(IndexError):  # 'set index %d' % i)
+            with \
+                    self.assertRaises(IndexError): # 'set index %d' % i)
                 setfcn(ul, i)
-            with self.assertRaises(IndexError):  # 'get index %d' % i)
+            with \
+                    self.assertRaises(IndexError): # 'get index %d' % i)
                 getfcn(ul, i)
-            with self.assertRaises(IndexError):  # 'del index %d' % i)
+            with \
+                    self.assertRaises(IndexError): # 'del index %d' % i)
                 delfcn(ul, i)
 
     def test06_list_methods(self):
@@ -266,6 +273,7 @@ class ListMixinTest(unittest.TestCase):
 
         def popfcn(x, i):
             x.pop(i)
+
         with self.assertRaises(IndexError):
             popfcn(ul, self.limit)
         with self.assertRaises(IndexError):
@@ -289,6 +297,7 @@ class ListMixinTest(unittest.TestCase):
 
         def removefcn(x, v):
             return x.remove(v)
+
         with self.assertRaises(ValueError):
             indexfcn(ul, 40)
         with self.assertRaises(ValueError):
@@ -303,6 +312,7 @@ class ListMixinTest(unittest.TestCase):
 
         def setfcn(x, i, v):
             x[i] = v
+
         with self.assertRaises(TypeError):
             setfcn(ul, 2, 'hello')
         with self.assertRaises(TypeError):
@@ -318,6 +328,7 @@ class ListMixinTest(unittest.TestCase):
 
         def setfcn(x, i):
             x[:i] = []
+
         for i in range(len(ul) - ul._minlength + 1, len(ul)):
             with self.assertRaises(ValueError):
                 delfcn(ul, i)
@@ -337,6 +348,7 @@ class ListMixinTest(unittest.TestCase):
 
         def setfcn(x, i, v):
             x[i] = v
+
         with self.assertRaises(TypeError):
             setfcn(ul, slice(0, 3, 2), 2)
 
@@ -362,8 +374,8 @@ class ListMixinTest(unittest.TestCase):
         ul.sort()
         self.assertEqual(pl[:], ul[:], 'sort')
         mid = pl[len(pl) // 2]
-        pl.sort(key=lambda x: (mid - x) ** 2)
-        ul.sort(key=lambda x: (mid - x) ** 2)
+        pl.sort(key=lambda x: mid - x ** 2)
+        ul.sort(key=lambda x: mid - x ** 2)
         self.assertEqual(pl[:], ul[:], 'sort w/ key')
 
         pl.insert(0, pl.pop())
@@ -372,8 +384,8 @@ class ListMixinTest(unittest.TestCase):
         ul.sort(reverse=True)
         self.assertEqual(pl[:], ul[:], 'sort w/ reverse')
         mid = pl[len(pl) // 2]
-        pl.sort(key=lambda x: (mid - x) ** 2)
-        ul.sort(key=lambda x: (mid - x) ** 2)
+        pl.sort(key=lambda x: mid - x ** 2)
+        ul.sort(key=lambda x: mid - x ** 2)
         self.assertEqual(pl[:], ul[:], 'sort w/ key')
 
     def test_12_arithmetic(self):

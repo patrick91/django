@@ -1,6 +1,6 @@
-"""
+'''
 Tests of ModelAdmin system checks logic.
-"""
+'''
 
 from django.contrib.contenttypes.fields import GenericForeignKey
 from django.contrib.contenttypes.models import ContentType
@@ -28,8 +28,8 @@ class Song(models.Model):
 
 
 class TwoAlbumFKAndAnE(models.Model):
-    album1 = models.ForeignKey(Album, models.CASCADE, related_name="album1_set")
-    album2 = models.ForeignKey(Album, models.CASCADE, related_name="album2_set")
+    album1 = models.ForeignKey(Album, models.CASCADE, related_name='album1_set')
+    album2 = models.ForeignKey(Album, models.CASCADE, related_name='album2_set')
     e = models.CharField(max_length=1)
 
 

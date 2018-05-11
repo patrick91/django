@@ -5,9 +5,7 @@ from django.contrib.gis.db.models.fields import BaseSpatialField, GeometryField
 from django.contrib.gis.db.models.sql import AreaField, DistanceField
 from django.contrib.gis.geos import GEOSGeometry
 from django.core.exceptions import FieldError
-from django.db.models import (
-    BooleanField, FloatField, IntegerField, TextField, Transform,
-)
+from django.db.models import BooleanField, FloatField, IntegerField, TextField, Transform
 from django.db.models.expressions import Func, Value
 from django.db.models.functions import Cast
 from django.db.utils import NotSupportedError
@@ -23,7 +21,6 @@ class GeoFuncMixin:
 
     def __init__(self, *expressions, **extra):
         super().__init__(*expressions, **extra)
-
         # Ensure that value expressions are geometric.
         for pos in self.geom_param_pos:
             expr = self.source_expressions[pos]
@@ -35,9 +32,9 @@ class GeoFuncMixin:
                 output_field = None
             geom = expr.value
             if not isinstance(geom, GEOSGeometry) or output_field and not isinstance(output_field, GeometryField):
-                raise TypeError("%s function requires a geometric argument in position %d." % (self.name, pos + 1))
+                raise TypeError('%s function requires a geometric argument in position %d.' % (self.name, pos + 1))
             if not geom.srid and not output_field:
-                raise ValueError("SRID is required for all geometries.")
+                raise ValueError('SRID is required for all geometries.')
             if not output_field:
                 self.source_expressions[pos] = Value(geom, output_field=GeometryField(srid=geom.srid))
 
@@ -56,17 +53,15 @@ class GeoFuncMixin:
 
     def resolve_expression(self, *args, **kwargs):
         res = super().resolve_expression(*args, **kwargs)
-
         # Ensure that expressions are geometric.
         source_fields = res.get_source_fields()
         for pos in self.geom_param_pos:
             field = source_fields[pos]
             if not isinstance(field, GeometryField):
-                raise TypeError(
-                    "%s function requires a GeometryField in position %s, got %s." % (
-                        self.name, pos + 1, type(field).__name__,
-                    )
-                )
+                raise
+                TypeError('%s function requires a GeometryField in position %s, got %s.' \
+                % \
+                (self.name, pos + 1, type(field).__name__))
 
         base_srid = res.geo_field.srid
         for pos in self.geom_param_pos[1:]:
@@ -80,14 +75,11 @@ class GeoFuncMixin:
     def _handle_param(self, value, param_name='', check_types=None):
         if not hasattr(value, 'resolve_expression'):
             if check_types and not isinstance(value, check_types):
-                raise TypeError(
-                    "The %s parameter has the wrong type: should be %s." % (
-                        param_name, check_types)
-                )
+                raise TypeError('The %s parameter has the wrong type: should be %s.' % (param_name, check_types))
         return value
 
 
-class GeoFunc(GeoFuncMixin, Func):
+class GeoFunc(GeoFuncMixin,Func):
     pass
 
 
@@ -98,10 +90,11 @@ class GeomOutputGeoFunc(GeoFunc):
 
 
 class SQLiteDecimalToFloatMixin:
-    """
+    '''
     By default, Decimal values are converted to str by the SQLite backend, which
     is not acceptable by the GIS functions expecting numeric values.
-    """
+    '''
+
     def as_sqlite(self, compiler, connection):
         for expr in self.get_source_expressions():
             if hasattr(expr, 'value') and isinstance(expr.value, Decimal):
@@ -114,10 +107,10 @@ class OracleToleranceMixin:
 
     def as_oracle(self, compiler, connection):
         tol = self.extra.get('tolerance', self.tolerance)
-        return self.as_sql(compiler, connection, template="%%(function)s(%%(expressions)s, %s)" % tol)
+        return self.as_sql(compiler, connection, template='%%(function)s(%%(expressions)s, %s)' % tol)
 
 
-class Area(OracleToleranceMixin, GeoFunc):
+class Area(OracleToleranceMixin,GeoFunc):
     arity = 1
 
     @cached_property
@@ -193,15 +186,11 @@ class AsSVG(GeoFunc):
 
     def __init__(self, expression, relative=False, precision=8, **extra):
         relative = relative if hasattr(relative, 'resolve_expression') else int(relative)
-        expressions = [
-            expression,
-            relative,
-            self._handle_param(precision, 'precision', int),
-        ]
+        expressions = [expression, relative, self._handle_param(precision, 'precision', int)]
         super().__init__(*expressions, **extra)
 
 
-class BoundingCircle(OracleToleranceMixin, GeoFunc):
+class BoundingCircle(OracleToleranceMixin,GeoFunc):
     def __init__(self, expression, num_seg=48, **extra):
         super().__init__(expression, num_seg, **extra)
 
@@ -211,11 +200,11 @@ class BoundingCircle(OracleToleranceMixin, GeoFunc):
         return super(BoundingCircle, clone).as_oracle(compiler, connection)
 
 
-class Centroid(OracleToleranceMixin, GeomOutputGeoFunc):
+class Centroid(OracleToleranceMixin,GeomOutputGeoFunc):
     arity = 1
 
 
-class Difference(OracleToleranceMixin, GeomOutputGeoFunc):
+class Difference(OracleToleranceMixin,GeomOutputGeoFunc):
     arity = 2
     geom_param_pos = (0, 1)
 
@@ -229,7 +218,7 @@ class DistanceResultMixin:
         return self.geo_field.geography and self.geo_field.srid == 4326
 
 
-class Distance(DistanceResultMixin, OracleToleranceMixin, GeoFunc):
+class Distance(DistanceResultMixin,OracleToleranceMixin,GeoFunc):
     geom_param_pos = (0, 1)
     spheroid = None
 
@@ -248,10 +237,9 @@ class Distance(DistanceResultMixin, OracleToleranceMixin, GeoFunc):
             if isinstance(expr2, Value):
                 expr2.output_field.geography = geography
             else:
-                clone.source_expressions[1] = Cast(
-                    expr2,
-                    GeometryField(srid=expr2.output_field.srid, geography=geography),
-                )
+                clone.source_expressions[
+                    1
+                ] = Cast(expr2, GeometryField(srid=expr2.output_field.srid, geography=geography))
 
         if not geography and self.geo_field.geodetic(connection):
             # Geometry fields with geodetic (lon/lat) coordinates need special distance functions
@@ -284,10 +272,7 @@ class ForceRHR(GeomOutputGeoFunc):
     arity = 1
 
     def __init__(self, *args, **kwargs):
-        warnings.warn(
-            'ForceRHR is deprecated in favor of ForcePolygonCW.',
-            RemovedInDjango30Warning, stacklevel=2,
-        )
+        warnings.warn('ForceRHR is deprecated in favor of ForcePolygonCW.', RemovedInDjango30Warning, stacklevel=2)
         super().__init__(*args, **kwargs)
 
 
@@ -308,13 +293,13 @@ class GeoHash(GeoFunc):
         return clone.as_sql(compiler, connection)
 
 
-class Intersection(OracleToleranceMixin, GeomOutputGeoFunc):
+class Intersection(OracleToleranceMixin,GeomOutputGeoFunc):
     arity = 2
     geom_param_pos = (0, 1)
 
 
 @BaseSpatialField.register_lookup
-class IsValid(OracleToleranceMixin, GeoFuncMixin, Transform):
+class IsValid(OracleToleranceMixin,GeoFuncMixin,Transform):
     lookup_name = 'isvalid'
     output_field = BooleanField()
 
@@ -323,7 +308,7 @@ class IsValid(OracleToleranceMixin, GeoFuncMixin, Transform):
         return "CASE %s WHEN 'TRUE' THEN 1 ELSE 0 END" % sql, params
 
 
-class Length(DistanceResultMixin, OracleToleranceMixin, GeoFunc):
+class Length(DistanceResultMixin,OracleToleranceMixin,GeoFunc):
     def __init__(self, expr1, spheroid=True, **extra):
         self.spheroid = spheroid
         super().__init__(expr1, **extra)
@@ -380,13 +365,13 @@ class NumPoints(GeoFunc):
     arity = 1
 
 
-class Perimeter(DistanceResultMixin, OracleToleranceMixin, GeoFunc):
+class Perimeter(DistanceResultMixin,OracleToleranceMixin,GeoFunc):
     arity = 1
 
     def as_postgresql(self, compiler, connection):
         function = None
         if self.geo_field.geodetic(connection) and not self.source_is_geography():
-            raise NotSupportedError("ST_Perimeter cannot use a non-projected non-geography field.")
+            raise NotSupportedError('ST_Perimeter cannot use a non-projected non-geography field.')
         dim = min(f.dim for f in self.get_source_fields())
         if dim > 2:
             function = connection.ops.perimeter3d
@@ -394,11 +379,11 @@ class Perimeter(DistanceResultMixin, OracleToleranceMixin, GeoFunc):
 
     def as_sqlite(self, compiler, connection):
         if self.geo_field.geodetic(connection):
-            raise NotSupportedError("Perimeter cannot use a non-projected field.")
+            raise NotSupportedError('Perimeter cannot use a non-projected field.')
         return super().as_sql(compiler, connection)
 
 
-class PointOnSurface(OracleToleranceMixin, GeomOutputGeoFunc):
+class PointOnSurface(OracleToleranceMixin,GeomOutputGeoFunc):
     arity = 1
 
 
@@ -406,48 +391,43 @@ class Reverse(GeoFunc):
     arity = 1
 
 
-class Scale(SQLiteDecimalToFloatMixin, GeomOutputGeoFunc):
+class Scale(SQLiteDecimalToFloatMixin,GeomOutputGeoFunc):
     def __init__(self, expression, x, y, z=0.0, **extra):
         expressions = [
             expression,
             self._handle_param(x, 'x', NUMERIC_TYPES),
-            self._handle_param(y, 'y', NUMERIC_TYPES),
+            self._handle_param(y, 'y', NUMERIC_TYPES)
         ]
         if z != 0.0:
             expressions.append(self._handle_param(z, 'z', NUMERIC_TYPES))
         super().__init__(*expressions, **extra)
 
 
-class SnapToGrid(SQLiteDecimalToFloatMixin, GeomOutputGeoFunc):
+class SnapToGrid(SQLiteDecimalToFloatMixin,GeomOutputGeoFunc):
     def __init__(self, expression, *args, **extra):
         nargs = len(args)
         expressions = [expression]
         if nargs in (1, 2):
-            expressions.extend(
-                [self._handle_param(arg, '', NUMERIC_TYPES) for arg in args]
-            )
+            expressions.extend([self._handle_param(arg, '', NUMERIC_TYPES) for arg in args])
         elif nargs == 4:
             # Reverse origin and size param ordering
             expressions += [
                 *(self._handle_param(arg, '', NUMERIC_TYPES) for arg in args[2:]),
-                *(self._handle_param(arg, '', NUMERIC_TYPES) for arg in args[0:2]),
+                *(self._handle_param(arg, '', NUMERIC_TYPES) for arg in args[0:2])
             ]
         else:
             raise ValueError('Must provide 1, 2, or 4 arguments to `SnapToGrid`.')
         super().__init__(*expressions, **extra)
 
 
-class SymDifference(OracleToleranceMixin, GeomOutputGeoFunc):
+class SymDifference(OracleToleranceMixin,GeomOutputGeoFunc):
     arity = 2
     geom_param_pos = (0, 1)
 
 
 class Transform(GeomOutputGeoFunc):
     def __init__(self, expression, srid, **extra):
-        expressions = [
-            expression,
-            self._handle_param(srid, 'srid', int),
-        ]
+        expressions = [expression, self._handle_param(srid, 'srid', int)]
         if 'output_field' not in extra:
             extra['output_field'] = GeometryField(srid=srid)
         super().__init__(*expressions, **extra)
@@ -462,6 +442,6 @@ class Translate(Scale):
         return super(Translate, clone).as_sqlite(compiler, connection)
 
 
-class Union(OracleToleranceMixin, GeomOutputGeoFunc):
+class Union(OracleToleranceMixin,GeomOutputGeoFunc):
     arity = 2
     geom_param_pos = (0, 1)

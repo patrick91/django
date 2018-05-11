@@ -17,18 +17,14 @@ class Operation:
     Due to the way this class deals with deconstruction, it should be
     considered immutable.
     """
-
     # If this migration can be run in reverse.
     # Some operations are impossible to reverse, like deleting data.
     reversible = True
-
     # Can this migration be represented as SQL? (things like RunPython cannot)
     reduces_to_sql = True
-
     # Should this operation be forced as atomic even on backends with no
     # DDL transaction support (i.e., does it have no DDL, like RunPython)
     atomic = False
-
     # Should this operation be considered safe to elide and optimize across?
     elidable = False
 
@@ -41,29 +37,25 @@ class Operation:
         return self
 
     def deconstruct(self):
-        """
+        '''
         Return a 3-tuple of class import path (or just name if it lives
         under django.db.migrations), positional arguments, and keyword
         arguments.
-        """
-        return (
-            self.__class__.__name__,
-            self._constructor_args[0],
-            self._constructor_args[1],
-        )
+        '''
+        return self.__class__.__name__, self._constructor_args[0], self._constructor_args[1]
 
     def state_forwards(self, app_label, state):
-        """
+        '''
         Take the state from the previous migration, and mutate it
         so that it matches what this migration would perform.
-        """
+        '''
         raise NotImplementedError('subclasses of Operation must provide a state_forwards() method')
 
     def database_forwards(self, app_label, schema_editor, from_state, to_state):
-        """
+        '''
         Perform the mutation on the database schema in the normal
         (forwards) direction.
-        """
+        '''
         raise NotImplementedError('subclasses of Operation must provide a database_forwards() method')
 
     def database_backwards(self, app_label, schema_editor, from_state, to_state):
@@ -75,13 +67,13 @@ class Operation:
         raise NotImplementedError('subclasses of Operation must provide a database_backwards() method')
 
     def describe(self):
-        """
+        '''
         Output a brief summary of what the action does.
-        """
-        return "%s: %s" % (self.__class__.__name__, self._constructor_args)
+        '''
+        return '%s: %s' % (self.__class__.__name__, self._constructor_args)
 
     def references_model(self, name, app_label=None):
-        """
+        '''
         Return True if there is a chance this operation references the given
         model name (as a string), with an optional app label for accuracy.
 
@@ -89,36 +81,36 @@ class Operation:
         returning a false positive will merely make the optimizer a little
         less efficient, while returning a false negative may result in an
         unusable optimized migration.
-        """
+        '''
         return True
 
     def references_field(self, model_name, name, app_label=None):
-        """
+        '''
         Return True if there is a chance this operation references the given
         field name, with an optional app label for accuracy.
 
         Used for optimization. If in doubt, return True.
-        """
+        '''
         return self.references_model(model_name, app_label)
 
     def allow_migrate_model(self, connection_alias, model):
-        """
+        '''
         Return wether or not a model may be migrated.
 
         This is a thin wrapper around router.allow_migrate_model() that
         preemptively rejects any proxy, swapped out, or unmanaged model.
-        """
+        '''
         if not model._meta.can_migrate(connection_alias):
             return False
 
         return router.allow_migrate_model(connection_alias, model)
 
     def reduce(self, operation, in_between, app_label=None):
-        """
+        '''
         Return either a list of operations the actual operation should be
         replaced with or a boolean that indicates whether or not the specified
         operation can be optimized across.
-        """
+        '''
         if self.elidable:
             return [operation]
         elif operation.elidable:
@@ -134,8 +126,11 @@ class Operation:
             return app_label, remote_model.lower()
 
     def __repr__(self):
-        return "<%s %s%s>" % (
-            self.__class__.__name__,
-            ", ".join(map(repr, self._constructor_args[0])),
-            ",".join(" %s=%r" % x for x in self._constructor_args[1].items()),
-        )
+        return \
+            '<%s %s%s>' \
+            % \
+            (
+                self.__class__.__name__,
+                ', '.join(map(repr, self._constructor_args[0])),
+                ','.join(' %s=%r' % x for x in self._constructor_args[1].items())
+            )

@@ -5,7 +5,6 @@ from ..utils import setup
 
 
 class LengthIsTests(SimpleTestCase):
-
     @setup({'length_is01': '{% if some_list|length_is:"4" %}Four{% endif %}'})
     def test_length_is01(self):
         output = self.engine.render_to_string('length_is01', {'some_list': ['4', None, True, {}]})
@@ -65,7 +64,6 @@ class LengthIsTests(SimpleTestCase):
 
 
 class FunctionTests(SimpleTestCase):
-
     def test_empty_list(self):
         self.assertIs(length_is([], 0), True)
         self.assertIs(length_is([], 1), False)

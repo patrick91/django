@@ -26,11 +26,11 @@ class MigrationRecorder:
 
         class Meta:
             apps = Apps()
-            app_label = "migrations"
-            db_table = "django_migrations"
+            app_label = 'migrations'
+            db_table = 'django_migrations'
 
         def __str__(self):
-            return "Migration %s for %s" % (self.name, self.app)
+            return 'Migration %s for %s' % (self.name, self.app)
 
     def __init__(self, connection):
         self.connection = connection
@@ -40,11 +40,11 @@ class MigrationRecorder:
         return self.Migration.objects.using(self.connection.alias)
 
     def has_table(self):
-        """Return True if the django_migrations table exists."""
+        '''Return True if the django_migrations table exists.'''
         return self.Migration._meta.db_table in self.connection.introspection.table_names(self.connection.cursor())
 
     def ensure_schema(self):
-        """Ensure the table exists and has the correct schema."""
+        '''Ensure the table exists and has the correct schema.'''
         # If the table's there, that's fine - we've never changed its schema
         # in the codebase.
         if self.has_table():
@@ -54,10 +54,10 @@ class MigrationRecorder:
             with self.connection.schema_editor() as editor:
                 editor.create_model(self.Migration)
         except DatabaseError as exc:
-            raise MigrationSchemaMissing("Unable to create the django_migrations table (%s)" % exc)
+            raise MigrationSchemaMissing('Unable to create the django_migrations table (%s)' % exc)
 
     def applied_migrations(self):
-        """Return a set of (app, name) of applied migrations."""
+        '''Return a set of (app, name) of applied migrations.'''
         if self.has_table():
             return {tuple(x) for x in self.migration_qs.values_list('app', 'name')}
         else:
@@ -66,15 +66,15 @@ class MigrationRecorder:
             return set()
 
     def record_applied(self, app, name):
-        """Record that a migration was applied."""
+        '''Record that a migration was applied.'''
         self.ensure_schema()
         self.migration_qs.create(app=app, name=name)
 
     def record_unapplied(self, app, name):
-        """Record that a migration was unapplied."""
+        '''Record that a migration was unapplied.'''
         self.ensure_schema()
         self.migration_qs.filter(app=app, name=name).delete()
 
     def flush(self):
-        """Delete all migration records. Useful for testing migrations."""
+        '''Delete all migration records. Useful for testing migrations.'''
         self.migration_qs.all().delete()

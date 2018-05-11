@@ -1,4 +1,4 @@
-"""
+'''
 DB-API Shortcuts
 
 ``get_object_or_404()`` is a shortcut function to be used in view functions for
@@ -8,7 +8,7 @@ performing a ``get()`` lookup and raising a ``Http404`` exception if a
 ``get_list_or_404()`` is a shortcut function to be used in view functions for
 performing a ``filter()`` lookup and raising a ``Http404`` exception if a
 ``DoesNotExist`` exception was raised during the ``filter()`` call.
-"""
+'''
 
 from django.db import models
 

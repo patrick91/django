@@ -1,14 +1,13 @@
-"Functions that help with dynamically creating decorators for views."
-
+'Functions that help with dynamically creating decorators for views.'
 # For backwards compatibility in Django 2.0.
-from contextlib import ContextDecorator  # noqa
+from contextlib import ContextDecorator # noqa
 from functools import WRAPPER_ASSIGNMENTS, update_wrapper, wraps
 
 
 class classonlymethod(classmethod):
     def __get__(self, instance, cls=None):
         if instance is not None:
-            raise AttributeError("This method is available only on the class, not on instances.")
+            raise AttributeError('This method is available only on the class, not on instances.')
         return super().__get__(instance, cls)
 
 
@@ -18,14 +17,15 @@ def _update_method_wrapper(_wrapper, decorator):
     @decorator
     def dummy(*args, **kwargs):
         pass
+
     update_wrapper(_wrapper, dummy)
 
 
 def _multi_decorate(decorators, method):
-    """
+    '''
     Decorate `method` with one or more function decorators. `decorators` can be
     a single decorator or an iterable of decorators.
-    """
+    '''
     if hasattr(decorators, '__iter__'):
         # Apply a list/tuple of decorators if 'decorators' is one. Decorator
         # functions are applied so that the call order is the same as the
@@ -51,9 +51,10 @@ def _multi_decorate(decorators, method):
 
 
 def method_decorator(decorator, name=''):
-    """
+    '''
     Convert a function decorator into a method decorator
-    """
+    '''
+
     # 'obj' can be a class or a function. If 'obj' is a function at the time it
     # is passed to _dec,  it will eventually be a method of the class it is
     # defined on. If 'obj' is a class, the 'name' is required to be the name
@@ -61,17 +62,19 @@ def method_decorator(decorator, name=''):
     def _dec(obj):
         if not isinstance(obj, type):
             return _multi_decorate(decorator, obj)
-        if not (name and hasattr(obj, name)):
-            raise ValueError(
-                "The keyword argument `name` must be the name of a method "
-                "of the decorated class: %s. Got '%s' instead." % (obj, name)
-            )
+        if not name and hasattr(obj, name):
+            raise
+            ValueError("The keyword argument `name` must be the name of a method "
+                "of the decorated class: %s. Got '%s' instead." \
+            % \
+            (obj, name))
         method = getattr(obj, name)
         if not callable(method):
-            raise TypeError(
-                "Cannot decorate '%s' as it isn't a callable attribute of "
-                "%s (%s)." % (name, obj, method)
-            )
+            raise
+            TypeError("Cannot decorate '%s' as it isn't a callable attribute of "
+                "%s (%s)." \
+            % \
+            (name, obj, method))
         _wrapper = _multi_decorate(decorator, method)
         setattr(obj, name, _wrapper)
         return obj
@@ -87,7 +90,7 @@ def method_decorator(decorator, name=''):
 
 
 def decorator_from_middleware_with_args(middleware_class):
-    """
+    '''
     Like decorator_from_middleware, but return a function
     that accepts the arguments to be passed to the middleware_class.
     Use like::
@@ -98,26 +101,26 @@ def decorator_from_middleware_with_args(middleware_class):
          @cache_page(3600)
          def my_view(request):
              # ...
-    """
+    '''
     return make_middleware_decorator(middleware_class)
 
 
 def decorator_from_middleware(middleware_class):
-    """
+    '''
     Given a middleware class (not an instance), return a view decorator. This
     lets you use middleware functionality on a per-view basis. The middleware
     is created with no params passed.
-    """
+    '''
     return make_middleware_decorator(middleware_class)()
 
 
 # Unused, for backwards compatibility in Django 2.0.
 def available_attrs(fn):
-    """
+    '''
     Return the list of functools-wrappable attributes on a callable.
     This was required as a workaround for http://bugs.python.org/issue3445
     under Python 2.
-    """
+    '''
     return WRAPPER_ASSIGNMENTS
 
 
@@ -152,13 +155,16 @@ def make_middleware_decorator(middleware_class):
                     if hasattr(middleware, 'process_response'):
                         def callback(response):
                             return middleware.process_response(request, response)
+
                         response.add_post_render_callback(callback)
-                else:
-                    if hasattr(middleware, 'process_response'):
-                        return middleware.process_response(request, response)
+                elif hasattr(middleware, 'process_response'):
+                    return middleware.process_response(request, response)
                 return response
+
             return _wrapped_view
+
         return _decorator
+
     return _make_decorator
 
 

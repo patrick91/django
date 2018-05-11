@@ -10,5 +10,5 @@ urlpatterns = [
     url('^condition/etag2/$', views.etag_view2),
     url('^condition/unquoted_etag/$', views.etag_view_unquoted),
     url('^condition/weak_etag/$', views.etag_view_weak),
-    url('^condition/no_etag/$', views.etag_view_none),
+    url('^condition/no_etag/$', views.etag_view_none)
 ]

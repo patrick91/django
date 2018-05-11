@@ -1,6 +1,6 @@
-"""
+'''
 Tests for django.core.servers.
-"""
+'''
 import errno
 import os
 import socket
@@ -19,19 +19,13 @@ TEST_SETTINGS = {
     'MEDIA_URL': '/media/',
     'MEDIA_ROOT': os.path.join(TEST_ROOT, 'media'),
     'STATIC_URL': '/static/',
-    'STATIC_ROOT': os.path.join(TEST_ROOT, 'static'),
+    'STATIC_ROOT': os.path.join(TEST_ROOT, 'static')
 }
 
 
 @override_settings(ROOT_URLCONF='servers.urls', **TEST_SETTINGS)
 class LiveServerBase(LiveServerTestCase):
-
-    available_apps = [
-        'servers',
-        'django.contrib.auth',
-        'django.contrib.contenttypes',
-        'django.contrib.sessions',
-    ]
+    available_apps = ['servers', 'django.contrib.auth', 'django.contrib.contenttypes', 'django.contrib.sessions']
     fixtures = ['testdata.json']
 
     def urlopen(self, url):
@@ -39,7 +33,6 @@ class LiveServerBase(LiveServerTestCase):
 
 
 class LiveServerAddress(LiveServerBase):
-
     @classmethod
     def setUpClass(cls):
         super().setUpClass()
@@ -53,7 +46,7 @@ class LiveServerAddress(LiveServerBase):
 
 class LiveServerViews(LiveServerBase):
     def test_protocol(self):
-        """Launched server serves with HTTP 1.1."""
+        '''Launched server serves with HTTP 1.1.'''
         with self.urlopen('/example_view/') as f:
             self.assertEqual(f.version, 11)
 
@@ -77,6 +70,7 @@ class LiveServerViews(LiveServerBase):
                 except ConnectionAbortedError:
                     if sys.platform == 'win32':
                         self.skipTest('Ignore nondeterministic failure on Windows.')
+
         finally:
             conn.close()
         self.assertEqual(response, b'example view')
@@ -116,35 +110,29 @@ class LiveServerViews(LiveServerBase):
 
 
 class LiveServerDatabase(LiveServerBase):
-
     def test_fixtures_loaded(self):
-        """
+        '''
         Fixtures are properly loaded and visible to the live server thread.
-        """
+        '''
         with self.urlopen('/model_view/') as f:
             self.assertEqual(f.read().splitlines(), [b'jane', b'robert'])
 
     def test_database_writes(self):
-        """
+        '''
         Data written to the database by a view can be read.
-        """
+        '''
         with self.urlopen('/create_model_instance/'):
             pass
-        self.assertQuerysetEqual(
-            Person.objects.all().order_by('pk'),
-            ['jane', 'robert', 'emily'],
-            lambda b: b.name
-        )
+        self.assertQuerysetEqual(Person.objects.all().order_by('pk'), ['jane', 'robert', 'emily'], lambda b: b.name)
 
 
 class LiveServerPort(LiveServerBase):
-
     def test_port_bind(self):
-        """
+        '''
         Each LiveServerTestCase binds to a unique port or fails to start a
         server thread when run concurrently (#26011).
-        """
-        TestCase = type("TestCase", (LiveServerBase,), {})
+        '''
+        TestCase = type('TestCase', (LiveServerBase,), {})
         try:
             TestCase.setUpClass()
         except socket.error as e:
@@ -157,10 +145,10 @@ class LiveServerPort(LiveServerBase):
         try:
             # We've acquired a port, ensure our server threads acquired
             # different addresses.
-            self.assertNotEqual(
-                self.live_server_url, TestCase.live_server_url,
-                "Acquired duplicate server addresses for server threads: %s" % self.live_server_url
-            )
+            self.assertNotEqual(self.live_server_url, TestCase.live_server_url, 'Acquired duplicate server addresses for server threads: %s' \
+            % \
+            self.live_server_url)
+
         finally:
             if hasattr(TestCase, 'server_thread'):
                 TestCase.server_thread.terminate()
@@ -175,10 +163,10 @@ class LiveServerPort(LiveServerBase):
         s.close()
         TestCase.setUpClass()
         try:
-            self.assertEqual(
-                TestCase.port, TestCase.server_thread.port,
-                'Did not use specified port for LiveServerTestCase thread: %s' % TestCase.port
-            )
+            self.assertEqual(TestCase.port, TestCase.server_thread.port, 'Did not use specified port for LiveServerTestCase thread: %s' \
+            % \
+            TestCase.port)
+
         finally:
             if hasattr(TestCase, 'server_thread'):
                 TestCase.server_thread.terminate()
@@ -193,8 +181,6 @@ class LiverServerThreadedTests(LiveServerBase):
             self.assertEqual(f.read(), b'subview calling view: subview')
 
     def test_check_model_instance_from_subview(self):
-        url = '/check_model_instance_from_subview/?%s' % urlencode({
-            'url': self.live_server_url,
-        })
+        url = '/check_model_instance_from_subview/?%s' % urlencode({'url': self.live_server_url})
         with self.urlopen(url) as f:
             self.assertIn(b'emily', f.read())

@@ -2,16 +2,13 @@ import re
 
 from django.forms import CharField, Form, Media
 from django.http import HttpRequest
-from django.middleware.csrf import (
-    CsrfViewMiddleware, _compare_salted_tokens as equivalent_tokens, get_token,
-)
+from django.middleware.csrf import CsrfViewMiddleware, _compare_salted_tokens as equivalent_tokens, get_token
 from django.template import TemplateDoesNotExist, TemplateSyntaxError
 from django.template.backends.dummy import TemplateStrings
 from django.test import SimpleTestCase
 
 
 class TemplateStringsTests(SimpleTestCase):
-
     engine_class = TemplateStrings
     backend_name = 'dummy'
     options = {}
@@ -19,23 +16,18 @@ class TemplateStringsTests(SimpleTestCase):
     @classmethod
     def setUpClass(cls):
         super().setUpClass()
-        params = {
-            'DIRS': [],
-            'APP_DIRS': True,
-            'NAME': cls.backend_name,
-            'OPTIONS': cls.options,
-        }
+        params = {'DIRS': [], 'APP_DIRS': True, 'NAME': cls.backend_name, 'OPTIONS': cls.options}
         cls.engine = cls.engine_class(params)
 
     def test_from_string(self):
-        template = self.engine.from_string("Hello!\n")
+        template = self.engine.from_string('Hello!\n')
         content = template.render()
-        self.assertEqual(content, "Hello!\n")
+        self.assertEqual(content, 'Hello!\n')
 
     def test_get_template(self):
         template = self.engine.get_template('template_backends/hello.html')
         content = template.render({'name': 'world'})
-        self.assertEqual(content, "Hello world!\n")
+        self.assertEqual(content, 'Hello world!\n')
 
     def test_get_template_nonexistent(self):
         with self.assertRaises(TemplateDoesNotExist) as e:
@@ -83,7 +75,7 @@ class TemplateStringsTests(SimpleTestCase):
 
         expected = '<input type="hidden" name="csrfmiddlewaretoken" value="([^"]+)">'
         match = re.match(expected, content) or re.match(expected.replace('"', "'"), content)
-        self.assertTrue(match, "hidden csrftoken field not found in output")
+        self.assertTrue(match, 'hidden csrftoken field not found in output')
         self.assertTrue(equivalent_tokens(match.group(1), get_token(request)))
 
     def test_no_directory_traversal(self):
@@ -93,4 +85,4 @@ class TemplateStringsTests(SimpleTestCase):
     def test_non_ascii_characters(self):
         template = self.engine.get_template('template_backends/hello.html')
         content = template.render({'name': 'Jérôme'})
-        self.assertEqual(content, "Hello Jérôme!\n")
+        self.assertEqual(content, 'Hello Jérôme!\n')

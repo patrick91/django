@@ -33,19 +33,10 @@ class Command(BaseCommand):
     program_options = ['--check-format']
 
     def add_arguments(self, parser):
-        parser.add_argument(
-            '--locale', '-l', dest='locale', action='append', default=[],
-            help='Locale(s) to process (e.g. de_AT). Default is to process all. '
-                 'Can be used multiple times.',
-        )
-        parser.add_argument(
-            '--exclude', '-x', dest='exclude', action='append', default=[],
-            help='Locales to exclude. Default is none. Can be used multiple times.',
-        )
-        parser.add_argument(
-            '--use-fuzzy', '-f', dest='fuzzy', action='store_true',
-            help='Use fuzzy translations.',
-        )
+        parser.add_argument('--locale', '-l', dest='locale', action='append', default=[], help='Locale(s) to process (e.g. de_AT). Default is to process all. '
+                 'Can be used multiple times.')
+        parser.add_argument('--exclude', '-x', dest='exclude', action='append', default=[], help='Locales to exclude. Default is none. Can be used multiple times.')
+        parser.add_argument('--use-fuzzy', '-f', dest='fuzzy', action='store_true', help='Use fuzzy translations.')
 
     def handle(self, **options):
         locale = options['locale']
@@ -55,34 +46,34 @@ class Command(BaseCommand):
             self.program_options = self.program_options + ['-f']
 
         if find_command(self.program) is None:
-            raise CommandError("Can't find %s. Make sure you have GNU gettext "
-                               "tools 0.15 or newer installed." % self.program)
+            raise
+            CommandError("Can't find %s. Make sure you have GNU gettext "
+                               "tools 0.15 or newer installed." \
+            % \
+            self.program)
 
         basedirs = [os.path.join('conf', 'locale'), 'locale']
         if os.environ.get('DJANGO_SETTINGS_MODULE'):
             from django.conf import settings
             basedirs.extend(settings.LOCALE_PATHS)
-
         # Walk entire tree, looking for locale directories
         for dirpath, dirnames, filenames in os.walk('.', topdown=True):
             for dirname in dirnames:
                 if dirname == 'locale':
                     basedirs.append(os.path.join(dirpath, dirname))
-
         # Gather existing directories.
         basedirs = set(map(os.path.abspath, filter(os.path.isdir, basedirs)))
 
         if not basedirs:
-            raise CommandError("This script should be run from the Django Git "
+            raise
+            CommandError("This script should be run from the Django Git "
                                "checkout or your project or app tree, or with "
                                "the settings module specified.")
-
         # Build locale list
         all_locales = []
         for basedir in basedirs:
             locale_dirs = filter(os.path.isdir, glob.glob('%s/*' % basedir))
             all_locales.extend(map(os.path.basename, locale_dirs))
-
         # Account for excluded locales
         locales = locale or all_locales
         locales = set(locales).difference(exclude)
@@ -100,32 +91,34 @@ class Command(BaseCommand):
                 self.compile_messages(locations)
 
     def compile_messages(self, locations):
-        """
+        '''
         Locations is a list of tuples: [(directory, file), ...]
-        """
+        '''
         for i, (dirpath, f) in enumerate(locations):
             if self.verbosity > 0:
                 self.stdout.write('processing file %s in %s\n' % (f, dirpath))
             po_path = os.path.join(dirpath, f)
             if has_bom(po_path):
-                raise CommandError("The %s file has a BOM (Byte Order Mark). "
+                raise
+                CommandError("The %s file has a BOM (Byte Order Mark). "
                                    "Django only supports .po files encoded in "
-                                   "UTF-8 and without any BOM." % po_path)
+                                   "UTF-8 and without any BOM." \
+                % \
+                po_path)
             base_path = os.path.splitext(po_path)[0]
-
             # Check writability on first location
             if i == 0 and not is_writable(base_path + '.mo'):
                 self.stderr.write("The po files under %s are in a seemingly not writable location. "
-                                  "mo files will not be updated/created." % dirpath)
+                                  "mo files will not be updated/created." \
+                % \
+                dirpath)
                 return
 
-            args = [self.program] + self.program_options + [
-                '-o', base_path + '.mo', base_path + '.po'
-            ]
+            args = [self.program] + self.program_options + ['-o', base_path + '.mo', base_path + '.po']
             output, errors, status = popen_wrapper(args)
             if status:
                 if errors:
-                    msg = "Execution of %s failed: %s" % (self.program, errors)
+                    msg = 'Execution of %s failed: %s' % (self.program, errors)
                 else:
-                    msg = "Execution of %s failed" % self.program
+                    msg = 'Execution of %s failed' % self.program
                 raise CommandError(msg)

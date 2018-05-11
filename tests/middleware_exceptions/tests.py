@@ -23,31 +23,31 @@ class MiddlewareTests(SimpleTestCase):
 
     @override_settings(MIDDLEWARE=[
         'middleware_exceptions.middleware.ProcessViewTemplateResponseMiddleware',
-        'middleware_exceptions.middleware.LogMiddleware',
+        'middleware_exceptions.middleware.LogMiddleware'
     ])
     def test_templateresponse_from_process_view_rendered(self):
-        """
+        '''
         TemplateResponses returned from process_view() must be rendered before
         being passed to any middleware that tries to access response.content,
         such as middleware_exceptions.middleware.LogMiddleware.
-        """
+        '''
         response = self.client.get('/middleware_exceptions/view/')
         self.assertEqual(response.content, b'Processed view normal_view\nProcessViewTemplateResponseMiddleware')
 
     @override_settings(MIDDLEWARE=[
         'middleware_exceptions.middleware.ProcessViewTemplateResponseMiddleware',
-        'middleware_exceptions.middleware.TemplateResponseMiddleware',
+        'middleware_exceptions.middleware.TemplateResponseMiddleware'
     ])
     def test_templateresponse_from_process_view_passed_to_process_template_response(self):
-        """
+        '''
         TemplateResponses returned from process_view() should be passed to any
         template response middleware.
-        """
+        '''
         response = self.client.get('/middleware_exceptions/view/')
         expected_lines = [
             b'Processed view normal_view',
             b'ProcessViewTemplateResponseMiddleware',
-            b'TemplateResponseMiddleware',
+            b'TemplateResponseMiddleware'
         ]
         self.assertEqual(response.content, b'\n'.join(expected_lines))
 
@@ -69,7 +69,7 @@ class MiddlewareTests(SimpleTestCase):
 
     @override_settings(MIDDLEWARE=[
         'middleware_exceptions.middleware.ProcessExceptionLogMiddleware',
-        'middleware_exceptions.middleware.ProcessExceptionMiddleware',
+        'middleware_exceptions.middleware.ProcessExceptionMiddleware'
     ])
     def test_response_from_process_exception_short_circuits_remainder(self):
         response = self.client.get('/middleware_exceptions/error/')
@@ -78,7 +78,7 @@ class MiddlewareTests(SimpleTestCase):
 
     @override_settings(MIDDLEWARE=[
         'middleware_exceptions.middleware.LogMiddleware',
-        'middleware_exceptions.middleware.NotFoundMiddleware',
+        'middleware_exceptions.middleware.NotFoundMiddleware'
     ])
     def test_exception_in_middleware_converted_before_prior_middleware(self):
         response = self.client.get('/middleware_exceptions/view/')
@@ -93,18 +93,16 @@ class MiddlewareTests(SimpleTestCase):
 
 @override_settings(ROOT_URLCONF='middleware_exceptions.urls')
 class RootUrlconfTests(SimpleTestCase):
-
     @override_settings(ROOT_URLCONF=None)
     def test_missing_root_urlconf(self):
         # Removing ROOT_URLCONF is safe, as override_settings will restore
         # the previously defined settings.
         del settings.ROOT_URLCONF
         with self.assertRaises(AttributeError):
-            self.client.get("/middleware_exceptions/view/")
+            self.client.get('/middleware_exceptions/view/')
 
 
 class MyMiddleware:
-
     def __init__(self, get_response=None):
         raise MiddlewareNotUsed
 
@@ -113,7 +111,6 @@ class MyMiddleware:
 
 
 class MyMiddlewareWithExceptionMessage:
-
     def __init__(self, get_response=None):
         raise MiddlewareNotUsed('spam eggs')
 
@@ -121,13 +118,10 @@ class MyMiddlewareWithExceptionMessage:
         pass
 
 
-@override_settings(
-    DEBUG=True,
-    ROOT_URLCONF='middleware_exceptions.urls',
-    MIDDLEWARE=['django.middleware.common.CommonMiddleware'],
-)
+@override_settings(DEBUG=True, ROOT_URLCONF='middleware_exceptions.urls', MIDDLEWARE=[
+    'django.middleware.common.CommonMiddleware'
+])
 class MiddlewareNotUsedTests(SimpleTestCase):
-
     rf = RequestFactory()
 
     def test_raise_exception(self):
@@ -139,19 +133,15 @@ class MiddlewareNotUsedTests(SimpleTestCase):
     def test_log(self):
         with self.assertLogs('django.request', 'DEBUG') as cm:
             self.client.get('/middleware_exceptions/view/')
-        self.assertEqual(
-            cm.records[0].getMessage(),
-            "MiddlewareNotUsed: 'middleware_exceptions.tests.MyMiddleware'"
-        )
+        self.assertEqual(cm.records[0].getMessage(), "MiddlewareNotUsed: 'middleware_exceptions.tests.MyMiddleware'")
 
     @override_settings(MIDDLEWARE=['middleware_exceptions.tests.MyMiddlewareWithExceptionMessage'])
     def test_log_custom_message(self):
         with self.assertLogs('django.request', 'DEBUG') as cm:
             self.client.get('/middleware_exceptions/view/')
-        self.assertEqual(
-            cm.records[0].getMessage(),
-            "MiddlewareNotUsed('middleware_exceptions.tests.MyMiddlewareWithExceptionMessage'): spam eggs"
-        )
+        self.assertEqual(cm.records[
+            0
+        ].getMessage(), "MiddlewareNotUsed('middleware_exceptions.tests.MyMiddlewareWithExceptionMessage'): spam eggs")
 
     @override_settings(DEBUG=False)
     def test_do_not_log_when_debug_is_false(self):

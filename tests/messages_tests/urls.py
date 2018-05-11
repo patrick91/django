@@ -9,7 +9,7 @@ from django.urls import reverse
 from django.views.decorators.cache import never_cache
 from django.views.generic.edit import FormView
 
-TEMPLATE = """{% if messages %}
+TEMPLATE = '''{% if messages %}
 <ul class="messages">
     {% for message in messages %}
     <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>
@@ -18,7 +18,7 @@ TEMPLATE = """{% if messages %}
     {% endfor %}
 </ul>
 {% endif %}
-"""
+'''
 
 
 @never_cache
@@ -58,17 +58,16 @@ class ContactForm(forms.Form):
     slug = forms.SlugField(required=True)
 
 
-class ContactFormViewWithMsg(SuccessMessageMixin, FormView):
+class ContactFormViewWithMsg(SuccessMessageMixin,FormView):
     form_class = ContactForm
     success_url = show
-    success_message = "%(name)s was created successfully"
+    success_message = '%(name)s was created successfully'
 
 
 urlpatterns = [
     url('^add/(debug|info|success|warning|error)/$', add, name='add_message'),
     url('^add/msg/$', ContactFormViewWithMsg.as_view(), name='add_success_msg'),
     url('^show/$', show, name='show_message'),
-    url('^template_response/add/(debug|info|success|warning|error)/$',
-        add_template_response, name='add_template_response'),
-    url('^template_response/show/$', show_template_response, name='show_template_response'),
+    url('^template_response/add/(debug|info|success|warning|error)/$', add_template_response, name='add_template_response'),
+    url('^template_response/show/$', show_template_response, name='show_template_response')
 ]

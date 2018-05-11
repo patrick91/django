@@ -12,7 +12,6 @@ from .models import Artist, Author, Book, Page
 
 @override_settings(ROOT_URLCONF='generic_views.urls')
 class DetailViewTest(TestCase):
-
     @classmethod
     def setUpTestData(cls):
         cls.artist1 = Artist.objects.create(name='Rene Magritte')
@@ -20,12 +19,8 @@ class DetailViewTest(TestCase):
         cls.author2 = Author.objects.create(name='Scott Rosenberg', slug='scott-rosenberg')
         cls.book1 = Book.objects.create(name='2066', slug='2066', pages=800, pubdate=datetime.date(2008, 10, 1))
         cls.book1.authors.add(cls.author1)
-        cls.book2 = Book.objects.create(
-            name='Dreaming in Code', slug='dreaming-in-code', pages=300, pubdate=datetime.date(2006, 5, 1)
-        )
-        cls.page1 = Page.objects.create(
-            content='I was once bitten by a moose.', template='generic_views/page_template.html'
-        )
+        cls.book2 = Book.objects.create(name='Dreaming in Code', slug='dreaming-in-code', pages=300, pubdate=datetime.date(2006, 5, 1))
+        cls.page1 = Page.objects.create(content='I was once bitten by a moose.', template='generic_views/page_template.html')
 
     def test_simple_object(self):
         res = self.client.get('/detail/obj/')
@@ -139,11 +134,11 @@ class DetailViewTest(TestCase):
         self.assertTemplateUsed(res, 'generic_views/author_detail.html')
 
     def test_custom_detail(self):
-        """
+        '''
         AuthorCustomDetail overrides get() and ensures that
         SingleObjectMixin.get_context_object_name() always uses the obj
         parameter instead of self.object.
-        """
+        '''
         res = self.client.get('/detail/author/%s/custom_detail/' % self.author1.pk)
         self.assertEqual(res.status_code, 200)
         self.assertEqual(res.context['custom_author'], self.author1)
@@ -175,14 +170,12 @@ class DetailViewTest(TestCase):
             self.client.get('/detail/author/invalid/url/')
 
     def test_invalid_queryset(self):
-        msg = (
-            'AuthorDetail is missing a QuerySet. Define AuthorDetail.model, '
+        msg = 'AuthorDetail is missing a QuerySet. Define AuthorDetail.model, '
             'AuthorDetail.queryset, or override AuthorDetail.get_queryset().'
-        )
         with self.assertRaisesMessage(ImproperlyConfigured, msg):
             self.client.get('/detail/author/invalid/qs/')
 
     def test_non_model_object_with_meta(self):
         res = self.client.get('/detail/nonmodel/1/')
         self.assertEqual(res.status_code, 200)
-        self.assertEqual(res.context['object'].id, "non_model_1")
+        self.assertEqual(res.context['object'].id, 'non_model_1')

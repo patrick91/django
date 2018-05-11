@@ -31,23 +31,23 @@ def etag_view2(request):
 
 @condition(etag_func=lambda r: ETAG.strip('"'))
 def etag_view_unquoted(request):
-    """
+    '''
     Use an etag_func() that returns an unquoted ETag.
-    """
+    '''
     return HttpResponse(FULL_RESPONSE)
 
 
 @condition(etag_func=lambda r: WEAK_ETAG)
 def etag_view_weak(request):
-    """
+    '''
     Use an etag_func() that returns a weak ETag.
-    """
+    '''
     return HttpResponse(FULL_RESPONSE)
 
 
 @condition(etag_func=lambda r: None)
 def etag_view_none(request):
-    """
+    '''
     Use an etag_func() that returns None, as opposed to setting etag_func=None.
-    """
+    '''
     return HttpResponse(FULL_RESPONSE)

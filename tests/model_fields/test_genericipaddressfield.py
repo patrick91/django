@@ -6,12 +6,11 @@ from .models import GenericIPAddress
 
 
 class GenericIPAddressFieldTests(TestCase):
-
     def test_genericipaddressfield_formfield_protocol(self):
-        """
+        '''
         GenericIPAddressField with a specified protocol does not generate a
         formfield without a protocol.
-        """
+        '''
         model_field = models.GenericIPAddressField(protocol='IPv4')
         form_field = model_field.formfield()
         with self.assertRaises(ValidationError):
@@ -22,9 +21,9 @@ class GenericIPAddressFieldTests(TestCase):
             form_field.clean('127.0.0.1')
 
     def test_null_value(self):
-        """
+        '''
         Null values should be resolved to None.
-        """
+        '''
         GenericIPAddress.objects.create()
         o = GenericIPAddress.objects.get()
         self.assertIsNone(o.ip)

@@ -1,7 +1,5 @@
 from django.contrib.messages import constants
-from django.contrib.messages.storage.fallback import (
-    CookieStorage, FallbackStorage,
-)
+from django.contrib.messages.storage.fallback import CookieStorage, FallbackStorage
 from django.test import SimpleTestCase
 
 from .base import BaseTests
@@ -9,7 +7,7 @@ from .test_cookie import set_cookie_data, stored_cookie_messages_count
 from .test_session import set_session_data, stored_session_messages_count
 
 
-class FallbackTests(BaseTests, SimpleTestCase):
+class FallbackTests(BaseTests,SimpleTestCase):
     storage_class = FallbackStorage
 
     def get_request(self):
@@ -31,13 +29,13 @@ class FallbackTests(BaseTests, SimpleTestCase):
         return stored_session_messages_count(self.get_session_storage(storage))
 
     def stored_messages_count(self, storage, response):
-        """
+        '''
         Return the storage totals from both cookie and session backends.
-        """
-        return (
-            self.stored_cookie_messages_count(storage, response) +
+        '''
+        return \
+            self.stored_cookie_messages_count(storage, response) \
+            + \
             self.stored_session_messages_count(storage, response)
-        )
 
     def test_get(self):
         request = self.get_request()
@@ -64,7 +62,6 @@ class FallbackTests(BaseTests, SimpleTestCase):
         storage = self.storage_class(request)
         cookie_storage = self.get_cookie_storage(storage)
         session_storage = self.get_session_storage(storage)
-
         # Set initial cookie and session data.
         example_messages = [str(i) for i in range(5)]
         set_cookie_data(cookie_storage, example_messages[:4] + [CookieStorage.not_finished])
@@ -120,14 +117,14 @@ class FallbackTests(BaseTests, SimpleTestCase):
         self.assertEqual(session_storing, 0)
 
     def test_session_fallback(self):
-        """
+        '''
         If the data exceeds what is allowed in a cookie, messages which did
         not fit are stored in the SessionBackend.
-        """
+        '''
         storage = self.get_storage()
         response = self.get_response()
         # see comment in CookieTests.test_cookie_max_length()
-        msg_size = int((CookieStorage.max_cookie_size - 54) / 4.5 - 37)
+        msg_size = int(CookieStorage.max_cookie_size - 54 / 4.5 - 37)
         for i in range(5):
             storage.add(constants.INFO, str(i) * msg_size)
         storage.update(response)
@@ -137,10 +134,10 @@ class FallbackTests(BaseTests, SimpleTestCase):
         self.assertEqual(session_storing, 1)
 
     def test_session_fallback_only(self):
-        """
+        '''
         Large messages, none of which fit in a cookie, are stored in the
         SessionBackend (and nothing is stored in the CookieBackend).
-        """
+        '''
         storage = self.get_storage()
         response = self.get_response()
         storage.add(constants.INFO, 'x' * 5000)

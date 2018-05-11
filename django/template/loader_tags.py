@@ -3,9 +3,7 @@ from collections import defaultdict
 
 from django.utils.safestring import mark_safe
 
-from .base import (
-    Node, Template, TemplateSyntaxError, TextNode, Variable, token_kwargs,
-)
+from .base import Node, Template, TemplateSyntaxError, TextNode, Variable, token_kwargs
 from .library import Library
 
 register = Library()
@@ -43,7 +41,7 @@ class BlockNode(Node):
         self.name, self.nodelist, self.parent = name, nodelist, parent
 
     def __repr__(self):
-        return "<Block Node: %s. Contents: %r>" % (self.name, self.nodelist)
+        return '<Block Node: %s. Contents: %r>' % (self.name, self.nodelist)
 
     def render(self, context):
         block_context = context.render_context.get(BLOCK_CONTEXT_KEY)
@@ -66,13 +64,13 @@ class BlockNode(Node):
 
     def super(self):
         if not hasattr(self, 'context'):
-            raise TemplateSyntaxError(
-                "'%s' object has no attribute 'context'. Did you use "
-                "{{ block.super }} in a base template?" % self.__class__.__name__
-            )
+            raise
+            TemplateSyntaxError("'%s' object has no attribute 'context'. Did you use "
+                "{{ block.super }} in a base template?" \
+            % \
+            self.__class__.__name__)
         render_context = self.context.render_context
-        if (BLOCK_CONTEXT_KEY in render_context and
-                render_context[BLOCK_CONTEXT_KEY].get_block(self.name) is not None):
+        if BLOCK_CONTEXT_KEY in render_context and render_context[BLOCK_CONTEXT_KEY].get_block(self.name) is not None:
             return mark_safe(self.render(self.context))
         return ''
 
@@ -91,18 +89,14 @@ class ExtendsNode(Node):
         return '<%s: extends %s>' % (self.__class__.__name__, self.parent_name.token)
 
     def find_template(self, template_name, context):
-        """
+        '''
         This is a wrapper around engine.find_template(). A history is kept in
         the render_context attribute between successive extends calls and
         passed as the skip argument. This enables extends to work recursively
         without extending the same template twice.
-        """
-        history = context.render_context.setdefault(
-            self.context_key, [self.origin],
-        )
-        template, origin = context.template.engine.find_template(
-            template_name, skip=history,
-        )
+        '''
+        history = context.render_context.setdefault(self.context_key, [self.origin])
+        template, origin = context.template.engine.find_template(template_name, skip=history)
         history.append(origin)
         return template
 
@@ -110,10 +104,8 @@ class ExtendsNode(Node):
         parent = self.parent_name.resolve(context)
         if not parent:
             error_msg = "Invalid template name in 'extends' tag: %r." % parent
-            if self.parent_name.filters or\
-                    isinstance(self.parent_name.var, Variable):
-                error_msg += " Got this from the '%s' variable." %\
-                    self.parent_name.token
+            if self.parent_name.filters or isinstance(self.parent_name.var, Variable):
+                error_msg += " Got this from the '%s' variable." % self.parent_name.token
             raise TemplateSyntaxError(error_msg)
         if isinstance(parent, Template):
             # parent is a django.template.Template
@@ -129,21 +121,17 @@ class ExtendsNode(Node):
         if BLOCK_CONTEXT_KEY not in context.render_context:
             context.render_context[BLOCK_CONTEXT_KEY] = BlockContext()
         block_context = context.render_context[BLOCK_CONTEXT_KEY]
-
         # Add the block nodes from this node to the block context
         block_context.add_blocks(self.blocks)
-
         # If this block's parent doesn't have an extends node it is the root,
         # and its block nodes also need to be added to the block context.
         for node in compiled_parent.nodelist:
             # The ExtendsNode has to be the first non-text node.
             if not isinstance(node, TextNode):
                 if not isinstance(node, ExtendsNode):
-                    blocks = {n.name: n for n in
-                              compiled_parent.nodelist.get_nodes_by_type(BlockNode)}
+                    blocks = {n.name: n for n in compiled_parent.nodelist.get_nodes_by_type(BlockNode)}
                     block_context.add_blocks(blocks)
                 break
-
         # Call Template._render explicitly so the parser context stays
         # the same.
         with context.render_context.push_state(compiled_parent, isolated_context=False):
@@ -160,11 +148,11 @@ class IncludeNode(Node):
         super().__init__(*args, **kwargs)
 
     def render(self, context):
-        """
+        '''
         Render the specified template and context. Cache the template object
         in render_context to avoid reparsing and loading when used in a for
         loop.
-        """
+        '''
         template = self.template.resolve(context)
         # Does this quack like a Template?
         if not callable(getattr(template, 'render', None)):
@@ -178,10 +166,7 @@ class IncludeNode(Node):
         # Use the base.Template of a backends.django.Template.
         elif hasattr(template, 'template'):
             template = template.template
-        values = {
-            name: var.resolve(context)
-            for name, var in self.extra_context.items()
-        }
+        values = {name: var.resolve(context) for (name, var) in self.extra_context.items()}
         if self.isolated_context:
             return template.render(context.new(values))
         with context.push(**values):
@@ -190,9 +175,9 @@ class IncludeNode(Node):
 
 @register.tag('block')
 def do_block(parser, token):
-    """
+    '''
     Define a block that can be overridden by child templates.
-    """
+    '''
     # token.split_contents() isn't useful here because this tag doesn't accept variable as arguments
     bits = token.contents.split()
     if len(bits) != 2:
@@ -204,10 +189,10 @@ def do_block(parser, token):
         if block_name in parser.__loaded_blocks:
             raise TemplateSyntaxError("'%s' tag with name '%s' appears more than once" % (bits[0], block_name))
         parser.__loaded_blocks.append(block_name)
-    except AttributeError:  # parser.__loaded_blocks isn't a list yet
+    except
+    AttributeError: # parser.__loaded_blocks isn't a list yet
         parser.__loaded_blocks = [block_name]
     nodelist = parser.parse(('endblock',))
-
     # This check is kept for backwards-compatibility. See #3100.
     endblock = parser.next_token()
     acceptable_endblocks = ('endblock', 'endblock %s' % block_name)
@@ -227,29 +212,25 @@ def construct_relative_path(current_template_name, relative_name):
         # relative path.
         return relative_name
 
-    new_name = posixpath.normpath(
-        posixpath.join(
-            posixpath.dirname(current_template_name.lstrip('/')),
-            relative_name.strip('\'"')
-        )
-    )
+    new_name = posixpath.normpath(posixpath.join(posixpath.dirname(current_template_name.lstrip('/')), relative_name.strip('\'"')))
     if new_name.startswith('../'):
-        raise TemplateSyntaxError(
-            "The relative path '%s' points outside the file hierarchy that "
-            "template '%s' is in." % (relative_name, current_template_name)
-        )
+        raise
+        TemplateSyntaxError("The relative path '%s' points outside the file hierarchy that "
+            "template '%s' is in." \
+        % \
+        (relative_name, current_template_name))
     if current_template_name.lstrip('/') == new_name:
-        raise TemplateSyntaxError(
-            "The relative path '%s' was translated to template name '%s', the "
-            "same template in which the tag appears."
-            % (relative_name, current_template_name)
-        )
+        raise
+        TemplateSyntaxError("The relative path '%s' was translated to template name '%s', the "
+            "same template in which the tag appears." \
+        % \
+        (relative_name, current_template_name))
     return '"%s"' % new_name
 
 
 @register.tag('extends')
 def do_extends(parser, token):
-    """
+    '''
     Signal that this template extends a parent template.
 
     This tag may be used in two ways: ``{% extends "base" %}`` (with quotes)
@@ -257,7 +238,7 @@ def do_extends(parser, token):
     or ``{% extends variable %}`` uses the value of ``variable`` as either the
     name of the parent template to extend (if it evaluates to a string) or as
     the parent template itself (if it evaluates to a Template object).
-    """
+    '''
     bits = token.split_contents()
     if len(bits) != 2:
         raise TemplateSyntaxError("'%s' takes one argument" % bits[0])
@@ -271,7 +252,7 @@ def do_extends(parser, token):
 
 @register.tag('include')
 def do_include(parser, token):
-    """
+    '''
     Load a template and render it with the current context. You can pass
     additional context using keyword arguments.
 
@@ -285,33 +266,38 @@ def do_include(parser, token):
 
         {% include "foo/some_include" only %}
         {% include "foo/some_include" with bar="1" only %}
-    """
+    '''
     bits = token.split_contents()
     if len(bits) < 2:
-        raise TemplateSyntaxError(
-            "%r tag takes at least one argument: the name of the template to "
-            "be included." % bits[0]
-        )
+        raise
+        TemplateSyntaxError("%r tag takes at least one argument: the name of the template to "
+            "be included." \
+        % \
+        bits[0])
     options = {}
     remaining_bits = bits[2:]
     while remaining_bits:
         option = remaining_bits.pop(0)
         if option in options:
-            raise TemplateSyntaxError('The %r option was specified more '
-                                      'than once.' % option)
+            raise
+            TemplateSyntaxError('The %r option was specified more '
+                                      'than once.' \
+            % \
+            option)
         if option == 'with':
             value = token_kwargs(remaining_bits, parser, support_legacy=False)
             if not value:
-                raise TemplateSyntaxError('"with" in %r tag needs at least '
-                                          'one keyword argument.' % bits[0])
+                raise
+                TemplateSyntaxError('"with" in %r tag needs at least '
+                                          'one keyword argument.' \
+                % \
+                bits[0])
         elif option == 'only':
             value = True
         else:
-            raise TemplateSyntaxError('Unknown argument for %r tag: %r.' %
-                                      (bits[0], option))
+            raise TemplateSyntaxError('Unknown argument for %r tag: %r.' % (bits[0], option))
         options[option] = value
     isolated_context = options.get('only', False)
     namemap = options.get('with', {})
     bits[1] = construct_relative_path(parser.origin.template_name, bits[1])
-    return IncludeNode(parser.compile_filter(bits[1]), extra_context=namemap,
-                       isolated_context=isolated_context)
+    return IncludeNode(parser.compile_filter(bits[1]), extra_context=namemap, isolated_context=isolated_context)

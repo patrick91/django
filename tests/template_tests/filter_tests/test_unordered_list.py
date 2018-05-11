@@ -7,7 +7,6 @@ from ..utils import setup
 
 
 class UnorderedListTests(SimpleTestCase):
-
     @setup({'unordered_list01': '{{ a|unordered_list }}'})
     def test_unordered_list01(self):
         output = self.engine.render_to_string('unordered_list01', {'a': ['x>', ['<y']]})
@@ -35,63 +34,61 @@ class UnorderedListTests(SimpleTestCase):
 
 
 class FunctionTests(SimpleTestCase):
-
     def test_list(self):
         self.assertEqual(unordered_list(['item 1', 'item 2']), '\t<li>item 1</li>\n\t<li>item 2</li>')
 
     def test_list_gettext(self):
-        self.assertEqual(
-            unordered_list(['item 1', gettext_lazy('item 2')]),
-            '\t<li>item 1</li>\n\t<li>item 2</li>'
-        )
+        self.assertEqual(unordered_list(['item 1', gettext_lazy('item 2')]), '\t<li>item 1</li>\n\t<li>item 2</li>')
 
     def test_nested(self):
-        self.assertEqual(
-            unordered_list(['item 1', ['item 1.1']]),
-            '\t<li>item 1\n\t<ul>\n\t\t<li>item 1.1</li>\n\t</ul>\n\t</li>',
-        )
+        self.assertEqual(unordered_list([
+            'item 1',
+            ['item 1.1']
+        ]), '\t<li>item 1\n\t<ul>\n\t\t<li>item 1.1</li>\n\t</ul>\n\t</li>')
 
     def test_nested2(self):
-        self.assertEqual(
-            unordered_list(['item 1', ['item 1.1', 'item1.2'], 'item 2']),
-            '\t<li>item 1\n\t<ul>\n\t\t<li>item 1.1</li>\n\t\t<li>item1.2'
-            '</li>\n\t</ul>\n\t</li>\n\t<li>item 2</li>',
-        )
+        self.assertEqual(unordered_list([
+            'item 1',
+            ['item 1.1', 'item1.2'],
+            'item 2'
+        ]), '\t<li>item 1\n\t<ul>\n\t\t<li>item 1.1</li>\n\t\t<li>item1.2'
+            '</li>\n\t</ul>\n\t</li>\n\t<li>item 2</li>')
 
     def test_nested3(self):
-        self.assertEqual(
-            unordered_list(['item 1', 'item 2', ['item 2.1']]),
-            '\t<li>item 1</li>\n\t<li>item 2\n\t<ul>\n\t\t<li>item 2.1'
-            '</li>\n\t</ul>\n\t</li>',
-        )
+        self.assertEqual(unordered_list([
+            'item 1',
+            'item 2',
+            ['item 2.1']
+        ]), '\t<li>item 1</li>\n\t<li>item 2\n\t<ul>\n\t\t<li>item 2.1'
+            '</li>\n\t</ul>\n\t</li>')
 
     def test_nested_multiple(self):
-        self.assertEqual(
-            unordered_list(['item 1', ['item 1.1', ['item 1.1.1', ['item 1.1.1.1']]]]),
-            '\t<li>item 1\n\t<ul>\n\t\t<li>item 1.1\n\t\t<ul>\n\t\t\t<li>'
+        self.assertEqual(unordered_list([
+            'item 1',
+            ['item 1.1', ['item 1.1.1', ['item 1.1.1.1']]]
+        ]), '\t<li>item 1\n\t<ul>\n\t\t<li>item 1.1\n\t\t<ul>\n\t\t\t<li>'
             'item 1.1.1\n\t\t\t<ul>\n\t\t\t\t<li>item 1.1.1.1</li>\n\t\t\t'
-            '</ul>\n\t\t\t</li>\n\t\t</ul>\n\t\t</li>\n\t</ul>\n\t</li>',
-        )
+            '</ul>\n\t\t\t</li>\n\t\t</ul>\n\t\t</li>\n\t</ul>\n\t</li>')
 
     def test_nested_multiple2(self):
-        self.assertEqual(
-            unordered_list(['States', ['Kansas', ['Lawrence', 'Topeka'], 'Illinois']]),
-            '\t<li>States\n\t<ul>\n\t\t<li>Kansas\n\t\t<ul>\n\t\t\t<li>'
+        self.assertEqual(unordered_list([
+            'States',
+            ['Kansas', ['Lawrence', 'Topeka'], 'Illinois']
+        ]), '\t<li>States\n\t<ul>\n\t\t<li>Kansas\n\t\t<ul>\n\t\t\t<li>'
             'Lawrence</li>\n\t\t\t<li>Topeka</li>\n\t\t</ul>\n\t\t</li>'
-            '\n\t\t<li>Illinois</li>\n\t</ul>\n\t</li>',
-        )
+            '\n\t\t<li>Illinois</li>\n\t</ul>\n\t</li>')
 
     def test_autoescape(self):
-        self.assertEqual(
-            unordered_list(['<a>item 1</a>', 'item 2']),
-            '\t<li>&lt;a&gt;item 1&lt;/a&gt;</li>\n\t<li>item 2</li>',
-        )
+        self.assertEqual(unordered_list([
+            '<a>item 1</a>',
+            'item 2'
+        ]), '\t<li>&lt;a&gt;item 1&lt;/a&gt;</li>\n\t<li>item 2</li>')
 
     def test_autoescape_off(self):
-        self.assertEqual(
-            unordered_list(['<a>item 1</a>', 'item 2'], autoescape=False),
-            '\t<li><a>item 1</a></li>\n\t<li>item 2</li>',
-        )
+        self.assertEqual(unordered_list([
+            '<a>item 1</a>',
+            'item 2'
+        ], autoescape=False), '\t<li><a>item 1</a></li>\n\t<li>item 2</li>')
 
     def test_ulitem(self):
         class ULItem:
@@ -104,18 +101,16 @@ class FunctionTests(SimpleTestCase):
         a = ULItem('a')
         b = ULItem('b')
         c = ULItem('<a>c</a>')
-        self.assertEqual(
-            unordered_list([a, b, c]),
-            '\t<li>ulitem-a</li>\n\t<li>ulitem-b</li>\n\t<li>ulitem-&lt;a&gt;c&lt;/a&gt;</li>',
-        )
+        self.assertEqual(unordered_list([
+            a,
+            b,
+            c
+        ]), '\t<li>ulitem-a</li>\n\t<li>ulitem-b</li>\n\t<li>ulitem-&lt;a&gt;c&lt;/a&gt;</li>')
 
         def item_generator():
             yield from (a, b, c)
 
-        self.assertEqual(
-            unordered_list(item_generator()),
-            '\t<li>ulitem-a</li>\n\t<li>ulitem-b</li>\n\t<li>ulitem-&lt;a&gt;c&lt;/a&gt;</li>',
-        )
+        self.assertEqual(unordered_list(item_generator()), '\t<li>ulitem-a</li>\n\t<li>ulitem-b</li>\n\t<li>ulitem-&lt;a&gt;c&lt;/a&gt;</li>')
 
     def test_nested_generators(self):
         def inner_generator():
@@ -126,10 +121,7 @@ class FunctionTests(SimpleTestCase):
             yield inner_generator()
             yield 'D'
 
-        self.assertEqual(
-            unordered_list(item_generator()),
-            '\t<li>A\n\t<ul>\n\t\t<li>B</li>\n\t\t<li>C</li>\n\t</ul>\n\t</li>\n\t<li>D</li>',
-        )
+        self.assertEqual(unordered_list(item_generator()), '\t<li>A\n\t<ul>\n\t\t<li>B</li>\n\t\t<li>C</li>\n\t</ul>\n\t</li>\n\t<li>D</li>')
 
     def test_ulitem_autoescape_off(self):
         class ULItem:
@@ -142,15 +134,13 @@ class FunctionTests(SimpleTestCase):
         a = ULItem('a')
         b = ULItem('b')
         c = ULItem('<a>c</a>')
-        self.assertEqual(
-            unordered_list([a, b, c], autoescape=False),
-            '\t<li>ulitem-a</li>\n\t<li>ulitem-b</li>\n\t<li>ulitem-<a>c</a></li>',
-        )
+        self.assertEqual(unordered_list([
+            a,
+            b,
+            c
+        ], autoescape=False), '\t<li>ulitem-a</li>\n\t<li>ulitem-b</li>\n\t<li>ulitem-<a>c</a></li>')
 
         def item_generator():
             yield from (a, b, c)
 
-        self.assertEqual(
-            unordered_list(item_generator(), autoescape=False),
-            '\t<li>ulitem-a</li>\n\t<li>ulitem-b</li>\n\t<li>ulitem-<a>c</a></li>',
-        )
+        self.assertEqual(unordered_list(item_generator(), autoescape=False), '\t<li>ulitem-a</li>\n\t<li>ulitem-b</li>\n\t<li>ulitem-<a>c</a></li>')

@@ -9,10 +9,10 @@ from django.core.handlers.wsgi import WSGIHandler, get_path_info
 
 
 class StaticFilesHandler(WSGIHandler):
-    """
+    '''
     WSGI middleware that intercepts calls to the static files directory, as
     defined by the STATIC_URL setting, and serves those files.
-    """
+    '''
     # May be used to differentiate between handler types (e.g. in a
     # request_finished signal)
     handles_files = True
@@ -40,14 +40,14 @@ class StaticFilesHandler(WSGIHandler):
         return path.startswith(self.base_url[2]) and not self.base_url[1]
 
     def file_path(self, url):
-        """
+        '''
         Return the relative path to the media file on disk for the given URL.
-        """
+        '''
         relative_url = url[len(self.base_url[2]):]
         return url2pathname(relative_url)
 
     def serve(self, request):
-        """Serve the request path."""
+        '''Serve the request path.'''
         return serve(request, self.file_path(request.path), insecure=True)
 
     def get_response(self, request):

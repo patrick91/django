@@ -8,14 +8,13 @@ from .base_tests import BaseOrderWithRespectToTests
 from .models import Answer, Dimension, Entity, Post, Question
 
 
-class OrderWithRespectToBaseTests(BaseOrderWithRespectToTests, TestCase):
+class OrderWithRespectToBaseTests(BaseOrderWithRespectToTests,TestCase):
     Answer = Answer
     Post = Post
     Question = Question
 
 
 class OrderWithRespectToTests(TestCase):
-
     @isolate_apps('order_with_respect_to')
     def test_duplicate_order_field(self):
         class Bar(models.Model):

@@ -16,9 +16,10 @@ class DatabaseCheckTests(TestCase):
         return check_database_backends
 
     def test_database_checks_not_run_by_default(self):
-        """
+        '''
         `database` checks are only run when their tag is specified.
-        """
+        '''
+
         def f1(**kwargs):
             return [5]
 
@@ -37,24 +38,14 @@ class DatabaseCheckTests(TestCase):
 
     @unittest.skipUnless(connection.vendor == 'mysql', 'Test only for MySQL')
     def test_mysql_strict_mode(self):
-        good_sql_modes = [
-            'STRICT_TRANS_TABLES,STRICT_ALL_TABLES',
-            'STRICT_TRANS_TABLES',
-            'STRICT_ALL_TABLES',
-        ]
+        good_sql_modes = ['STRICT_TRANS_TABLES,STRICT_ALL_TABLES', 'STRICT_TRANS_TABLES', 'STRICT_ALL_TABLES']
         for response in good_sql_modes:
-            with mock.patch(
-                'django.db.backends.utils.CursorWrapper.fetchone', create=True,
-                return_value=(response,)
-            ):
+            with mock.patch('django.db.backends.utils.CursorWrapper.fetchone', create=True, return_value=(response,)):
                 self.assertEqual(self.func(None), [])
 
         bad_sql_modes = ['', 'WHATEVER']
         for response in bad_sql_modes:
-            with mock.patch(
-                'django.db.backends.utils.CursorWrapper.fetchone', create=True,
-                return_value=(response,)
-            ):
+            with mock.patch('django.db.backends.utils.CursorWrapper.fetchone', create=True, return_value=(response,)):
                 # One warning for each database alias
                 result = self.func(None)
                 self.assertEqual(len(result), 2)

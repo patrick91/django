@@ -55,7 +55,7 @@ class BaseConverter:
             raise ValueError('Sign character found in converter base digits.')
 
     def __repr__(self):
-        return "<%s: base%s (%s)>" % (self.__class__.__name__, len(self.digits), self.digits)
+        return '<%s: base%s (%s)>' % (self.__class__.__name__, len(self.digits), self.digits)
 
     def encode(self, i):
         neg, value = self.convert(i, self.decimal_digits, self.digits, '-')
@@ -75,12 +75,10 @@ class BaseConverter:
             neg = 1
         else:
             neg = 0
-
         # make an integer out of the number
         x = 0
         for digit in str(number):
             x = x * len(from_digits) + from_digits.index(digit)
-
         # create the result in base 'len(to_digits)'
         if x == 0:
             res = to_digits[0]

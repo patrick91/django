@@ -4,7 +4,6 @@ from ..utils import setup
 
 
 class CommentSyntaxTests(SimpleTestCase):
-
     @setup({'comment-syntax01': '{# this is hidden #}hello'})
     def test_comment_syntax01(self):
         output = self.engine.render_to_string('comment-syntax01')
@@ -70,8 +69,11 @@ class CommentSyntaxTests(SimpleTestCase):
         output = self.engine.render_to_string('comment-tag01')
         self.assertEqual(output, 'hello')
 
-    @setup({'comment-tag02': '{% comment %}this is hidden{% endcomment %}'
-                             'hello{% comment %}foo{% endcomment %}'})
+    @setup({
+        'comment-tag02':
+            '{% comment %}this is hidden{% endcomment %}'
+                             'hello{% comment %}foo{% endcomment %}'
+    })
     def test_comment_tag02(self):
         output = self.engine.render_to_string('comment-tag02')
         self.assertEqual(output, 'hello')

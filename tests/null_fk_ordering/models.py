@@ -1,10 +1,10 @@
-"""
+'''
 Regression tests for proper working of ForeignKey(null=True). Tests these bugs:
 
     * #7512: including a nullable foreign key reference in Meta ordering has
 unexpected results
 
-"""
+'''
 from django.db import models
 
 

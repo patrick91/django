@@ -3,10 +3,7 @@ from django.core.cache import DEFAULT_CACHE_ALIAS
 
 from . import Error, Tags, register
 
-E001 = Error(
-    "You must define a '%s' cache in your CACHES setting." % DEFAULT_CACHE_ALIAS,
-    id='caches.E001',
-)
+E001 = Error("You must define a '%s' cache in your CACHES setting." % DEFAULT_CACHE_ALIAS, id='caches.E001')
 
 
 @register(Tags.caches)

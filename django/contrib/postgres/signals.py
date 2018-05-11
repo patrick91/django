@@ -10,14 +10,12 @@ from django.db.backends.base.base import NO_DB_ALIAS
 
 @functools.lru_cache()
 def get_hstore_oids(connection_alias):
-    """Return hstore and hstore array OIDs."""
+    '''Return hstore and hstore array OIDs.'''
     with connections[connection_alias].cursor() as cursor:
-        cursor.execute(
-            "SELECT t.oid, typarray "
+        cursor.execute("SELECT t.oid, typarray "
             "FROM pg_type t "
             "JOIN pg_namespace ns ON typnamespace = ns.oid "
-            "WHERE typname = 'hstore'"
-        )
+            "WHERE typname = 'hstore'")
         oids = []
         array_oids = []
         for row in cursor:
@@ -28,7 +26,7 @@ def get_hstore_oids(connection_alias):
 
 @functools.lru_cache()
 def get_citext_oids(connection_alias):
-    """Return citext array OIDs."""
+    '''Return citext array OIDs.'''
     with connections[connection_alias].cursor() as cursor:
         cursor.execute("SELECT typarray FROM pg_type WHERE typname = 'citext'")
         return tuple(row[0] for row in cursor)

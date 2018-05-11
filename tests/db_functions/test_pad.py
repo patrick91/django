@@ -20,7 +20,7 @@ class PadTests(TestCase):
             (LPad('name', 2), 'Jo'),
             (RPad('name', 2), 'Jo'),
             (LPad('name', 0), ''),
-            (RPad('name', 0), ''),
+            (RPad('name', 0), '')
         )
         for function, padded_name in tests:
             with self.subTest(function=function):
@@ -37,8 +37,4 @@ class PadTests(TestCase):
         Author.objects.create(name='Rhonda', alias='john_smith')
         Author.objects.create(name='♥♣♠', alias='bytes')
         authors = Author.objects.annotate(filled=LPad('name', Length('alias'), output_field=CharField()))
-        self.assertQuerysetEqual(
-            authors.order_by('alias'),
-            ['  ♥♣♠', '    Rhonda'],
-            lambda a: a.filled,
-        )
+        self.assertQuerysetEqual(authors.order_by('alias'), ['  ♥♣♠', '    Rhonda'], lambda a: a.filled)

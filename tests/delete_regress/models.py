@@ -1,6 +1,4 @@
-from django.contrib.contenttypes.fields import (
-    GenericForeignKey, GenericRelation,
-)
+from django.contrib.contenttypes.fields import GenericForeignKey, GenericRelation
 from django.contrib.contenttypes.models import ContentType
 from django.db import models
 
@@ -55,7 +53,7 @@ class Email(Contact):
 
 
 class Researcher(models.Model):
-    contacts = models.ManyToManyField(Contact, related_name="research_contacts")
+    contacts = models.ManyToManyField(Contact, related_name='research_contacts')
     primary_contact = models.ForeignKey(Contact, models.SET_NULL, null=True, related_name='primary_contacts')
     secondary_contact = models.ForeignKey(Contact, models.SET_NULL, null=True, related_name='secondary_contacts')
 
@@ -65,12 +63,11 @@ class Food(models.Model):
 
 
 class Eaten(models.Model):
-    food = models.ForeignKey(Food, models.CASCADE, to_field="name")
+    food = models.ForeignKey(Food, models.CASCADE, to_field='name')
     meal = models.CharField(max_length=20)
 
 
 # Models for #15776
-
 
 class Policy(models.Model):
     policy_number = models.CharField(max_length=10)
@@ -88,8 +85,8 @@ class Item(models.Model):
     version = models.ForeignKey(Version, models.CASCADE)
     location = models.ForeignKey(Location, models.SET_NULL, blank=True, null=True)
 
-# Models for #16128
 
+# Models for #16128
 
 class File(models.Model):
     pass

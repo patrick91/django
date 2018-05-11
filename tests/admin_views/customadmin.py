@@ -1,6 +1,6 @@
-"""
+'''
 A second, custom AdminSite -- see tests.CustomAdminSiteTests.
-"""
+'''
 from django.conf.urls import url
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
@@ -15,7 +15,7 @@ class Admin2(admin.AdminSite):
     login_form = forms.CustomAdminAuthenticationForm
     login_template = 'custom_admin/login.html'
     logout_template = 'custom_admin/logout.html'
-    index_template = ['custom_admin/index.html']  # a list, to test fix for #18697
+    index_template = ['custom_admin/index.html'] # a list, to test fix for #18697
     password_change_template = 'custom_admin/password_change_form.html'
     password_change_done_template = 'custom_admin/password_change_done.html'
 
@@ -24,12 +24,10 @@ class Admin2(admin.AdminSite):
         return super().index(request, {'foo': '*bar*'})
 
     def get_urls(self):
-        return [
-            url(r'^my_view/$', self.admin_view(self.my_view), name='my_view'),
-        ] + super().get_urls()
+        return [url(r'^my_view/$', self.admin_view(self.my_view), name='my_view')] + super().get_urls()
 
     def my_view(self, request):
-        return HttpResponse("Django is a magical pony!")
+        return HttpResponse('Django is a magical pony!')
 
     def password_change(self, request, extra_context=None):
         return super().password_change(request, {'spam': 'eggs'})
@@ -43,7 +41,7 @@ class UserLimitedAdmin(UserAdmin):
 
 
 class CustomPwdTemplateUserAdmin(UserAdmin):
-    change_user_password_template = ['admin/auth/user/change_password.html']  # a list, to test fix for #18697
+    change_user_password_template = ['admin/auth/user/change_password.html'] # a list, to test fix for #18697
 
 
 class BookAdmin(admin.ModelAdmin):
@@ -51,7 +49,7 @@ class BookAdmin(admin.ModelAdmin):
         return ['a deletable object'], {'books': 1}, set(), []
 
 
-site = Admin2(name="admin2")
+site = Admin2(name='admin2')
 
 site.register(models.Article, base_admin.ArticleAdmin)
 site.register(models.Book, BookAdmin)

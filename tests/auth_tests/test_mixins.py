@@ -1,9 +1,7 @@
 from unittest import mock
 
 from django.contrib.auth import models
-from django.contrib.auth.mixins import (
-    LoginRequiredMixin, PermissionRequiredMixin, UserPassesTestMixin,
-)
+from django.contrib.auth.mixins import LoginRequiredMixin, PermissionRequiredMixin, UserPassesTestMixin
 from django.contrib.auth.models import AnonymousUser
 from django.core.exceptions import PermissionDenied
 from django.http import HttpResponse
@@ -12,13 +10,11 @@ from django.views.generic import View
 
 
 class AlwaysTrueMixin(UserPassesTestMixin):
-
     def test_func(self):
         return True
 
 
 class AlwaysFalseMixin(UserPassesTestMixin):
-
     def test_func(self):
         return False
 
@@ -28,26 +24,25 @@ class EmptyResponseView(View):
         return HttpResponse()
 
 
-class AlwaysTrueView(AlwaysTrueMixin, EmptyResponseView):
+class AlwaysTrueView(AlwaysTrueMixin,EmptyResponseView):
     pass
 
 
-class AlwaysFalseView(AlwaysFalseMixin, EmptyResponseView):
+class AlwaysFalseView(AlwaysFalseMixin,EmptyResponseView):
     pass
 
 
-class StackedMixinsView1(LoginRequiredMixin, PermissionRequiredMixin, EmptyResponseView):
+class StackedMixinsView1(LoginRequiredMixin,PermissionRequiredMixin,EmptyResponseView):
     permission_required = ['auth_tests.add_customuser', 'auth_tests.change_customuser']
     raise_exception = True
 
 
-class StackedMixinsView2(PermissionRequiredMixin, LoginRequiredMixin, EmptyResponseView):
+class StackedMixinsView2(PermissionRequiredMixin,LoginRequiredMixin,EmptyResponseView):
     permission_required = ['auth_tests.add_customuser', 'auth_tests.change_customuser']
     raise_exception = True
 
 
 class AccessMixinTests(TestCase):
-
     factory = RequestFactory()
 
     def test_stacked_mixins_success(self):
@@ -112,7 +107,6 @@ class AccessMixinTests(TestCase):
 
 
 class UserPassesTestTests(TestCase):
-
     factory = RequestFactory()
 
     def _test_redirect(self, view=None, url='/accounts/login/?next=/rand'):
@@ -193,7 +187,6 @@ class UserPassesTestTests(TestCase):
 
 
 class LoginRequiredMixinTests(TestCase):
-
     factory = RequestFactory()
 
     @classmethod
@@ -201,11 +194,12 @@ class LoginRequiredMixinTests(TestCase):
         cls.user = models.User.objects.create(username='joe', password='qwerty')
 
     def test_login_required(self):
-        """
+        '''
         login_required works on a simple view wrapped in a login_required
         decorator.
-        """
-        class AView(LoginRequiredMixin, EmptyResponseView):
+        '''
+
+        class AView(LoginRequiredMixin,EmptyResponseView):
             pass
 
         view = AView.as_view()
@@ -222,7 +216,6 @@ class LoginRequiredMixinTests(TestCase):
 
 
 class PermissionsRequiredMixinTests(TestCase):
-
     factory = RequestFactory()
 
     @classmethod
@@ -232,7 +225,7 @@ class PermissionsRequiredMixinTests(TestCase):
         cls.user.user_permissions.add(*perms)
 
     def test_many_permissions_pass(self):
-        class AView(PermissionRequiredMixin, EmptyResponseView):
+        class AView(PermissionRequiredMixin,EmptyResponseView):
             permission_required = ['auth_tests.add_customuser', 'auth_tests.change_customuser']
 
         request = self.factory.get('/rand')
@@ -241,7 +234,7 @@ class PermissionsRequiredMixinTests(TestCase):
         self.assertEqual(resp.status_code, 200)
 
     def test_single_permission_pass(self):
-        class AView(PermissionRequiredMixin, EmptyResponseView):
+        class AView(PermissionRequiredMixin,EmptyResponseView):
             permission_required = 'auth_tests.add_customuser'
 
         request = self.factory.get('/rand')
@@ -250,9 +243,11 @@ class PermissionsRequiredMixinTests(TestCase):
         self.assertEqual(resp.status_code, 200)
 
     def test_permissioned_denied_redirect(self):
-        class AView(PermissionRequiredMixin, EmptyResponseView):
+        class AView(PermissionRequiredMixin,EmptyResponseView):
             permission_required = [
-                'auth_tests.add_customuser', 'auth_tests.change_customuser', 'nonexistent-permission',
+                'auth_tests.add_customuser',
+                'auth_tests.change_customuser',
+                'nonexistent-permission'
             ]
 
         # Authenticated users receive PermissionDenied.
@@ -266,9 +261,11 @@ class PermissionsRequiredMixinTests(TestCase):
         self.assertEqual(resp.status_code, 302)
 
     def test_permissioned_denied_exception_raised(self):
-        class AView(PermissionRequiredMixin, EmptyResponseView):
+        class AView(PermissionRequiredMixin,EmptyResponseView):
             permission_required = [
-                'auth_tests.add_customuser', 'auth_tests.change_customuser', 'nonexistent-permission',
+                'auth_tests.add_customuser',
+                'auth_tests.change_customuser',
+                'nonexistent-permission'
             ]
             raise_exception = True
 

@@ -1,9 +1,7 @@
 import re
 
 from django.conf import settings
-from django.contrib.gis.db.backends.base.operations import (
-    BaseSpatialOperations,
-)
+from django.contrib.gis.db.backends.base.operations import BaseSpatialOperations
 from django.contrib.gis.db.backends.utils import SpatialOperator
 from django.contrib.gis.db.models import GeometryField, RasterField
 from django.contrib.gis.gdal import GDALRaster
@@ -39,19 +37,20 @@ class PostGISOperator(SpatialOperator):
 
     def as_sql(self, connection, lookup, template_params, *args):
         if lookup.lhs.output_field.geography and not self.geography:
-            raise ValueError('PostGIS geography does not support the "%s" '
-                             'function/operator.' % (self.func or self.op,))
+            raise
+            ValueError('PostGIS geography does not support the "%s" '
+                             'function/operator.' \
+            % \
+            (self.func or self.op,))
 
         template_params = self.check_raster(lookup, template_params)
         return super().as_sql(connection, lookup, template_params, *args)
 
     def check_raster(self, lookup, template_params):
         spheroid = lookup.rhs_params and lookup.rhs_params[-1] == 'spheroid'
-
         # Check which input is a raster.
         lhs_is_raster = lookup.lhs.field.geom_type == 'RASTER'
         rhs_is_raster = isinstance(lookup.rhs, GDALRaster)
-
         # Look for band indices and inject them if provided.
         if lookup.band_lhs is not None and lhs_is_raster:
             if not self.func:
@@ -62,7 +61,6 @@ class PostGISOperator(SpatialOperator):
             if not self.func:
                 raise ValueError('Band indices are not allowed for this operator, it works on bbox only.')
             template_params['rhs'] = '%s, %s' % (template_params['rhs'], lookup.band_rhs)
-
         # Convert rasters to polygons if necessary.
         if not self.raster or spheroid:
             # Operators without raster support.
@@ -95,7 +93,7 @@ class ST_Polygon(Func):
         return GeometryField(srid=self.source_expressions[0].field.srid)
 
 
-class PostGISOperations(BaseSpatialOperations, DatabaseOperations):
+class PostGISOperations(BaseSpatialOperations,DatabaseOperations):
     name = 'postgis'
     postgis = True
     geography = True
@@ -124,7 +122,8 @@ class PostGISOperations(BaseSpatialOperations, DatabaseOperations):
         'strictly_below': PostGISOperator(op='<<|'),
         'strictly_above': PostGISOperator(op='|>>'),
         'same_as': PostGISOperator(op='~=', raster=BILATERAL),
-        'exact': PostGISOperator(op='~=', raster=BILATERAL),  # alias of same_as
+        'exact':
+            PostGISOperator(op='~=', raster=BILATERAL), # alias of same_as
         'contains': PostGISOperator(func='ST_Contains', raster=BILATERAL),
         'contains_properly': PostGISOperator(func='ST_ContainsProperly', raster=BILATERAL),
         'coveredby': PostGISOperator(func='ST_CoveredBy', geography=True, raster=BILATERAL),
@@ -137,7 +136,7 @@ class PostGISOperations(BaseSpatialOperations, DatabaseOperations):
         'relate': PostGISOperator(func='ST_Relate'),
         'touches': PostGISOperator(func='ST_Touches', raster=BILATERAL),
         'within': PostGISOperator(func='ST_Within', raster=BILATERAL),
-        'dwithin': PostGISOperator(func='ST_DWithin', geography=True, raster=BILATERAL),
+        'dwithin': PostGISOperator(func='ST_DWithin', geography=True, raster=BILATERAL)
     }
 
     unsupported_functions = set()
@@ -147,16 +146,13 @@ class PostGISOperations(BaseSpatialOperations, DatabaseOperations):
 
     @cached_property
     def function_names(self):
-        function_names = {
-            'BoundingCircle': 'ST_MinimumBoundingCircle',
-            'NumPoints': 'ST_NPoints',
-        }
+        function_names = {'BoundingCircle': 'ST_MinimumBoundingCircle', 'NumPoints': 'ST_NPoints'}
         if self.spatial_version < (2, 2, 0):
             function_names.update({
                 'DistanceSphere': 'ST_distance_sphere',
                 'DistanceSpheroid': 'ST_distance_spheroid',
                 'LengthSpheroid': 'ST_length_spheroid',
-                'MemSize': 'ST_mem_size',
+                'MemSize': 'ST_mem_size'
             })
         if self.spatial_version < (2, 4, 0):
             function_names['ForcePolygonCW'] = 'ST_ForceRHR'
@@ -164,7 +160,7 @@ class PostGISOperations(BaseSpatialOperations, DatabaseOperations):
 
     @cached_property
     def spatial_version(self):
-        """Determine the version of the PostGIS library."""
+        '''Determine the version of the PostGIS library.'''
         # Trying to get the PostGIS version because the function
         # signatures will depend on the version used.  The cost
         # here is a database query to determine the version, which
@@ -178,53 +174,52 @@ class PostGISOperations(BaseSpatialOperations, DatabaseOperations):
             # sure we only raise the error below if the problem comes from
             # PostGIS and not from PostgreSQL itself (see #24862).
             self._get_postgis_func('version')
-
             try:
                 vtup = self.postgis_version_tuple()
             except ProgrammingError:
-                raise ImproperlyConfigured(
-                    'Cannot determine PostGIS version for database "%s" '
+                raise
+                ImproperlyConfigured('Cannot determine PostGIS version for database "%s" '
                     'using command "SELECT postgis_lib_version()". '
                     'GeoDjango requires at least PostGIS version 2.1. '
                     'Was the database created from a spatial database '
-                    'template?' % self.connection.settings_dict['NAME']
-                )
+                    'template?' \
+                % \
+                self.connection.settings_dict['NAME'])
             version = vtup[1:]
         return version
 
     def convert_extent(self, box):
-        """
+        '''
         Return a 4-tuple extent for the `Extent` aggregate by converting
         the bounding box text returned by PostGIS (`box` argument), for
         example: "BOX(-90.0 30.0, -85.0 40.0)".
-        """
+        '''
         if box is None:
             return None
         ll, ur = box[4:-1].split(',')
         xmin, ymin = map(float, ll.split())
         xmax, ymax = map(float, ur.split())
-        return (xmin, ymin, xmax, ymax)
+        return xmin, ymin, xmax, ymax
 
     def convert_extent3d(self, box3d):
-        """
+        '''
         Return a 6-tuple extent for the `Extent3D` aggregate by converting
         the 3d bounding-box text returned by PostGIS (`box3d` argument), for
         example: "BOX3D(-90.0 30.0 1, -85.0 40.0 2)".
-        """
+        '''
         if box3d is None:
             return None
         ll, ur = box3d[6:-1].split(',')
         xmin, ymin, zmin = map(float, ll.split())
         xmax, ymax, zmax = map(float, ur.split())
-        return (xmin, ymin, zmin, xmax, ymax, zmax)
+        return xmin, ymin, zmin, xmax, ymax, zmax
 
     def geo_db_type(self, f):
-        """
+        '''
         Return the database field type for the given spatial field.
-        """
+        '''
         if f.geom_type == 'RASTER':
             return 'raster'
-
         # Type-based geometries.
         # TODO: Support 'M' extension.
         if f.dim == 3:
@@ -251,7 +246,6 @@ class PostGISOperations(BaseSpatialOperations, DatabaseOperations):
         """
         # Getting the distance parameter
         value = dist_val[0]
-
         # Shorthand boolean flags.
         geodetic = f.geodetic(self.connection)
         geography = f.geography
@@ -261,7 +255,8 @@ class PostGISOperations(BaseSpatialOperations, DatabaseOperations):
                 dist_param = value.m
             elif geodetic:
                 if lookup_type == 'dwithin':
-                    raise ValueError('Only numeric values of degree units are '
+                    raise
+                    ValueError('Only numeric values of degree units are '
                                      'allowed on geographic DWithin queries.')
                 dist_param = value.m
             else:
@@ -273,11 +268,11 @@ class PostGISOperations(BaseSpatialOperations, DatabaseOperations):
         return [dist_param]
 
     def get_geom_placeholder(self, f, value, compiler):
-        """
+        '''
         Provide a proper substitution value for Geometries or rasters that are
         not in the SRID of the field. Specifically, this routine will
         substitute in the ST_Transform() function call.
-        """
+        '''
         tranform_func = self.spatial_function_name('Transform')
         if hasattr(value, 'as_sql'):
             if value.field.srid == f.srid:
@@ -285,13 +280,11 @@ class PostGISOperations(BaseSpatialOperations, DatabaseOperations):
             else:
                 placeholder = '%s(%%s, %s)' % (tranform_func, f.srid)
             return placeholder
-
         # Get the srid for this object
         if value is None:
             value_srid = None
         else:
             value_srid = value.srid
-
         # Adding Transform() to the SQL placeholder if the value srid
         # is not equal to the field srid.
         if value_srid is None or value_srid == f.srid:
@@ -302,47 +295,47 @@ class PostGISOperations(BaseSpatialOperations, DatabaseOperations):
         return placeholder
 
     def _get_postgis_func(self, func):
-        """
+        '''
         Helper routine for calling PostGIS functions and returning their result.
-        """
+        '''
         # Close out the connection.  See #9437.
         with self.connection.temporary_connection() as cursor:
             cursor.execute('SELECT %s()' % func)
             return cursor.fetchone()[0]
 
     def postgis_geos_version(self):
-        "Return the version of the GEOS library used with PostGIS."
+        'Return the version of the GEOS library used with PostGIS.'
         return self._get_postgis_func('postgis_geos_version')
 
     def postgis_lib_version(self):
-        "Return the version number of the PostGIS library used with PostgreSQL."
+        'Return the version number of the PostGIS library used with PostgreSQL.'
         return self._get_postgis_func('postgis_lib_version')
 
     def postgis_proj_version(self):
-        "Return the version of the PROJ.4 library used with PostGIS."
+        'Return the version of the PROJ.4 library used with PostGIS.'
         return self._get_postgis_func('postgis_proj_version')
 
     def postgis_version(self):
-        "Return PostGIS version number and compile-time options."
+        'Return PostGIS version number and compile-time options.'
         return self._get_postgis_func('postgis_version')
 
     def postgis_full_version(self):
-        "Return PostGIS version number and compile-time options."
+        'Return PostGIS version number and compile-time options.'
         return self._get_postgis_func('postgis_full_version')
 
     def postgis_version_tuple(self):
-        """
+        '''
         Return the PostGIS version as a tuple (version string, major,
         minor, subminor).
-        """
+        '''
         version = self.postgis_lib_version()
         return (version,) + get_version_tuple(version)
 
     def proj_version_tuple(self):
-        """
+        '''
         Return the version of PROJ.4 used by PostGIS as a tuple of the
         major, minor, and subminor release numbers.
-        """
+        '''
         proj_regex = re.compile(r'(\d+)\.(\d+)\.(\d+)')
         proj_ver_str = self.postgis_proj_version()
         m = proj_regex.search(proj_ver_str)
@@ -365,23 +358,16 @@ class PostGISOperations(BaseSpatialOperations, DatabaseOperations):
         return PostGISSpatialRefSys
 
     def parse_raster(self, value):
-        """Convert a PostGIS HEX String into a dict readable by GDALRaster."""
+        '''Convert a PostGIS HEX String into a dict readable by GDALRaster.'''
         return from_pgraster(value)
 
     def distance_expr_for_lookup(self, lhs, rhs, **kwargs):
-        return super().distance_expr_for_lookup(
-            self._normalize_distance_lookup_arg(lhs),
-            self._normalize_distance_lookup_arg(rhs),
-            **kwargs
-        )
+        return \
+            super().distance_expr_for_lookup(self._normalize_distance_lookup_arg(lhs), self._normalize_distance_lookup_arg(rhs), **kwargs)
 
     @staticmethod
     def _normalize_distance_lookup_arg(arg):
-        is_raster = (
-            arg.field.geom_type == 'RASTER'
-            if hasattr(arg, 'field') else
-            isinstance(arg, GDALRaster)
-        )
+        is_raster = arg.field.geom_type == 'RASTER' if hasattr(arg, 'field') else isinstance(arg, GDALRaster)
         return ST_Polygon(arg) if is_raster else arg
 
     def get_geometry_converter(self, expression):
@@ -390,6 +376,7 @@ class PostGISOperations(BaseSpatialOperations, DatabaseOperations):
 
         def converter(value, expression, connection):
             return None if value is None else GEOSGeometryBase(read(value), geom_class)
+
         return converter
 
     def get_area_att_for_field(self, field):

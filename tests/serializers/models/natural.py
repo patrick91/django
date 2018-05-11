@@ -1,4 +1,4 @@
-"""Models for test_natural.py"""
+'''Models for test_natural.py'''
 from django.db import models
 
 
@@ -14,7 +14,7 @@ class NaturalKeyAnchor(models.Model):
     title = models.CharField(max_length=100, null=True)
 
     def natural_key(self):
-        return (self.data,)
+        return self.data,
 
 
 class FKDataNaturalKey(models.Model):

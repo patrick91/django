@@ -9,17 +9,15 @@ from django.db.utils import DatabaseError
 from django.test import SimpleTestCase
 
 try:
-    import psycopg2  # NOQA
+    import psycopg2 # NOQA
 except ImportError:
     pass
 else:
-    from psycopg2 import errorcodes
-    from django.db.backends.postgresql.creation import DatabaseCreation
+    from psycopg2 import errorcodesfrom django.db.backends.postgresql.creation import DatabaseCreation
 
 
 @unittest.skipUnless(connection.vendor == 'postgresql', 'PostgreSQL tests')
 class DatabaseCreationTests(SimpleTestCase):
-
     @contextmanager
     def changed_test_settings(self, **kwargs):
         settings = connection.settings_dict['TEST']
@@ -32,6 +30,7 @@ class DatabaseCreationTests(SimpleTestCase):
             settings[name] = value
         try:
             yield
+
         finally:
             for name in kwargs:
                 if name in saved_values:
@@ -47,7 +46,7 @@ class DatabaseCreationTests(SimpleTestCase):
 
     def test_sql_table_creation_suffix_with_none_settings(self):
         settings = {'CHARSET': None, 'TEMPLATE': None}
-        self.check_sql_table_creation_suffix(settings, "")
+        self.check_sql_table_creation_suffix(settings, '')
 
     def test_sql_table_creation_suffix_with_encoding(self):
         settings = {'CHARSET': 'UTF8'}
@@ -64,12 +63,12 @@ class DatabaseCreationTests(SimpleTestCase):
     def _execute_raise_database_already_exists(self, cursor, parameters, keepdb=False):
         error = DatabaseError('database %s already exists' % parameters['dbname'])
         error.pgcode = errorcodes.DUPLICATE_DATABASE
-        raise DatabaseError() from error
+        raise DatabaseError()
 
     def _execute_raise_permission_denied(self, cursor, parameters, keepdb=False):
         error = DatabaseError('permission denied to create database')
         error.pgcode = errorcodes.INSUFFICIENT_PRIVILEGE
-        raise DatabaseError() from error
+        raise DatabaseError()
 
     def patch_test_db_creation(self, execute_create_test_db):
         return mock.patch.object(BaseDatabaseCreation, '_execute_create_test_db', execute_create_test_db)

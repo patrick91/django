@@ -1,16 +1,16 @@
-"""
+'''
 This module allows importing AbstractBaseSession even
 when django.contrib.sessions is not in INSTALLED_APPS.
-"""
+'''
 from django.db import models
 from django.utils.translation import gettext_lazy as _
 
 
 class BaseSessionManager(models.Manager):
     def encode(self, session_dict):
-        """
+        '''
         Return the given session dictionary serialized and encoded as a string.
-        """
+        '''
         session_store_class = self.model.get_session_store_class()
         return session_store_class().encode(session_dict)
 
@@ -19,7 +19,7 @@ class BaseSessionManager(models.Manager):
         if session_dict:
             s.save()
         else:
-            s.delete()  # Clear sessions with no data.
+            s.delete() # Clear sessions with no data.
         return s
 
 

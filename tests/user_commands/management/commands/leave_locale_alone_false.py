@@ -3,7 +3,6 @@ from django.utils import translation
 
 
 class Command(BaseCommand):
-
     leave_locale_alone = False
 
     def handle(self, *args, **options):

@@ -27,29 +27,16 @@ class Defaults(models.Model):
 
 
 class ChoiceModel(models.Model):
-    """For ModelChoiceField and ModelMultipleChoiceField tests."""
-    CHOICES = [
-        ('', 'No Preference'),
-        ('f', 'Foo'),
-        ('b', 'Bar'),
-    ]
+    '''For ModelChoiceField and ModelMultipleChoiceField tests.'''
+    CHOICES = [('', 'No Preference'), ('f', 'Foo'), ('b', 'Bar')]
 
-    INTEGER_CHOICES = [
-        (None, 'No Preference'),
-        (1, 'Foo'),
-        (2, 'Bar'),
-    ]
+    INTEGER_CHOICES = [(None, 'No Preference'), (1, 'Foo'), (2, 'Bar')]
 
-    STRING_CHOICES_WITH_NONE = [
-        (None, 'No Preference'),
-        ('f', 'Foo'),
-        ('b', 'Bar'),
-    ]
+    STRING_CHOICES_WITH_NONE = [(None, 'No Preference'), ('f', 'Foo'), ('b', 'Bar')]
 
     name = models.CharField(max_length=10)
     choice = models.CharField(max_length=2, blank=True, choices=CHOICES)
-    choice_string_w_none = models.CharField(
-        max_length=2, blank=True, null=True, choices=STRING_CHOICES_WITH_NONE)
+    choice_string_w_none = models.CharField(max_length=2, blank=True, null=True, choices=STRING_CHOICES_WITH_NONE)
     choice_integer = models.IntegerField(choices=INTEGER_CHOICES, blank=True, null=True)
 
 
@@ -82,47 +69,17 @@ def int_list_default():
 
 
 class ChoiceFieldModel(models.Model):
-    """Model with ForeignKey to another model, for testing ModelForm
-    generation with ModelChoiceField."""
-    choice = models.ForeignKey(
-        ChoiceOptionModel,
-        models.CASCADE,
-        blank=False,
-        default=choice_default,
-    )
-    choice_int = models.ForeignKey(
-        ChoiceOptionModel,
-        models.CASCADE,
-        blank=False,
-        related_name='choice_int',
-        default=int_default,
-    )
-    multi_choice = models.ManyToManyField(
-        ChoiceOptionModel,
-        blank=False,
-        related_name='multi_choice',
-        default=choice_default_list,
-    )
-    multi_choice_int = models.ManyToManyField(
-        ChoiceOptionModel,
-        blank=False,
-        related_name='multi_choice_int',
-        default=int_list_default,
-    )
+    '''Model with ForeignKey to another model, for testing ModelForm
+    generation with ModelChoiceField.'''
+    choice = models.ForeignKey(ChoiceOptionModel, models.CASCADE, blank=False, default=choice_default)
+    choice_int = models.ForeignKey(ChoiceOptionModel, models.CASCADE, blank=False, related_name='choice_int', default=int_default)
+    multi_choice = models.ManyToManyField(ChoiceOptionModel, blank=False, related_name='multi_choice', default=choice_default_list)
+    multi_choice_int = models.ManyToManyField(ChoiceOptionModel, blank=False, related_name='multi_choice_int', default=int_list_default)
 
 
 class OptionalMultiChoiceModel(models.Model):
-    multi_choice = models.ManyToManyField(
-        ChoiceOptionModel,
-        blank=False,
-        related_name='not_relevant',
-        default=choice_default,
-    )
-    multi_choice_optional = models.ManyToManyField(
-        ChoiceOptionModel,
-        blank=True,
-        related_name='not_relevant2',
-    )
+    multi_choice = models.ManyToManyField(ChoiceOptionModel, blank=False, related_name='not_relevant', default=choice_default)
+    multi_choice_optional = models.ManyToManyField(ChoiceOptionModel, blank=True, related_name='not_relevant2')
 
 
 class FileModel(models.Model):

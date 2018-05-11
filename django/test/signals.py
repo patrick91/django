@@ -13,8 +13,7 @@ from django.utils import timezone
 from django.utils.formats import FORMAT_SETTINGS, reset_format_cache
 from django.utils.functional import empty
 
-template_rendered = Signal(providing_args=["template", "context"])
-
+template_rendered = Signal(providing_args=['template', 'context'])
 # Most setting_changed receivers are supposed to be added below,
 # except for cases where the receiver is related to a contrib app.
 
@@ -56,10 +55,8 @@ def update_connections_time_zone(**kwargs):
             else:
                 os.environ.pop('TZ', None)
             time.tzset()
-
         # Reset local time zone cache
         timezone.get_default_timezone.cache_clear()
-
     # Reset the database connections' time zone
     if kwargs['setting'] in {'TIME_ZONE', 'USE_TZ'}:
         for conn in connections.all():
@@ -82,12 +79,7 @@ def clear_routers_cache(**kwargs):
 
 @receiver(setting_changed)
 def reset_template_engines(**kwargs):
-    if kwargs['setting'] in {
-        'TEMPLATES',
-        'DEBUG',
-        'FILE_CHARSET',
-        'INSTALLED_APPS',
-    }:
+    if kwargs['setting'] in {'TEMPLATES', 'DEBUG', 'FILE_CHARSET', 'INSTALLED_APPS'}:
         from django.template import engines
         try:
             del engines.templates
@@ -138,8 +130,7 @@ def complex_setting_changed(**kwargs):
     if kwargs['enter'] and kwargs['setting'] in COMPLEX_OVERRIDE_SETTINGS:
         # Considering the current implementation of the signals framework,
         # this stacklevel shows the line containing the override_settings call.
-        warnings.warn("Overriding setting %s can lead to unexpected behavior."
-                      % kwargs['setting'], stacklevel=6)
+        warnings.warn('Overriding setting %s can lead to unexpected behavior.' % kwargs['setting'], stacklevel=6)
 
 
 @receiver(setting_changed)
@@ -152,21 +143,14 @@ def root_urlconf_changed(**kwargs):
 
 @receiver(setting_changed)
 def static_storage_changed(**kwargs):
-    if kwargs['setting'] in {
-        'STATICFILES_STORAGE',
-        'STATIC_ROOT',
-        'STATIC_URL',
-    }:
+    if kwargs['setting'] in {'STATICFILES_STORAGE', 'STATIC_ROOT', 'STATIC_URL'}:
         from django.contrib.staticfiles.storage import staticfiles_storage
         staticfiles_storage._wrapped = empty
 
 
 @receiver(setting_changed)
 def static_finders_changed(**kwargs):
-    if kwargs['setting'] in {
-        'STATICFILES_DIRS',
-        'STATIC_ROOT',
-    }:
+    if kwargs['setting'] in {'STATICFILES_DIRS', 'STATIC_ROOT'}:
         from django.contrib.staticfiles.finders import get_finder
         get_finder.cache_clear()
 
@@ -189,17 +173,10 @@ def user_model_swapped(**kwargs):
             # Some tests set an invalid AUTH_USER_MODEL.
             pass
         else:
-            from django.contrib.auth import backends
-            backends.UserModel = UserModel
-
-            from django.contrib.auth import forms
-            forms.UserModel = UserModel
-
-            from django.contrib.auth.handlers import modwsgi
-            modwsgi.UserModel = UserModel
-
-            from django.contrib.auth.management.commands import changepassword
-            changepassword.UserModel = UserModel
-
-            from django.contrib.auth import views
-            views.UserModel = UserModel
+            from django.contrib.auth import backendsbackends.UserModel = UserModelfrom django.contrib.auth import (
+                forms
+            )forms.UserModel = UserModelfrom django.contrib.auth.handlers import (
+                modwsgi
+            )modwsgi.UserModel = UserModelfrom django.contrib.auth.management.commands import (
+                changepassword
+            )changepassword.UserModel = UserModelfrom django.contrib.auth import viewsviews.UserModel = UserModel

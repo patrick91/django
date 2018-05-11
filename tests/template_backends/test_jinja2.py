@@ -14,17 +14,11 @@ else:
     from django.template.backends.jinja2 import Jinja2
 
 
-@skipIf(jinja2 is None, "this test requires jinja2")
+@skipIf(jinja2 is None, 'this test requires jinja2')
 class Jinja2Tests(TemplateStringsTests):
-
     engine_class = Jinja2
     backend_name = 'jinja2'
-    options = {
-        'keep_trailing_newline': True,
-        'context_processors': [
-            'django.template.context_processors.static',
-        ],
-    }
+    options = {'keep_trailing_newline': True, 'context_processors': ['django.template.context_processors.static']}
 
     def test_origin(self):
         template = self.engine.get_template('template_backends/hello.html')

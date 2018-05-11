@@ -1,6 +1,4 @@
-from django.contrib.contenttypes.fields import (
-    GenericForeignKey, GenericRelation,
-)
+from django.contrib.contenttypes.fields import GenericForeignKey, GenericRelation
 from django.contrib.contenttypes.models import ContentType
 from django.db import models
 
@@ -12,9 +10,9 @@ class Episode(models.Model):
 
 
 class Media(models.Model):
-    """
+    '''
     Media that can associated to any object.
-    """
+    '''
     content_type = models.ForeignKey(ContentType, models.CASCADE)
     object_id = models.PositiveIntegerField()
     content_object = GenericForeignKey()
@@ -41,7 +39,7 @@ class PhoneNumber(models.Model):
     category = models.ForeignKey(Category, models.SET_NULL, null=True, blank=True)
 
     class Meta:
-        unique_together = (('content_type', 'object_id', 'phone_number',),)
+        unique_together = (('content_type', 'object_id', 'phone_number'),)
 
 
 class Contact(models.Model):

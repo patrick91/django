@@ -8,7 +8,6 @@ from .models import CharFieldModel, DateTimeArrayModel, IntegerArrayModel
 
 @skipUnlessDBFeature('has_brin_index_support')
 class BrinIndexTests(PostgreSQLTestCase):
-
     def test_suffix(self):
         self.assertEqual(BrinIndex.suffix, 'brin')
 
@@ -48,7 +47,6 @@ class BrinIndexTests(PostgreSQLTestCase):
 
 
 class GinIndexTests(PostgreSQLTestCase):
-
     def test_suffix(self):
         self.assertEqual(GinIndex.suffix, 'gin')
 
@@ -65,24 +63,16 @@ class GinIndexTests(PostgreSQLTestCase):
         self.assertEqual(index.name, 'postgres_te_field_def2f8_gin')
 
     def test_deconstruction(self):
-        index = GinIndex(
-            fields=['title'],
-            name='test_title_gin',
-            fastupdate=True,
-            gin_pending_list_limit=128,
-        )
+        index = GinIndex(fields=['title'], name='test_title_gin', fastupdate=True, gin_pending_list_limit=128)
         path, args, kwargs = index.deconstruct()
         self.assertEqual(path, 'django.contrib.postgres.indexes.GinIndex')
         self.assertEqual(args, ())
-        self.assertEqual(
-            kwargs,
-            {
-                'fields': ['title'],
-                'name': 'test_title_gin',
-                'fastupdate': True,
-                'gin_pending_list_limit': 128,
-            }
-        )
+        self.assertEqual(kwargs, {
+            'fields': ['title'],
+            'name': 'test_title_gin',
+            'fastupdate': True,
+            'gin_pending_list_limit': 128
+        })
 
     def test_deconstruct_no_args(self):
         index = GinIndex(fields=['title'], name='test_title_gin')
@@ -93,7 +83,6 @@ class GinIndexTests(PostgreSQLTestCase):
 
 
 class GistIndexTests(PostgreSQLTestCase):
-
     def test_suffix(self):
         self.assertEqual(GistIndex.suffix, 'gist')
 
@@ -114,15 +103,12 @@ class GistIndexTests(PostgreSQLTestCase):
         path, args, kwargs = index.deconstruct()
         self.assertEqual(path, 'django.contrib.postgres.indexes.GistIndex')
         self.assertEqual(args, ())
-        self.assertEqual(
-            kwargs,
-            {
-                'fields': ['title'],
-                'name': 'test_title_gist',
-                'buffering': False,
-                'fillfactor': 80,
-            }
-        )
+        self.assertEqual(kwargs, {
+            'fields': ['title'],
+            'name': 'test_title_gist',
+            'buffering': False,
+            'fillfactor': 80
+        })
 
     def test_deconstruction_no_customization(self):
         index = GistIndex(fields=['title'], name='test_title_gist')
@@ -133,11 +119,10 @@ class GistIndexTests(PostgreSQLTestCase):
 
 
 class SchemaTests(PostgreSQLTestCase):
-
     def get_constraints(self, table):
-        """
+        '''
         Get the indexes on the table using a new cursor.
-        """
+        '''
         with connection.cursor() as cursor:
             return connection.introspection.get_constraints(cursor, table)
 

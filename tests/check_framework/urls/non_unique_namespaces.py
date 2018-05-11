@@ -1,9 +1,6 @@
 from django.conf.urls import include, url
 
-common_url_patterns = ([
-    url(r'^app-ns1/', include([])),
-    url(r'^app-url/', include([])),
-], 'app-ns1')
+common_url_patterns = ([url(r'^app-ns1/', include([])), url(r'^app-url/', include([]))], 'app-ns1')
 
 urlpatterns = [
     url(r'^app-ns1-0/', include(common_url_patterns)),

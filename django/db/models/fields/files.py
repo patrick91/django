@@ -75,6 +75,7 @@ class FieldFile(File):
         else:
             self.file.open(mode)
         return self
+
     # open() doesn't alter the file's contents, but it does reset the pointer
     open.alters_data = True
 
@@ -87,10 +88,10 @@ class FieldFile(File):
         self.name = self.storage.save(name, content, max_length=self.field.max_length)
         setattr(self.instance, self.field.name, self.name)
         self._committed = True
-
         # Save the object because it has changed, unless save is False
         if save:
             self.instance.save()
+
     save.alters_data = True
 
     def delete(self, save=True):
@@ -110,6 +111,7 @@ class FieldFile(File):
 
         if save:
             self.instance.save()
+
     delete.alters_data = True
 
     @property
@@ -144,13 +146,13 @@ class FileDescriptor:
         >>> with open('/path/to/hello.world', 'r') as f:
         ...     instance.file = File(f)
     """
+
     def __init__(self, field):
         self.field = field
 
     def __get__(self, instance, cls=None):
         if instance is None:
             return self
-
         # This is slightly complicated, so worth an explanation.
         # instance.file`needs to ultimately return some instance of `File`,
         # probably a subclass. Additionally, this returned object needs to have
@@ -168,7 +170,6 @@ class FileDescriptor:
         else:
             instance.refresh_from_db(fields=[self.field.name])
             file = getattr(instance, self.field.name)
-
         # If this value is a string (instance.file = "path/to/file") or None
         # then we simply wrap it with the appropriate attribute class according
         # to the file field. [This is FieldFile for FileFields and
@@ -179,7 +180,6 @@ class FileDescriptor:
         if isinstance(file, str) or file is None:
             attr = self.field.attr_class(instance, self.field, file)
             instance.__dict__[self.field.name] = attr
-
         # Other types of files may be assigned as well, but they need to have
         # the FieldFile interface added to them. Thus, we wrap any other type of
         # File inside a FieldFile (well, the field's attr_class, which is
@@ -189,7 +189,6 @@ class FileDescriptor:
             file_copy.file = file
             file_copy._committed = False
             instance.__dict__[self.field.name] = file_copy
-
         # Finally, because of the (some would say boneheaded) way pickle works,
         # the underlying FieldFile might not actually itself have an associated
         # file. So we need to reset the details of the FieldFile in those cases.
@@ -197,11 +196,9 @@ class FileDescriptor:
             file.instance = instance
             file.field = self.field
             file.storage = self.field.storage
-
         # Make sure that the instance is correct.
         elif isinstance(file, FieldFile) and instance is not file.instance:
             file.instance = instance
-
         # That was fun, wasn't it?
         return instance.__dict__[self.field.name]
 
@@ -210,15 +207,13 @@ class FileDescriptor:
 
 
 class FileField(Field):
-
     # The class to wrap instance attributes in. Accessing the file object off
     # the instance will always return an instance of attr_class.
     attr_class = FieldFile
-
     # The descriptor to use for accessing the attribute off of the class.
     descriptor_class = FileDescriptor
 
-    description = _("File")
+    description = _('File')
 
     def __init__(self, verbose_name=None, name=None, upload_to='', storage=None, **kwargs):
         self._primary_key_set_explicitly = 'primary_key' in kwargs
@@ -230,49 +225,42 @@ class FileField(Field):
         super().__init__(verbose_name, name, **kwargs)
 
     def check(self, **kwargs):
-        return [
-            *super().check(**kwargs),
-            *self._check_primary_key(),
-            *self._check_upload_to(),
-        ]
+        return [*super().check(**kwargs), *self._check_primary_key(), *self._check_upload_to()]
 
     def _check_primary_key(self):
         if self._primary_key_set_explicitly:
-            return [
-                checks.Error(
-                    "'primary_key' is not a valid argument for a %s." % self.__class__.__name__,
-                    obj=self,
-                    id='fields.E201',
-                )
-            ]
+            return \
+                [
+                    checks.Error("'primary_key' is not a valid argument for a %s." \
+                    % \
+                    self.__class__.__name__, obj=self, id='fields.E201')
+                ]
         else:
             return []
 
     def _check_upload_to(self):
         if isinstance(self.upload_to, str) and self.upload_to.startswith('/'):
-            return [
-                checks.Error(
-                    "%s's 'upload_to' argument must be a relative path, not an "
-                    "absolute path." % self.__class__.__name__,
-                    obj=self,
-                    id='fields.E202',
-                    hint='Remove the leading slash.',
-                )
-            ]
+            return \
+                [
+                    checks.Error("%s's 'upload_to' argument must be a relative path, not an "
+                    "absolute path." \
+                    % \
+                    self.__class__.__name__, obj=self, id='fields.E202', hint='Remove the leading slash.')
+                ]
         else:
             return []
 
     def deconstruct(self):
         name, path, args, kwargs = super().deconstruct()
-        if kwargs.get("max_length") == 100:
-            del kwargs["max_length"]
+        if kwargs.get('max_length') == 100:
+            del kwargs['max_length']
         kwargs['upload_to'] = self.upload_to
         if self.storage is not default_storage:
             kwargs['storage'] = self.storage
         return name, path, args, kwargs
 
     def get_internal_type(self):
-        return "FileField"
+        return 'FileField'
 
     def get_prep_value(self, value):
         value = super().get_prep_value(value)
@@ -293,12 +281,12 @@ class FileField(Field):
         setattr(cls, self.name, self.descriptor_class(self))
 
     def generate_filename(self, instance, filename):
-        """
+        '''
         Apply (if callable) or prepend (if a string) upload_to to the filename,
         then delegate further processing of the name to the storage backend.
         Until the storage layer, all file paths are expected to be Unix style
         (with forward slashes).
-        """
+        '''
         if callable(self.upload_to):
             filename = self.upload_to(instance, filename)
         else:
@@ -317,22 +305,18 @@ class FileField(Field):
             setattr(instance, self.name, data or '')
 
     def formfield(self, **kwargs):
-        return super().formfield(**{
-            'form_class': forms.FileField,
-            'max_length': self.max_length,
-            **kwargs,
-        })
+        return super().formfield(**{'form_class': forms.FileField, 'max_length': self.max_length, : kwargs})
 
 
 class ImageFileDescriptor(FileDescriptor):
-    """
+    '''
     Just like the FileDescriptor, but for ImageFields. The only difference is
     assigning the width/height to the width_field/height_field, if appropriate.
-    """
+    '''
+
     def __set__(self, instance, value):
         previous_file = instance.__dict__.get(self.field.name)
         super().__set__(instance, value)
-
         # To prevent recalculating image dimensions when we are instantiating
         # an object from the database (bug #11084), only update dimensions if
         # the field had a value before this assignment.  Since the default
@@ -346,7 +330,7 @@ class ImageFileDescriptor(FileDescriptor):
             self.field.update_dimension_fields(instance, force=True)
 
 
-class ImageFieldFile(ImageFile, FieldFile):
+class ImageFieldFile(ImageFile,FieldFile):
     def delete(self, save=True):
         # Clear the image dimensions cache
         if hasattr(self, '_dimensions_cache'):
@@ -357,31 +341,24 @@ class ImageFieldFile(ImageFile, FieldFile):
 class ImageField(FileField):
     attr_class = ImageFieldFile
     descriptor_class = ImageFileDescriptor
-    description = _("Image")
+    description = _('Image')
 
     def __init__(self, verbose_name=None, name=None, width_field=None, height_field=None, **kwargs):
         self.width_field, self.height_field = width_field, height_field
         super().__init__(verbose_name, name, **kwargs)
 
     def check(self, **kwargs):
-        return [
-            *super().check(**kwargs),
-            *self._check_image_library_installed(),
-        ]
+        return [*super().check(**kwargs), *self._check_image_library_installed()]
 
     def _check_image_library_installed(self):
         try:
-            from PIL import Image  # NOQA
+            from PIL import Image # NOQA
         except ImportError:
-            return [
-                checks.Error(
-                    'Cannot use ImageField because Pillow is not installed.',
-                    hint=('Get Pillow at https://pypi.org/project/Pillow/ '
-                          'or run command "pip install Pillow".'),
-                    obj=self,
-                    id='fields.E210',
-                )
-            ]
+            return \
+                [
+                    checks.Error('Cannot use ImageField because Pillow is not installed.', hint='Get Pillow at https://pypi.org/project/Pillow/ '
+                          'or run command "pip install Pillow".', obj=self, id='fields.E210')
+                ]
         else:
             return []
 
@@ -420,20 +397,17 @@ class ImageField(FileField):
         has_dimension_fields = self.width_field or self.height_field
         if not has_dimension_fields or self.attname not in instance.__dict__:
             return
-
         # getattr will call the ImageFileDescriptor's __get__ method, which
         # coerces the assigned value into an instance of self.attr_class
         # (ImageFieldFile in this case).
         file = getattr(instance, self.attname)
-
         # Nothing to update if we have no file and not being forced to update.
         if not file and not force:
             return
 
-        dimension_fields_filled = not(
-            (self.width_field and not getattr(instance, self.width_field)) or
-            (self.height_field and not getattr(instance, self.height_field))
-        )
+        dimension_fields_filled = not self.width_field and not getattr(instance, self.width_field) \
+        or \
+        self.height_field and not getattr(instance, self.height_field)
         # When both dimension fields have values, we are most likely loading
         # data from the database or updating an image field that already had
         # an image stored.  In the first case, we don't want to update the
@@ -443,7 +417,6 @@ class ImageField(FileField):
         # were called from ImageFileDescriptor.__set__.
         if dimension_fields_filled and not force:
             return
-
         # file should be an instance of ImageFieldFile or should be None.
         if file:
             width = file.width
@@ -452,7 +425,6 @@ class ImageField(FileField):
             # No file, so clear dimensions fields.
             width = None
             height = None
-
         # Update the width and height fields.
         if self.width_field:
             setattr(instance, self.width_field, width)
@@ -460,7 +432,4 @@ class ImageField(FileField):
             setattr(instance, self.height_field, height)
 
     def formfield(self, **kwargs):
-        return super().formfield(**{
-            'form_class': forms.ImageField,
-            **kwargs,
-        })
+        return super().formfield(**{'form_class': forms.ImageField, : kwargs})

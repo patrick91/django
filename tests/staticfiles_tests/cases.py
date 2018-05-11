@@ -12,16 +12,12 @@ from .settings import TEST_SETTINGS
 
 
 class BaseStaticFilesMixin:
-    """
+    '''
     Test case with a couple utility assertions.
-    """
+    '''
 
     def assertFileContains(self, filepath, text):
-        self.assertIn(
-            text,
-            self._get_file(filepath),
-            "'%s' not in '%s'" % (text, filepath),
-        )
+        self.assertIn(text, self._get_file(filepath), "'%s' not in '%s'" % (text, filepath))
 
     def assertFileNotFound(self, filepath):
         with self.assertRaises(IOError):
@@ -47,20 +43,20 @@ class BaseStaticFilesMixin:
 
 
 @override_settings(**TEST_SETTINGS)
-class StaticFilesTestCase(BaseStaticFilesMixin, SimpleTestCase):
+class StaticFilesTestCase(BaseStaticFilesMixin,SimpleTestCase):
     pass
 
 
 @override_settings(**TEST_SETTINGS)
-class CollectionTestCase(BaseStaticFilesMixin, SimpleTestCase):
-    """
+class CollectionTestCase(BaseStaticFilesMixin,SimpleTestCase):
+    '''
     Tests shared by all file finding features (collectstatic,
     findstatic, and static serve view).
 
     This relies on the asserts defined in BaseStaticFilesTestCase, but
     is separated because some test cases need those asserts without
     all these tests.
-    """
+    '''
     run_collectstatic_in_setUp = True
 
     def setUp(self):
@@ -80,56 +76,56 @@ class CollectionTestCase(BaseStaticFilesMixin, SimpleTestCase):
         super().tearDown()
 
     def run_collectstatic(self, *, verbosity=0, **kwargs):
-        call_command('collectstatic', interactive=False, verbosity=verbosity,
-                     ignore_patterns=['*.ignoreme'], **kwargs)
+        call_command('collectstatic', interactive=False, verbosity=verbosity, ignore_patterns=['*.ignoreme'], **kwargs)
 
     def _get_file(self, filepath):
         assert filepath, 'filepath is empty.'
         filepath = os.path.join(settings.STATIC_ROOT, filepath)
-        with codecs.open(filepath, "r", "utf-8") as f:
+        with codecs.open(filepath, 'r', 'utf-8') as f:
             return f.read()
 
 
 class TestDefaults:
-    """
+    '''
     A few standard test cases.
-    """
+    '''
+
     def test_staticfiles_dirs(self):
-        """
+        '''
         Can find a file in a STATICFILES_DIRS directory.
-        """
+        '''
         self.assertFileContains('test.txt', 'Can we find')
         self.assertFileContains(os.path.join('prefix', 'test.txt'), 'Prefix')
 
     def test_staticfiles_dirs_subdir(self):
-        """
+        '''
         Can find a file in a subdirectory of a STATICFILES_DIRS
         directory.
-        """
+        '''
         self.assertFileContains('subdir/test.txt', 'Can we find')
 
     def test_staticfiles_dirs_priority(self):
-        """
+        '''
         File in STATICFILES_DIRS has priority over file in app.
-        """
+        '''
         self.assertFileContains('test/file.txt', 'STATICFILES_DIRS')
 
     def test_app_files(self):
-        """
+        '''
         Can find a file in an app static/ directory.
-        """
+        '''
         self.assertFileContains('test/file1.txt', 'file1 in the app dir')
 
     def test_nonascii_filenames(self):
-        """
+        '''
         Can find a file with non-ASCII character in an app static/ directory.
-        """
+        '''
         self.assertFileContains('test/⊗.txt', '⊗ in the app dir')
 
     def test_camelcase_filenames(self):
-        """
+        '''
         Can find a file with capital letters.
-        """
+        '''
         self.assertFileContains('test/camelCase.txt', 'camelCase')
 
     def test_filename_with_percent_sign(self):

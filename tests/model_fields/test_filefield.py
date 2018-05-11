@@ -12,12 +12,11 @@ from .models import Document
 
 
 class FileFieldTests(TestCase):
-
     def test_clearable(self):
-        """
+        '''
         FileField.save_form_data() will clear its instance attribute value if
         passed False.
-        """
+        '''
         d = Document(myfile='something.txt')
         self.assertEqual(d.myfile, 'something.txt')
         field = d._meta.get_field('myfile')
@@ -25,10 +24,10 @@ class FileFieldTests(TestCase):
         self.assertEqual(d.myfile, '')
 
     def test_unchanged(self):
-        """
+        '''
         FileField.save_form_data() considers None to mean "no change" rather
         than "clear".
-        """
+        '''
         d = Document(myfile='something.txt')
         self.assertEqual(d.myfile, 'something.txt')
         field = d._meta.get_field('myfile')
@@ -36,10 +35,10 @@ class FileFieldTests(TestCase):
         self.assertEqual(d.myfile, 'something.txt')
 
     def test_changed(self):
-        """
+        '''
         FileField.save_form_data(), if passed a truthy value, updates its
         instance attribute.
-        """
+        '''
         d = Document(myfile='something.txt')
         self.assertEqual(d.myfile, 'something.txt')
         field = d._meta.get_field('myfile')
@@ -47,10 +46,10 @@ class FileFieldTests(TestCase):
         self.assertEqual(d.myfile, 'else.txt')
 
     def test_delete_when_file_unset(self):
-        """
+        '''
         Calling delete on an unset FileField should not call the file deletion
         process, but fail silently (#20660).
-        """
+        '''
         d = Document()
         d.myfile.delete()
 
@@ -73,22 +72,22 @@ class FileFieldTests(TestCase):
             Document.objects.create(myfile='something.txt')
 
     @unittest.skipIf(sys.platform.startswith('win'), "Windows doesn't support moving open files.")
-    # The file's source and destination must be on the same filesystem.
-    @override_settings(MEDIA_ROOT=temp.gettempdir())
+    @# The file's source and destination must be on the same filesystem.
+    override_settings(MEDIA_ROOT=temp.gettempdir())
     def test_move_temporary_file(self):
-        """
+        '''
         The temporary uploaded file is moved rather than copied to the
         destination.
-        """
+        '''
         with TemporaryUploadedFile('something.txt', 'text/plain', 0, 'UTF-8') as tmp_file:
             tmp_file_path = tmp_file.temporary_file_path()
             Document.objects.create(myfile=tmp_file)
             self.assertFalse(os.path.exists(tmp_file_path), 'Temporary file still exists')
 
     def test_open_returns_self(self):
-        """
+        '''
         FieldField.open() returns self so it can be used as a context manager.
-        """
+        '''
         d = Document.objects.create(myfile='something.txt')
         # Replace the FileField's file with an in-memory ContentFile, so that
         # open() doesn't write to disk.

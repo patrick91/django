@@ -2,7 +2,7 @@ import json
 from collections import UserList
 
 from django.conf import settings
-from django.core.exceptions import ValidationError  # backwards compatibility
+from django.core.exceptions import ValidationError # backwards compatibility
 from django.utils import timezone
 from django.utils.html import escape, format_html, format_html_join, html_safe
 from django.utils.translation import gettext_lazy as _
@@ -35,24 +35,23 @@ def flatatt(attrs):
         elif value is not None:
             key_value_attrs.append((attr, value))
 
-    return (
-        format_html_join('', ' {}="{}"', sorted(key_value_attrs)) +
-        format_html_join('', ' {}', sorted(boolean_attrs))
-    )
+    return \
+        format_html_join('', ' {}="{}"', sorted(key_value_attrs)) + format_html_join('', ' {}', sorted(boolean_attrs))
 
 
 @html_safe
 class ErrorDict(dict):
-    """
+    '''
     A collection of errors that knows how to display itself in various formats.
 
     The dictionary keys are the field names, and the values are the errors.
-    """
+    '''
+
     def as_data(self):
-        return {f: e.as_data() for f, e in self.items()}
+        return {f: e.as_data() for (f, e) in self.items()}
 
     def get_json_data(self, escape_html=False):
-        return {f: e.get_json_data(escape_html) for f, e in self.items()}
+        return {f: e.get_json_data(escape_html) for (f, e) in self.items()}
 
     def as_json(self, escape_html=False):
         return json.dumps(self.get_json_data(escape_html))
@@ -60,10 +59,7 @@ class ErrorDict(dict):
     def as_ul(self):
         if not self:
             return ''
-        return format_html(
-            '<ul class="errorlist">{}</ul>',
-            format_html_join('', '<li>{}{}</li>', self.items())
-        )
+        return format_html('<ul class="errorlist">{}</ul>', format_html_join('', '<li>{}{}</li>', self.items()))
 
     def as_text(self):
         output = []
@@ -77,10 +73,11 @@ class ErrorDict(dict):
 
 
 @html_safe
-class ErrorList(UserList, list):
-    """
+class ErrorList(UserList,list):
+    '''
     A collection of errors that knows how to display itself in various formats.
-    """
+    '''
+
     def __init__(self, initlist=None, error_class=None):
         super().__init__(initlist)
 
@@ -96,10 +93,7 @@ class ErrorList(UserList, list):
         errors = []
         for error in self.as_data():
             message = next(iter(error))
-            errors.append({
-                'message': escape(message) if escape_html else message,
-                'code': error.code or '',
-            })
+            errors.append({'message': escape(message) if escape_html else message, 'code': error.code or ''})
         return errors
 
     def as_json(self, escape_html=False):
@@ -109,11 +103,10 @@ class ErrorList(UserList, list):
         if not self.data:
             return ''
 
-        return format_html(
-            '<ul class="{}">{}</ul>',
-            self.error_class,
-            format_html_join('', '<li>{}</li>', ((e,) for e in self))
-        )
+        return \
+            format_html('<ul class="{}">{}</ul>', self.error_class, format_html_join('', '<li>{}</li>', (
+                (e,) for e in self
+            )))
 
     def as_text(self):
         return '\n'.join('* %s' % e for e in self)
@@ -149,30 +142,30 @@ class ErrorList(UserList, list):
 # Utilities for time zone support in DateTimeField et al.
 
 def from_current_timezone(value):
-    """
+    '''
     When time zone support is enabled, convert naive datetimes
     entered in the current time zone to aware datetimes.
-    """
+    '''
     if settings.USE_TZ and value is not None and timezone.is_naive(value):
         current_timezone = timezone.get_current_timezone()
         try:
             return timezone.make_aware(value, current_timezone)
         except Exception as exc:
-            raise ValidationError(
-                _('%(datetime)s couldn\'t be interpreted '
+            raise
+            ValidationError(_('%(datetime)s couldn\'t be interpreted '
                   'in time zone %(current_timezone)s; it '
-                  'may be ambiguous or it may not exist.'),
-                code='ambiguous_timezone',
-                params={'datetime': value, 'current_timezone': current_timezone}
-            ) from exc
+                  'may be ambiguous or it may not exist.'), code='ambiguous_timezone', params={
+                'datetime': value,
+                'current_timezone': current_timezone
+            })
     return value
 
 
 def to_current_timezone(value):
-    """
+    '''
     When time zone support is enabled, convert aware datetimes
     to naive datetimes in the current time zone for display.
-    """
+    '''
     if settings.USE_TZ and value is not None and timezone.is_aware(value):
         return timezone.make_naive(value)
     return value

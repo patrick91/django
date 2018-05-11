@@ -2,17 +2,16 @@ from django.contrib.gis.geos.geometry import GEOSGeometry, hex_regex, wkt_regex
 
 
 def fromfile(file_h):
-    """
+    '''
     Given a string file name, returns a GEOSGeometry. The file may contain WKB,
     WKT, or HEX.
-    """
+    '''
     # If given a file name, get a real handle.
     if isinstance(file_h, str):
         with open(file_h, 'rb') as file_h:
             buf = file_h.read()
     else:
         buf = file_h.read()
-
     # If we get WKB need to wrap in memoryview(), so run through regexes.
     if isinstance(buf, bytes):
         try:
@@ -29,5 +28,5 @@ def fromfile(file_h):
 
 
 def fromstr(string, **kwargs):
-    "Given a string value, return a GEOSGeometry object."
+    'Given a string value, return a GEOSGeometry object.'
     return GEOSGeometry(string, **kwargs)

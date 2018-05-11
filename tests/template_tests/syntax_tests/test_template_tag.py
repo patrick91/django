@@ -5,7 +5,6 @@ from ..utils import setup
 
 
 class TemplateTagTests(SimpleTestCase):
-
     @setup({'templatetag01': '{% templatetag openblock %}'})
     def test_templatetag01(self):
         output = self.engine.render_to_string('templatetag01')

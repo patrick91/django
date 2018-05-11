@@ -2,7 +2,7 @@ from django.core.management.base import LabelCommand
 
 
 class Command(LabelCommand):
-    help = "Test Label-based commands"
+    help = 'Test Label-based commands'
     requires_system_checks = False
 
     def handle_label(self, label, **options):

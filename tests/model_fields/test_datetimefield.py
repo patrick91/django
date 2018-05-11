@@ -1,9 +1,7 @@
 import datetime
 
 from django.db import models
-from django.test import (
-    SimpleTestCase, TestCase, override_settings, skipUnlessDBFeature,
-)
+from django.test import SimpleTestCase, TestCase, override_settings, skipUnlessDBFeature
 from django.test.utils import requires_tz_support
 from django.utils import timezone
 
@@ -11,15 +9,14 @@ from .models import DateTimeModel
 
 
 class DateTimeFieldTests(TestCase):
-
     def test_datetimefield_to_python_microseconds(self):
-        """DateTimeField.to_python() supports microseconds."""
+        '''DateTimeField.to_python() supports microseconds.'''
         f = models.DateTimeField()
         self.assertEqual(f.to_python('2001-01-02 03:04:05.000006'), datetime.datetime(2001, 1, 2, 3, 4, 5, 6))
         self.assertEqual(f.to_python('2001-01-02 03:04:05.999999'), datetime.datetime(2001, 1, 2, 3, 4, 5, 999999))
 
     def test_timefield_to_python_microseconds(self):
-        """TimeField.to_python() supports microseconds."""
+        '''TimeField.to_python() supports microseconds.'''
         f = models.TimeField()
         self.assertEqual(f.to_python('01:02:03.000004'), datetime.time(1, 2, 3, 4))
         self.assertEqual(f.to_python('01:02:03.999999'), datetime.time(1, 2, 3, 999999))
@@ -59,18 +56,13 @@ class DateTimeFieldTests(TestCase):
         m1 = DateTimeModel.objects.create(d=d, dt=dt1, t=t)
         m2 = DateTimeModel.objects.create(d=d, dt=dt2, t=t)
         # In Vancouver, we expect both results.
-        self.assertQuerysetEqual(
-            DateTimeModel.objects.filter(dt__date=d),
-            [repr(m1), repr(m2)],
-            ordered=False
-        )
+        self.assertQuerysetEqual(DateTimeModel.objects.filter(dt__date=d), [repr(m1), repr(m2)], ordered=False)
         with self.settings(TIME_ZONE='UTC'):
             # But in UTC, the __date only matches one of them.
             self.assertQuerysetEqual(DateTimeModel.objects.filter(dt__date=d), [repr(m1)])
 
 
 class ValidationTest(SimpleTestCase):
-
     def test_datefield_cleans_date(self):
         f = models.DateField()
         self.assertEqual(datetime.date(2008, 10, 10), f.clean('2008-10-10', None))

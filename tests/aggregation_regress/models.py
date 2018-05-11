@@ -1,6 +1,4 @@
-from django.contrib.contenttypes.fields import (
-    GenericForeignKey, GenericRelation,
-)
+from django.contrib.contenttypes.fields import GenericForeignKey, GenericRelation
 from django.contrib.contenttypes.models import ContentType
 from django.db import models
 
@@ -82,7 +80,7 @@ class HardbackBook(Book):
     weight = models.FloatField()
 
     def __str__(self):
-        return "%s (hardback): %s" % (self.name, self.weight)
+        return '%s (hardback): %s' % (self.name, self.weight)
 
 
 # Models for ticket #21150

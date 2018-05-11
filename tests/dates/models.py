@@ -7,14 +7,14 @@ class Article(models.Model):
     pub_date = models.DateField()
     pub_datetime = models.DateTimeField(default=timezone.now())
 
-    categories = models.ManyToManyField("Category", related_name="articles")
+    categories = models.ManyToManyField('Category', related_name='articles')
 
     def __str__(self):
         return self.title
 
 
 class Comment(models.Model):
-    article = models.ForeignKey(Article, models.CASCADE, related_name="comments")
+    article = models.ForeignKey(Article, models.CASCADE, related_name='comments')
     text = models.TextField()
     pub_date = models.DateField()
     approval_date = models.DateField(null=True)

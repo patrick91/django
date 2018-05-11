@@ -2,9 +2,7 @@ import os
 import unittest
 
 from django.core.files.uploadedfile import SimpleUploadedFile
-from django.forms import (
-    ClearableFileInput, FileInput, ImageField, ValidationError, Widget,
-)
+from django.forms import ClearableFileInput, FileInput, ImageField, ValidationError, Widget
 from django.test import SimpleTestCase
 
 from . import FormFieldAssertionsMixin
@@ -19,9 +17,8 @@ def get_img_path(path):
     return os.path.join(os.path.abspath(os.path.join(__file__, '..', '..')), 'tests', path)
 
 
-@unittest.skipUnless(Image, "Pillow is required to test ImageField")
-class ImageFieldTest(FormFieldAssertionsMixin, SimpleTestCase):
-
+@unittest.skipUnless(Image, 'Pillow is required to test ImageField')
+class ImageFieldTest(FormFieldAssertionsMixin,SimpleTestCase):
     def test_imagefield_annotate_with_image_after_clean(self):
         f = ImageField()
 
@@ -57,6 +54,7 @@ class ImageFieldTest(FormFieldAssertionsMixin, SimpleTestCase):
 
             self.assertEqual('BMP', uploaded_file.image.format)
             self.assertIsNone(uploaded_file.content_type)
+
         finally:
             Image.register_mime(BmpImageFile.format, 'image/bmp')
 

@@ -7,7 +7,6 @@ from django.test import TestCase
 
 
 class TokenGeneratorTest(TestCase):
-
     def test_make_token(self):
         user = User.objects.create_user('tokentestuser', 'test2@example.com', 'testpw')
         p0 = PasswordResetTokenGenerator()
@@ -15,10 +14,10 @@ class TokenGeneratorTest(TestCase):
         self.assertTrue(p0.check_token(user, tk1))
 
     def test_10265(self):
-        """
+        '''
         The token generated for a user created in the same request
         will work correctly.
-        """
+        '''
         # See ticket #10265
         user = User.objects.create_user('comebackkid', 'test3@example.com', 'testpw')
         p0 = PasswordResetTokenGenerator()
@@ -28,9 +27,10 @@ class TokenGeneratorTest(TestCase):
         self.assertEqual(tk1, tk2)
 
     def test_timeout(self):
-        """
+        '''
         The token is valid after n days, but no greater.
-        """
+        '''
+
         # Uses a mocked version of PasswordResetTokenGenerator so we can change
         # the value of 'today'
         class Mocked(PasswordResetTokenGenerator):
@@ -56,10 +56,10 @@ class TokenGeneratorTest(TestCase):
         self.assertIs(p0.check_token(user, None), False)
 
     def test_token_with_different_secret(self):
-        """
+        '''
         A valid token can be created with a secret other than SECRET_KEY by
         using the PasswordResetTokenGenerator.secret attribute.
-        """
+        '''
         user = User.objects.create_user('tokentestuser', 'test2@example.com', 'testpw')
         new_secret = 'abcdefghijkl'
         # Create and check a token with a different secret.

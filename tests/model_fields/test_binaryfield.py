@@ -6,7 +6,7 @@ from .models import DataModel
 
 
 class BinaryFieldTests(TestCase):
-    binary_data = b'\x00\x46\xFE'
+    binary_data = b'\x00F\xfe'
 
     def test_set_and_retrieve(self):
         data_set = (self.binary_data, memoryview(self.binary_data))

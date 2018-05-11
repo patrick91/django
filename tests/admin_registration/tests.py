@@ -39,7 +39,7 @@ class TestRegistration(SimpleTestCase):
         self.assertEqual(self.site._registry[Person].search_fields, ['name'])
 
     def test_star_star_overrides(self):
-        self.site.register(Person, NameAdmin, search_fields=["name"], list_display=['__str__'])
+        self.site.register(Person, NameAdmin, search_fields=['name'], list_display=['__str__'])
         self.assertEqual(self.site._registry[Person].search_fields, ['name'])
         self.assertEqual(self.site._registry[Person].list_display, ['__str__'])
         self.assertTrue(self.site._registry[Person].save_on_top)
@@ -52,26 +52,26 @@ class TestRegistration(SimpleTestCase):
         self.assertEqual(self.site._registry[Place].search_fields, ['name'])
 
     def test_abstract_model(self):
-        """
+        '''
         Exception is raised when trying to register an abstract model.
         Refs #12004.
-        """
+        '''
         msg = 'The model Location is abstract, so it cannot be registered with admin.'
         with self.assertRaisesMessage(ImproperlyConfigured, msg):
             self.site.register(Location)
 
     def test_is_registered_model(self):
-        "Checks for registered models should return true."
+        'Checks for registered models should return true.'
         self.site.register(Person)
         self.assertTrue(self.site.is_registered(Person))
 
     def test_is_registered_not_registered_model(self):
-        "Checks for unregistered models should return false."
+        'Checks for unregistered models should return false.'
         self.assertFalse(self.site.is_registered(Person))
 
 
 class TestRegistrationDecorator(SimpleTestCase):
-    """
+    '''
     Tests the register decorator in admin.decorators
 
     For clarity:
@@ -83,7 +83,8 @@ class TestRegistrationDecorator(SimpleTestCase):
     is functionally equal to (the way it is written in these tests):
 
         AuthorAdmin = register(Person)(AuthorAdmin)
-    """
+    '''
+
     def setUp(self):
         self.default_site = site
         self.custom_site = CustomSite()

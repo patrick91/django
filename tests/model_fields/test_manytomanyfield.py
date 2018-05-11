@@ -7,12 +7,11 @@ from .models import ManyToMany
 
 
 class ManyToManyFieldTests(SimpleTestCase):
-
     def test_abstract_model_pending_operations(self):
-        """
+        '''
         Many-to-many fields declared on abstract models should not add lazy
         relations to resolve relationship declared as string (#24215).
-        """
+        '''
         pending_ops_before = list(apps._pending_operations.items())
 
         class AbstractManyToManyModel(models.Model):
@@ -22,11 +21,7 @@ class ManyToManyFieldTests(SimpleTestCase):
                 abstract = True
 
         self.assertIs(AbstractManyToManyModel._meta.apps, apps)
-        self.assertEqual(
-            pending_ops_before,
-            list(apps._pending_operations.items()),
-            'Pending lookup added for a many-to-many field on an abstract model'
-        )
+        self.assertEqual(pending_ops_before, list(apps._pending_operations.items()), 'Pending lookup added for a many-to-many field on an abstract model')
 
     @isolate_apps('model_fields', 'model_fields.tests')
     def test_abstract_model_app_relative_foreign_key(self):
@@ -61,7 +56,6 @@ class ManyToManyFieldTests(SimpleTestCase):
 
 
 class ManyToManyFieldDBTests(TestCase):
-
     def test_value_from_object_instance_without_pk(self):
         obj = ManyToMany()
         self.assertEqual(obj._meta.get_field('m2m').value_from_object(obj), [])

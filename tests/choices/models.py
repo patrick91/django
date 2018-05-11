@@ -1,4 +1,4 @@
-"""
+'''
 Specifying 'choices' for a field
 
 Most fields take a ``choices`` parameter, which should be a tuple of tuples
@@ -7,14 +7,11 @@ specifying which are the valid values for that field.
 For each field that has ``choices``, a model instance gets a
 ``get_fieldname_display()`` method, where ``fieldname`` is the name of the
 field. This method returns the "human-readable" value of the field.
-"""
+'''
 
 from django.db import models
 
-GENDER_CHOICES = (
-    ('M', 'Male'),
-    ('F', 'Female'),
-)
+GENDER_CHOICES = (('M', 'Male'), ('F', 'Female'))
 
 
 class Person(models.Model):

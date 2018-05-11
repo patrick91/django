@@ -23,11 +23,7 @@ class SeparateDatabaseAndState(Operation):
             kwargs['database_operations'] = self.database_operations
         if self.state_operations:
             kwargs['state_operations'] = self.state_operations
-        return (
-            self.__class__.__qualname__,
-            [],
-            kwargs
-        )
+        return self.__class__.__qualname__, [], kwargs
 
     def state_forwards(self, app_label, state):
         for state_operation in self.state_operations:
@@ -57,7 +53,7 @@ class SeparateDatabaseAndState(Operation):
             database_operation.database_backwards(app_label, schema_editor, from_state, to_state)
 
     def describe(self):
-        return "Custom state/database change combination"
+        return 'Custom state/database change combination'
 
 
 class RunSQL(Operation):
@@ -77,20 +73,14 @@ class RunSQL(Operation):
         self.elidable = elidable
 
     def deconstruct(self):
-        kwargs = {
-            'sql': self.sql,
-        }
+        kwargs = {'sql': self.sql}
         if self.reverse_sql is not None:
             kwargs['reverse_sql'] = self.reverse_sql
         if self.state_operations:
             kwargs['state_operations'] = self.state_operations
         if self.hints:
             kwargs['hints'] = self.hints
-        return (
-            self.__class__.__qualname__,
-            [],
-            kwargs
-        )
+        return self.__class__.__qualname__, [], kwargs
 
     @property
     def reversible(self):
@@ -106,12 +96,12 @@ class RunSQL(Operation):
 
     def database_backwards(self, app_label, schema_editor, from_state, to_state):
         if self.reverse_sql is None:
-            raise NotImplementedError("You cannot reverse this operation")
+            raise NotImplementedError('You cannot reverse this operation')
         if router.allow_migrate(schema_editor.connection.alias, app_label, **self.hints):
             self._run_sql(schema_editor, self.reverse_sql)
 
     def describe(self):
-        return "Raw SQL operation"
+        return 'Raw SQL operation'
 
     def _run_sql(self, schema_editor, sqls):
         if isinstance(sqls, (list, tuple)):
@@ -122,7 +112,7 @@ class RunSQL(Operation):
                     if elements == 2:
                         sql, params = sql
                     else:
-                        raise ValueError("Expected a 2-tuple but got %d" % elements)
+                        raise ValueError('Expected a 2-tuple but got %d' % elements)
                 schema_editor.execute(sql, params=params)
         elif sqls != RunSQL.noop:
             statements = schema_editor.connection.ops.prepare_sql_script(sqls)
@@ -131,9 +121,9 @@ class RunSQL(Operation):
 
 
 class RunPython(Operation):
-    """
+    '''
     Run Python code in a context suitable for doing versioned ORM operations.
-    """
+    '''
 
     reduces_to_sql = False
 
@@ -141,33 +131,25 @@ class RunPython(Operation):
         self.atomic = atomic
         # Forwards code
         if not callable(code):
-            raise ValueError("RunPython must be supplied with a callable")
+            raise ValueError('RunPython must be supplied with a callable')
         self.code = code
         # Reverse code
         if reverse_code is None:
             self.reverse_code = None
-        else:
-            if not callable(reverse_code):
-                raise ValueError("RunPython must be supplied with callable arguments")
-            self.reverse_code = reverse_code
+        elif not callable(reverse_code):
+            raise ValueError('RunPython must be supplied with callable arguments')self.reverse_code = reverse_code
         self.hints = hints or {}
         self.elidable = elidable
 
     def deconstruct(self):
-        kwargs = {
-            'code': self.code,
-        }
+        kwargs = {'code': self.code}
         if self.reverse_code is not None:
             kwargs['reverse_code'] = self.reverse_code
         if self.atomic is not None:
             kwargs['atomic'] = self.atomic
         if self.hints:
             kwargs['hints'] = self.hints
-        return (
-            self.__class__.__qualname__,
-            [],
-            kwargs
-        )
+        return self.__class__.__qualname__, [], kwargs
 
     @property
     def reversible(self):
@@ -191,12 +173,12 @@ class RunPython(Operation):
 
     def database_backwards(self, app_label, schema_editor, from_state, to_state):
         if self.reverse_code is None:
-            raise NotImplementedError("You cannot reverse this operation")
+            raise NotImplementedError('You cannot reverse this operation')
         if router.allow_migrate(schema_editor.connection.alias, app_label, **self.hints):
             self.reverse_code(from_state.apps, schema_editor)
 
     def describe(self):
-        return "Raw Python operation"
+        return 'Raw Python operation'
 
     @staticmethod
     def noop(apps, schema_editor):

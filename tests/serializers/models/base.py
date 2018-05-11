@@ -1,16 +1,15 @@
-"""
+'''
 Serialization
 
 ``django.core.serializers`` provides interfaces to converting Django
 ``QuerySet`` objects to and from "flat" data (i.e. strings).
-"""
+'''
 from decimal import Decimal
 
 from django.db import models
 
 
 class CategoryMetaDataManager(models.Manager):
-
     def get_by_natural_key(self, kind, name):
         return self.get(kind=kind, name=name)
 
@@ -28,7 +27,7 @@ class CategoryMetaData(models.Model):
         return '[%s:%s]=%s' % (self.kind, self.name, self.value)
 
     def natural_key(self):
-        return (self.kind, self.name)
+        return self.kind, self.name
 
 
 class Category(models.Model):
@@ -71,7 +70,7 @@ class AuthorProfile(models.Model):
     date_of_birth = models.DateField()
 
     def __str__(self):
-        return "Profile of %s" % self.author
+        return 'Profile of %s' % self.author
 
 
 class Actor(models.Model):
@@ -105,14 +104,13 @@ class Team:
         self.title = title
 
     def __str__(self):
-        raise NotImplementedError("Not so simple")
+        raise NotImplementedError('Not so simple')
 
     def to_string(self):
-        return "%s" % self.title
+        return '%s' % self.title
 
 
 class TeamField(models.CharField):
-
     def __init__(self):
         super().__init__(max_length=100)
 

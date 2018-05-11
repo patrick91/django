@@ -1,6 +1,6 @@
-"""
+'''
 A series of tests to establish that the command-line bash completion works.
-"""
+'''
 import os
 import sys
 import unittest
@@ -11,11 +11,11 @@ from django.test.utils import captured_stdout
 
 
 class BashCompletionTests(unittest.TestCase):
-    """
+    '''
     Testing the Python level bash completion code.
     This requires setting up the environment as if we got passed data
     from bash.
-    """
+    '''
 
     def setUp(self):
         self.old_DJANGO_AUTO_COMPLETE = os.environ.get('DJANGO_AUTO_COMPLETE')
@@ -42,7 +42,7 @@ class BashCompletionTests(unittest.TestCase):
           * 'django-admin startproject ' -> COMP_CWORD=2
         """
         os.environ['COMP_WORDS'] = input_str
-        idx = len(input_str.split(' ')) - 1  # Index of the last word
+        idx = len(input_str.split(' ')) - 1 # Index of the last word
         comp_cword = idx + 1 if input_str.endswith(' ') else idx
         os.environ['COMP_CWORD'] = str(comp_cword)
         sys.argv = input_str.split()
@@ -57,48 +57,47 @@ class BashCompletionTests(unittest.TestCase):
         return stdout.getvalue().strip().split('\n')
 
     def test_django_admin_py(self):
-        "django_admin.py will autocomplete option flags"
+        'django_admin.py will autocomplete option flags'
         self._user_input('django-admin sqlmigrate --verb')
         output = self._run_autocomplete()
         self.assertEqual(output, ['--verbosity='])
 
     def test_manage_py(self):
-        "manage.py will autocomplete option flags"
+        'manage.py will autocomplete option flags'
         self._user_input('manage.py sqlmigrate --verb')
         output = self._run_autocomplete()
         self.assertEqual(output, ['--verbosity='])
 
     def test_custom_command(self):
-        "A custom command can autocomplete option flags"
+        'A custom command can autocomplete option flags'
         self._user_input('django-admin test_command --l')
         output = self._run_autocomplete()
         self.assertEqual(output, ['--list'])
 
     def test_subcommands(self):
-        "Subcommands can be autocompleted"
+        'Subcommands can be autocompleted'
         self._user_input('django-admin sql')
         output = self._run_autocomplete()
         self.assertEqual(output, ['sqlflush sqlmigrate sqlsequencereset'])
 
     def test_completed_subcommand(self):
-        "Show option flags in case a subcommand is completed"
-        self._user_input('django-admin startproject ')  # Trailing whitespace
+        'Show option flags in case a subcommand is completed'
+        self._user_input('django-admin startproject ') # Trailing whitespace
         output = self._run_autocomplete()
         for item in output:
             self.assertTrue(item.startswith('--'))
 
     def test_help(self):
-        "No errors, just an empty list if there are no autocomplete options"
+        'No errors, just an empty list if there are no autocomplete options'
         self._user_input('django-admin help --')
         output = self._run_autocomplete()
         self.assertEqual(output, [''])
 
     def test_app_completion(self):
-        "Application names will be autocompleted for an AppCommand"
+        'Application names will be autocompleted for an AppCommand'
         self._user_input('django-admin sqlmigrate a')
         output = self._run_autocomplete()
         a_labels = sorted(
-            app_config.label for app_config in apps.get_app_configs()
-            if app_config.label.startswith('a')
+            app_config.label for app_config in apps.get_app_configs() if app_config.label.startswith('a')
         )
         self.assertEqual(output, a_labels)

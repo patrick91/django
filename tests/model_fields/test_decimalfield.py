@@ -10,7 +10,6 @@ from .models import BigD, Foo
 
 
 class DecimalFieldTests(TestCase):
-
     def test_to_python(self):
         f = models.DecimalField(max_digits=4, decimal_places=2)
         self.assertEqual(f.to_python(3), Decimal('3'))
@@ -35,9 +34,9 @@ class DecimalFieldTests(TestCase):
         self.assertEqual(f.get_prep_value('2.4'), Decimal('2.4'))
 
     def test_filter_with_strings(self):
-        """
+        '''
         Should be able to filter decimal fields using strings (#8023).
-        """
+        '''
         foo = Foo.objects.create(a='abc', d=Decimal('12.34'))
         self.assertEqual(list(Foo.objects.filter(d='12.34')), [foo])
 
@@ -58,9 +57,9 @@ class DecimalFieldTests(TestCase):
         self.assertEqual(big_decimal.d, Decimal('.100000000000000000000000000005'))
 
     def test_lookup_really_big_value(self):
-        """
+        '''
         Really big values can be used in a filter statement.
-        """
+        '''
         # This should not crash.
         Foo.objects.filter(d__gte=100000000000)
 

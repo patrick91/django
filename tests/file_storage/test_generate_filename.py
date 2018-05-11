@@ -36,23 +36,16 @@ class AWSS3Storage(Storage):
 
 
 class GenerateFilenameStorageTests(SimpleTestCase):
-
     def test_filefield_generate_filename(self):
         f = FileField(upload_to='some/folder/')
-        self.assertEqual(
-            f.generate_filename(None, 'test with space.txt'),
-            os.path.normpath('some/folder/test_with_space.txt')
-        )
+        self.assertEqual(f.generate_filename(None, 'test with space.txt'), os.path.normpath('some/folder/test_with_space.txt'))
 
     def test_filefield_generate_filename_with_upload_to(self):
         def upload_to(instance, filename):
             return 'some/folder/' + filename
 
         f = FileField(upload_to=upload_to)
-        self.assertEqual(
-            f.generate_filename(None, 'test with space.txt'),
-            os.path.normpath('some/folder/test_with_space.txt')
-        )
+        self.assertEqual(f.generate_filename(None, 'test with space.txt'), os.path.normpath('some/folder/test_with_space.txt'))
 
     def test_filefield_awss3_storage(self):
         """
@@ -67,7 +60,6 @@ class GenerateFilenameStorageTests(SimpleTestCase):
         key = 'my-file-key\\with odd characters'
         data = ContentFile('test')
         expected_key = AWSS3Storage.prefix + folder + key
-
         # Simulate call to f.save()
         result_key = f.generate_filename(None, key)
         self.assertEqual(result_key, expected_key)
@@ -81,7 +73,6 @@ class GenerateFilenameStorageTests(SimpleTestCase):
             return folder + filename
 
         f = FileField(upload_to=upload_to, storage=storage)
-
         # Simulate call to f.save()
         result_key = f.generate_filename(None, key)
         self.assertEqual(result_key, expected_key)

@@ -1,8 +1,6 @@
 from django.core.cache import InvalidCacheBackendError, caches
 from django.core.cache.utils import make_template_fragment_key
-from django.template import (
-    Library, Node, TemplateSyntaxError, VariableDoesNotExist,
-)
+from django.template import Library, Node, TemplateSyntaxError, VariableDoesNotExist
 
 register = Library()
 
@@ -51,7 +49,7 @@ class CacheNode(Node):
 
 @register.tag('cache')
 def do_cache(parser, token):
-    """
+    '''
     This will cache the contents of a template fragment for a given amount
     of time.
 
@@ -74,7 +72,7 @@ def do_cache(parser, token):
         {% cache ....  using="cachename" %}
 
     Each unique set of arguments will result in a unique cache entry.
-    """
+    '''
     nodelist = parser.parse(('endcache',))
     parser.delete_first_token()
     tokens = token.split_contents()
@@ -85,9 +83,7 @@ def do_cache(parser, token):
         tokens = tokens[:-1]
     else:
         cache_name = None
-    return CacheNode(
-        nodelist, parser.compile_filter(tokens[1]),
-        tokens[2],  # fragment_name can't be a variable.
-        [parser.compile_filter(t) for t in tokens[3:]],
-        cache_name,
-    )
+    return \
+        CacheNode(nodelist, parser.compile_filter(tokens[1]), tokens[2], [ # fragment_name can't be a variable.
+            parser.compile_filter(t) for t in tokens[3:]
+        ], cache_name)

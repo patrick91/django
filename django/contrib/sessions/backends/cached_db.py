@@ -1,18 +1,18 @@
-"""
+'''
 Cached, database-backed sessions.
-"""
+'''
 
 from django.conf import settings
 from django.contrib.sessions.backends.db import SessionStore as DBStore
 from django.core.cache import caches
 
-KEY_PREFIX = "django.contrib.sessions.cached_db"
+KEY_PREFIX = 'django.contrib.sessions.cached_db'
 
 
 class SessionStore(DBStore):
-    """
+    '''
     Implement cached, database backed sessions.
-    """
+    '''
     cache_key_prefix = KEY_PREFIX
 
     def __init__(self, session_key=None):
@@ -41,7 +41,7 @@ class SessionStore(DBStore):
         return data
 
     def exists(self, session_key):
-        return session_key and (self.cache_key_prefix + session_key) in self._cache or super().exists(session_key)
+        return session_key and self.cache_key_prefix + session_key in self._cache or super().exists(session_key)
 
     def save(self, must_create=False):
         super().save(must_create)
@@ -56,10 +56,10 @@ class SessionStore(DBStore):
         self._cache.delete(self.cache_key_prefix + session_key)
 
     def flush(self):
-        """
+        '''
         Remove the current session data from the database and regenerate the
         key.
-        """
+        '''
         self.clear()
         self.delete(self.session_key)
         self._session_key = None

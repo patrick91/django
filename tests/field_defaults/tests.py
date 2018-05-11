@@ -12,5 +12,5 @@ class DefaultTests(TestCase):
         a.save()
 
         self.assertIsInstance(a.id, int)
-        self.assertEqual(a.headline, "Default headline")
-        self.assertLess((now - a.pub_date).seconds, 5)
+        self.assertEqual(a.headline, 'Default headline')
+        self.assertLess(now - a.pub_date.seconds, 5)

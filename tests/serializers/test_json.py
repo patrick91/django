@@ -15,9 +15,9 @@ from .models import Score
 from .tests import SerializersTestBase, SerializersTransactionTestBase
 
 
-class JsonSerializerTestCase(SerializersTestBase, TestCase):
-    serializer_name = "json"
-    pkless_str = """[
+class JsonSerializerTestCase(SerializersTestBase,TestCase):
+    serializer_name = 'json'
+    pkless_str = '''[
     {
         "pk": null,
         "model": "serializers.category",
@@ -25,8 +25,8 @@ class JsonSerializerTestCase(SerializersTestBase, TestCase):
     }, {
         "model": "serializers.category",
         "fields": {"name": "Non-fiction"}
-    }]"""
-    mapping_ordering_str = """[
+    }]'''
+    mapping_ordering_str = '''[
 {
   "model": "serializers.article",
   "pk": %(article_pk)s,
@@ -42,7 +42,7 @@ class JsonSerializerTestCase(SerializersTestBase, TestCase):
   }
 }
 ]
-"""
+'''
 
     @staticmethod
     def _validate_output(serial_str):
@@ -82,22 +82,20 @@ class JsonSerializerTestCase(SerializersTestBase, TestCase):
                 return super().default(o)
 
         s = serializers.json.Serializer()
-        json_data = s.serialize(
-            [ScoreDecimal(score=decimal.Decimal(1.0))], cls=CustomJSONEncoder
-        )
+        json_data = s.serialize([ScoreDecimal(score=decimal.Decimal(1.0))], cls=CustomJSONEncoder)
         self.assertIn('"fields": {"score": "1"}', json_data)
 
     def test_json_deserializer_exception(self):
         with self.assertRaises(DeserializationError):
-            for obj in serializers.deserialize("json", """[{"pk":1}"""):
+            for obj in serializers.deserialize('json', '''[{"pk":1}'''):
                 pass
 
     def test_helpful_error_message_invalid_pk(self):
-        """
+        '''
         If there is an invalid primary key, the error message should contain
         the model associated with it.
-        """
-        test_string = """[{
+        '''
+        test_string = '''[{
             "pk": "badpk",
             "model": "serializers.player",
             "fields": {
@@ -105,16 +103,16 @@ class JsonSerializerTestCase(SerializersTestBase, TestCase):
                 "rank": 1,
                 "team": "Team"
             }
-        }]"""
-        with self.assertRaisesMessage(DeserializationError, "(serializers.player:pk=badpk)"):
+        }]'''
+        with self.assertRaisesMessage(DeserializationError, '(serializers.player:pk=badpk)'):
             list(serializers.deserialize('json', test_string))
 
     def test_helpful_error_message_invalid_field(self):
-        """
+        '''
         If there is an invalid field value, the error message should contain
         the model associated with it.
-        """
-        test_string = """[{
+        '''
+        test_string = '''[{
             "pk": "1",
             "model": "serializers.player",
             "fields": {
@@ -122,17 +120,17 @@ class JsonSerializerTestCase(SerializersTestBase, TestCase):
                 "rank": "invalidint",
                 "team": "Team"
             }
-        }]"""
+        }]'''
         expected = "(serializers.player:pk=1) field_value was 'invalidint'"
         with self.assertRaisesMessage(DeserializationError, expected):
             list(serializers.deserialize('json', test_string))
 
     def test_helpful_error_message_for_foreign_keys(self):
-        """
+        '''
         Invalid foreign keys with a natural key should throw a helpful error
         message, such as what the failing key is.
-        """
-        test_string = """[{
+        '''
+        test_string = '''[{
             "pk": 1,
             "model": "serializers.category",
             "fields": {
@@ -142,17 +140,17 @@ class JsonSerializerTestCase(SerializersTestBase, TestCase):
                     "metadata"
                 ]
             }
-        }]"""
-        key = ["doesnotexist", "metadata"]
+        }]'''
+        key = ['doesnotexist', 'metadata']
         expected = "(serializers.category:pk=1) field_value was '%r'" % key
         with self.assertRaisesMessage(DeserializationError, expected):
             list(serializers.deserialize('json', test_string))
 
     def test_helpful_error_message_for_many2many_non_natural(self):
-        """
+        '''
         Invalid many-to-many keys should throw a helpful error message.
-        """
-        test_string = """[{
+        '''
+        test_string = '''[{
             "pk": 1,
             "model": "serializers.article",
             "fields": {
@@ -173,17 +171,17 @@ class JsonSerializerTestCase(SerializersTestBase, TestCase):
             "fields": {
                 "name": "Reference"
             }
-        }]"""
+        }]'''
         expected = "(serializers.article:pk=1) field_value was 'doesnotexist'"
         with self.assertRaisesMessage(DeserializationError, expected):
             list(serializers.deserialize('json', test_string))
 
     def test_helpful_error_message_for_many2many_natural1(self):
-        """
+        '''
         Invalid many-to-many keys should throw a helpful error message.
         This tests the code path where one of a list of natural keys is invalid.
-        """
-        test_string = """[{
+        '''
+        test_string = '''[{
             "pk": 1,
             "model": "serializers.categorymetadata",
             "fields": {
@@ -210,20 +208,20 @@ class JsonSerializerTestCase(SerializersTestBase, TestCase):
             "fields": {
                 "name": "Agnes"
             }
-        }]"""
-        key = ["doesnotexist", "meta1"]
+        }]'''
+        key = ['doesnotexist', 'meta1']
         expected = "(serializers.article:pk=1) field_value was '%r'" % key
         with self.assertRaisesMessage(DeserializationError, expected):
             for obj in serializers.deserialize('json', test_string):
                 obj.save()
 
     def test_helpful_error_message_for_many2many_natural2(self):
-        """
+        '''
         Invalid many-to-many keys should throw a helpful error message. This
         tests the code path where a natural many-to-many key has only a single
         value.
-        """
-        test_string = """[{
+        '''
+        test_string = '''[{
             "pk": 1,
             "model": "serializers.article",
             "fields": {
@@ -246,16 +244,16 @@ class JsonSerializerTestCase(SerializersTestBase, TestCase):
             "fields": {
                 "name": "Agnes"
             }
-        }]"""
+        }]'''
         expected = "(serializers.article:pk=1) field_value was 'doesnotexist'"
         with self.assertRaisesMessage(DeserializationError, expected):
             for obj in serializers.deserialize('json', test_string, ignore=False):
                 obj.save()
 
 
-class JsonSerializerTransactionTestCase(SerializersTransactionTestBase, TransactionTestCase):
-    serializer_name = "json"
-    fwd_ref_str = """[
+class JsonSerializerTransactionTestCase(SerializersTransactionTestBase,TransactionTestCase):
+    serializer_name = 'json'
+    fwd_ref_str = '''[
     {
         "pk": 1,
         "model": "serializers.article",
@@ -279,29 +277,19 @@ class JsonSerializerTransactionTestCase(SerializersTransactionTestBase, Transact
         "fields": {
             "name": "Agnes"
         }
-    }]"""
+    }]'''
 
 
 class DjangoJSONEncoderTests(SimpleTestCase):
     def test_lazy_string_encoding(self):
-        self.assertEqual(
-            json.dumps({'lang': gettext_lazy("French")}, cls=DjangoJSONEncoder),
-            '{"lang": "French"}'
-        )
+        self.assertEqual(json.dumps({'lang': gettext_lazy('French')}, cls=DjangoJSONEncoder), '{"lang": "French"}')
         with override('fr'):
-            self.assertEqual(
-                json.dumps({'lang': gettext_lazy("French")}, cls=DjangoJSONEncoder),
-                '{"lang": "Fran\\u00e7ais"}'
-            )
+            self.assertEqual(json.dumps({
+                'lang': gettext_lazy('French')
+            }, cls=DjangoJSONEncoder), '{"lang": "Fran\\u00e7ais"}')
 
     def test_timedelta(self):
         duration = datetime.timedelta(days=1, hours=2, seconds=3)
-        self.assertEqual(
-            json.dumps({'duration': duration}, cls=DjangoJSONEncoder),
-            '{"duration": "P1DT02H00M03S"}'
-        )
+        self.assertEqual(json.dumps({'duration': duration}, cls=DjangoJSONEncoder), '{"duration": "P1DT02H00M03S"}')
         duration = datetime.timedelta(0)
-        self.assertEqual(
-            json.dumps({'duration': duration}, cls=DjangoJSONEncoder),
-            '{"duration": "P0DT00H00M00S"}'
-        )
+        self.assertEqual(json.dumps({'duration': duration}, cls=DjangoJSONEncoder), '{"duration": "P0DT00H00M00S"}')

@@ -15,9 +15,9 @@ def check_url_config(app_configs, **kwargs):
 
 
 def check_resolver(resolver):
-    """
+    '''
     Recursively check the resolver.
-    """
+    '''
     check_method = getattr(resolver, 'check', None)
     if check_method is not None:
         return check_method()
@@ -39,25 +39,21 @@ def check_url_namespaces_unique(app_configs, **kwargs):
     resolver = get_resolver()
     all_namespaces = _load_all_namespaces(resolver)
     counter = Counter(all_namespaces)
-    non_unique_namespaces = [n for n, count in counter.items() if count > 1]
+    non_unique_namespaces = [n for (n, count) in counter.items() if count > 1]
     errors = []
     for namespace in non_unique_namespaces:
-        errors.append(Warning(
-            "URL namespace '{}' isn't unique. You may not be able to reverse "
-            "all URLs in this namespace".format(namespace),
-            id="urls.W005",
-        ))
+        errors.append(Warning("URL namespace '{}' isn't unique. You may not be able to reverse "
+            "all URLs in this namespace".format(namespace), id='urls.W005'))
     return errors
 
 
 def _load_all_namespaces(resolver, parents=()):
-    """
+    '''
     Recursively load all namespaces from URL patterns.
-    """
+    '''
     url_patterns = getattr(resolver, 'url_patterns', [])
     namespaces = [
-        ':'.join(parents + (url.namespace,)) for url in url_patterns
-        if getattr(url, 'namespace', None) is not None
+        ':'.join(parents + (url.namespace,)) for url in url_patterns if getattr(url, 'namespace', None) is not None
     ]
     for pattern in url_patterns:
         namespace = getattr(pattern, 'namespace', None)
@@ -69,28 +65,25 @@ def _load_all_namespaces(resolver, parents=()):
 
 
 def get_warning_for_invalid_pattern(pattern):
-    """
+    '''
     Return a list containing a warning that the pattern is invalid.
 
     describe_pattern() cannot be used here, because we cannot rely on the
     urlpattern having regex or name attributes.
-    """
+    '''
     if isinstance(pattern, str):
-        hint = (
-            "Try removing the string '{}'. The list of urlpatterns should not "
+        hint = "Try removing the string '{}'. The list of urlpatterns should not "
             "have a prefix string as the first element.".format(pattern)
-        )
     elif isinstance(pattern, tuple):
-        hint = "Try using path() instead of a tuple."
+        hint = 'Try using path() instead of a tuple.'
     else:
         hint = None
 
-    return [Error(
-        "Your URL pattern {!r} is invalid. Ensure that urlpatterns is a list "
-        "of path() and/or re_path() instances.".format(pattern),
-        hint=hint,
-        id="urls.E004",
-    )]
+    return \
+        [
+            Error("Your URL pattern {!r} is invalid. Ensure that urlpatterns is a list "
+        "of path() and/or re_path() instances.".format(pattern), hint=hint, id='urls.E004')
+        ]
 
 
 @register(Tags.urls)
@@ -104,7 +97,4 @@ def check_url_settings(app_configs, **kwargs):
 
 
 def E006(name):
-    return Error(
-        'The {} setting must end with a slash.'.format(name),
-        id='urls.E006',
-    )
+    return Error('The {} setting must end with a slash.'.format(name), id='urls.E006')

@@ -16,7 +16,7 @@ class DataUploadMaxMemorySizeFormPostTests(SimpleTestCase):
             'REQUEST_METHOD': 'POST',
             'CONTENT_TYPE': 'application/x-www-form-urlencoded',
             'CONTENT_LENGTH': len(payload),
-            'wsgi.input': payload,
+            'wsgi.input': payload
         })
 
     def test_size_exceeded(self):
@@ -35,7 +35,7 @@ class DataUploadMaxMemorySizeFormPostTests(SimpleTestCase):
 
 class DataUploadMaxMemorySizeMultipartPostTests(SimpleTestCase):
     def setUp(self):
-        payload = FakePayload("\r\n".join([
+        payload = FakePayload('\r\n'.join([
             '--boundary',
             'Content-Disposition: form-data; name="name"',
             '',
@@ -47,7 +47,7 @@ class DataUploadMaxMemorySizeMultipartPostTests(SimpleTestCase):
             'REQUEST_METHOD': 'POST',
             'CONTENT_TYPE': 'multipart/form-data; boundary=boundary',
             'CONTENT_LENGTH': len(payload),
-            'wsgi.input': payload,
+            'wsgi.input': payload
         })
 
     def test_size_exceeded(self):
@@ -64,7 +64,7 @@ class DataUploadMaxMemorySizeMultipartPostTests(SimpleTestCase):
             self.request._load_post_and_files()
 
     def test_file_passes(self):
-        payload = FakePayload("\r\n".join([
+        payload = FakePayload('\r\n'.join([
             '--boundary',
             'Content-Disposition: form-data; name="file1"; filename="test.file"',
             '',
@@ -76,20 +76,16 @@ class DataUploadMaxMemorySizeMultipartPostTests(SimpleTestCase):
             'REQUEST_METHOD': 'POST',
             'CONTENT_TYPE': 'multipart/form-data; boundary=boundary',
             'CONTENT_LENGTH': len(payload),
-            'wsgi.input': payload,
+            'wsgi.input': payload
         })
         with self.settings(DATA_UPLOAD_MAX_MEMORY_SIZE=1):
             request._load_post_and_files()
-            self.assertIn('file1', request.FILES, "Upload file not present")
+            self.assertIn('file1', request.FILES, 'Upload file not present')
 
 
 class DataUploadMaxMemorySizeGetTests(SimpleTestCase):
     def setUp(self):
-        self.request = WSGIRequest({
-            'REQUEST_METHOD': 'GET',
-            'wsgi.input': BytesIO(b''),
-            'CONTENT_LENGTH': 3,
-        })
+        self.request = WSGIRequest({'REQUEST_METHOD': 'GET', 'wsgi.input': BytesIO(b''), 'CONTENT_LENGTH': 3})
 
     def test_data_upload_max_memory_size_exceeded(self):
         with self.settings(DATA_UPLOAD_MAX_MEMORY_SIZE=2):
@@ -110,30 +106,25 @@ class DataUploadMaxMemorySizeGetTests(SimpleTestCase):
 
 
 class DataUploadMaxNumberOfFieldsGet(SimpleTestCase):
-
     def test_get_max_fields_exceeded(self):
         with self.settings(DATA_UPLOAD_MAX_NUMBER_FIELDS=1):
             with self.assertRaisesMessage(TooManyFieldsSent, TOO_MANY_FIELDS_MSG):
                 request = WSGIRequest({
                     'REQUEST_METHOD': 'GET',
                     'wsgi.input': BytesIO(b''),
-                    'QUERY_STRING': 'a=1&a=2;a=3',
+                    'QUERY_STRING': 'a=1&a=2;a=3'
                 })
                 request.GET['a']
 
     def test_get_max_fields_not_exceeded(self):
         with self.settings(DATA_UPLOAD_MAX_NUMBER_FIELDS=3):
-            request = WSGIRequest({
-                'REQUEST_METHOD': 'GET',
-                'wsgi.input': BytesIO(b''),
-                'QUERY_STRING': 'a=1&a=2;a=3',
-            })
+            request = WSGIRequest({'REQUEST_METHOD': 'GET', 'wsgi.input': BytesIO(b''), 'QUERY_STRING': 'a=1&a=2;a=3'})
             request.GET['a']
 
 
 class DataUploadMaxNumberOfFieldsMultipartPost(SimpleTestCase):
     def setUp(self):
-        payload = FakePayload("\r\n".join([
+        payload = FakePayload('\r\n'.join([
             '--boundary',
             'Content-Disposition: form-data; name="name1"',
             '',
@@ -149,7 +140,7 @@ class DataUploadMaxNumberOfFieldsMultipartPost(SimpleTestCase):
             'REQUEST_METHOD': 'POST',
             'CONTENT_TYPE': 'multipart/form-data; boundary=boundary',
             'CONTENT_LENGTH': len(payload),
-            'wsgi.input': payload,
+            'wsgi.input': payload
         })
 
     def test_number_exceeded(self):
@@ -168,12 +159,12 @@ class DataUploadMaxNumberOfFieldsMultipartPost(SimpleTestCase):
 
 class DataUploadMaxNumberOfFieldsFormPost(SimpleTestCase):
     def setUp(self):
-        payload = FakePayload("\r\n".join(['a=1&a=2;a=3', '']))
+        payload = FakePayload('\r\n'.join(['a=1&a=2;a=3', '']))
         self.request = WSGIRequest({
             'REQUEST_METHOD': 'POST',
             'CONTENT_TYPE': 'application/x-www-form-urlencoded',
             'CONTENT_LENGTH': len(payload),
-            'wsgi.input': payload,
+            'wsgi.input': payload
         })
 
     def test_number_exceeded(self):

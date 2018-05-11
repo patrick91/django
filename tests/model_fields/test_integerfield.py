@@ -5,10 +5,7 @@ from django.core.exceptions import ValidationError
 from django.db import IntegrityError, connection, models
 from django.test import SimpleTestCase, TestCase
 
-from .models import (
-    BigIntegerModel, IntegerModel, PositiveIntegerModel,
-    PositiveSmallIntegerModel, SmallIntegerModel,
-)
+from .models import BigIntegerModel, IntegerModel, PositiveIntegerModel, PositiveSmallIntegerModel, SmallIntegerModel
 
 
 class IntegerFieldTests(TestCase):
@@ -22,10 +19,10 @@ class IntegerFieldTests(TestCase):
         return connection.ops.integer_field_range(internal_type)
 
     def test_documented_range(self):
-        """
+        '''
         Values within the documented safe range pass validation, and can be
         saved and retrieved without corruption.
-        """
+        '''
         min_value, max_value = self.documented_range
 
         instance = self.model(value=min_value)
@@ -43,9 +40,9 @@ class IntegerFieldTests(TestCase):
         self.assertEqual(qs[0].value, max_value)
 
     def test_backend_range_save(self):
-        """
+        '''
         Backend specific ranges can be saved without corruption.
-        """
+        '''
         min_value, max_value = self.backend_range
 
         if min_value is not None:
@@ -65,17 +62,15 @@ class IntegerFieldTests(TestCase):
             self.assertEqual(qs[0].value, max_value)
 
     def test_backend_range_validation(self):
-        """
+        '''
         Backend specific ranges are enforced at the model validation level
         (#12030).
-        """
+        '''
         min_value, max_value = self.backend_range
 
         if min_value is not None:
             instance = self.model(value=min_value - 1)
-            expected_message = validators.MinValueValidator.message % {
-                'limit_value': min_value,
-            }
+            expected_message = validators.MinValueValidator.message % {'limit_value': min_value}
             with self.assertRaisesMessage(ValidationError, expected_message):
                 instance.full_clean()
             instance.value = min_value
@@ -83,9 +78,7 @@ class IntegerFieldTests(TestCase):
 
         if max_value is not None:
             instance = self.model(value=max_value + 1)
-            expected_message = validators.MaxValueValidator.message % {
-                'limit_value': max_value,
-            }
+            expected_message = validators.MaxValueValidator.message % {'limit_value': max_value}
             with self.assertRaisesMessage(ValidationError, expected_message):
                 instance.full_clean()
             instance.value = max_value
@@ -100,24 +93,20 @@ class IntegerFieldTests(TestCase):
 
         if min_backend_value is not None:
             min_custom_value = min_backend_value + 1
-            ranged_value_field = self.model._meta.get_field('value').__class__(
-                validators=[validators.MinValueValidator(min_custom_value)]
-            )
-            field_range_message = validators.MinValueValidator.message % {
-                'limit_value': min_custom_value,
-            }
-            with self.assertRaisesMessage(ValidationError, "[%r]" % field_range_message):
+            ranged_value_field = self.model._meta.get_field('value').__class__(validators=[
+                validators.MinValueValidator(min_custom_value)
+            ])
+            field_range_message = validators.MinValueValidator.message % {'limit_value': min_custom_value}
+            with self.assertRaisesMessage(ValidationError, '[%r]' % field_range_message):
                 ranged_value_field.run_validators(min_backend_value - 1)
 
         if max_backend_value is not None:
             max_custom_value = max_backend_value - 1
-            ranged_value_field = self.model._meta.get_field('value').__class__(
-                validators=[validators.MaxValueValidator(max_custom_value)]
-            )
-            field_range_message = validators.MaxValueValidator.message % {
-                'limit_value': max_custom_value,
-            }
-            with self.assertRaisesMessage(ValidationError, "[%r]" % field_range_message):
+            ranged_value_field = self.model._meta.get_field('value').__class__(validators=[
+                validators.MaxValueValidator(max_custom_value)
+            ])
+            field_range_message = validators.MaxValueValidator.message % {'limit_value': max_custom_value}
+            with self.assertRaisesMessage(ValidationError, '[%r]' % field_range_message):
                 ranged_value_field.run_validators(max_backend_value + 1)
 
     def test_types(self):
@@ -162,7 +151,6 @@ class PositiveIntegerFieldTests(IntegerFieldTests):
 
 
 class ValidationTests(SimpleTestCase):
-
     def test_integerfield_cleans_valid_string(self):
         f = models.IntegerField()
         self.assertEqual(f.clean('2', None), 2)

@@ -5,7 +5,6 @@ __all__ = ['BrinIndex', 'GinIndex', 'GistIndex']
 
 
 class PostgresIndex(Index):
-
     @cached_property
     def max_name_length(self):
         # Allow an index name longer than 30 characters when the suffix is
@@ -18,10 +17,7 @@ class PostgresIndex(Index):
         statement = super().create_sql(model, schema_editor, using=' USING %s' % self.suffix)
         with_params = self.get_with_params()
         if with_params:
-            statement.parts['extra'] = 'WITH (%s) %s' % (
-                ', '.join(with_params),
-                statement.parts['extra'],
-            )
+            statement.parts['extra'] = 'WITH (%s) %s' % (', '.join(with_params), statement.parts['extra'])
         return statement
 
     def get_with_params(self):
@@ -71,7 +67,7 @@ class GinIndex(PostgresIndex):
         if self.gin_pending_list_limit is not None:
             with_params.append('gin_pending_list_limit = %d' % self.gin_pending_list_limit)
         if self.fastupdate is not None:
-            with_params.append('fastupdate = %s' % ('on' if self.fastupdate else 'off'))
+            with_params.append('fastupdate = %s' % 'on' if self.fastupdate else 'off')
         return with_params
 
 
@@ -94,7 +90,7 @@ class GistIndex(PostgresIndex):
     def get_with_params(self):
         with_params = []
         if self.buffering is not None:
-            with_params.append('buffering = %s' % ('on' if self.buffering else 'off'))
+            with_params.append('buffering = %s' % 'on' if self.buffering else 'off')
         if self.fillfactor is not None:
             with_params.append('fillfactor = %d' % self.fillfactor)
         return with_params

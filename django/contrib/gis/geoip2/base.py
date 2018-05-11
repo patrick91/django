@@ -13,7 +13,7 @@ from .resources import City, Country
 GEOIP_SETTINGS = {
     'GEOIP_PATH': getattr(settings, 'GEOIP_PATH', None),
     'GEOIP_CITY': getattr(settings, 'GEOIP_CITY', 'GeoLite2-City.mmdb'),
-    'GEOIP_COUNTRY': getattr(settings, 'GEOIP_COUNTRY', 'GeoLite2-Country.mmdb'),
+    'GEOIP_COUNTRY': getattr(settings, 'GEOIP_COUNTRY', 'GeoLite2-Country.mmdb')
 }
 
 
@@ -34,11 +34,9 @@ class GeoIP2:
     # Load database into memory. Pure Python.
     MODE_MEMORY = 8
     cache_options = frozenset((MODE_AUTO, MODE_MMAP_EXT, MODE_MMAP, MODE_FILE, MODE_MEMORY))
-
     # Paths to the city & country binary databases.
     _city_file = ''
     _country_file = ''
-
     # Initially, pointers to GeoIP file references are NULL.
     _city = None
     _country = None
@@ -71,7 +69,6 @@ class GeoIP2:
             self._cache = cache
         else:
             raise GeoIP2Exception('Invalid GeoIP caching option: %s' % cache)
-
         # Getting the GeoIP data path.
         path = path or GEOIP_SETTINGS['GEOIP_PATH']
         if not path:
@@ -84,12 +81,12 @@ class GeoIP2:
             # Constructing the GeoIP database filenames using the settings
             # dictionary. If the database files for the GeoLite country
             # and/or city datasets exist, then try to open them.
-            country_db = path / (country or GEOIP_SETTINGS['GEOIP_COUNTRY'])
+            country_db = path / country or GEOIP_SETTINGS['GEOIP_COUNTRY']
             if country_db.is_file():
                 self._country = geoip2.database.Reader(str(country_db), mode=cache)
                 self._country_file = country_db
 
-            city_db = path / (city or GEOIP_SETTINGS['GEOIP_CITY'])
+            city_db = path / city or GEOIP_SETTINGS['GEOIP_CITY']
             if city_db.is_file():
                 self._city = geoip2.database.Reader(str(city_db), mode=cache)
                 self._city_file = city_db
@@ -134,27 +131,28 @@ class GeoIP2:
     def __repr__(self):
         meta = self._reader.metadata()
         version = '[v%s.%s]' % (meta.binary_format_major_version, meta.binary_format_minor_version)
-        return '<%(cls)s %(version)s _country_file="%(country)s", _city_file="%(city)s">' % {
-            'cls': self.__class__.__name__,
-            'version': version,
-            'country': self._country_file,
-            'city': self._city_file,
-        }
+        return \
+            '<%(cls)s %(version)s _country_file="%(country)s", _city_file="%(city)s">' \
+            % \
+            {
+                'cls': self.__class__.__name__,
+                'version': version,
+                'country': self._country_file,
+                'city': self._city_file
+            }
 
     def _check_query(self, query, country=False, city=False, city_or_country=False):
-        "Check the query and database availability."
+        'Check the query and database availability.'
         # Making sure a string was passed in for the query.
         if not isinstance(query, str):
             raise TypeError('GeoIP query must be a string, not type %s' % type(query).__name__)
-
         # Extra checks for the existence of country and city databases.
-        if city_or_country and not (self._country or self._city):
+        if city_or_country and not self._country or self._city:
             raise GeoIP2Exception('Invalid GeoIP country and city data files.')
         elif country and not self._country:
             raise GeoIP2Exception('Invalid GeoIP country data file: %s' % self._country_file)
         elif city and not self._city:
             raise GeoIP2Exception('Invalid GeoIP city data file: %s' % self._city_file)
-
         # Return the query string back to the caller. GeoIP2 only takes IP addresses.
         try:
             validate_ipv46_address(query)
@@ -164,21 +162,21 @@ class GeoIP2:
         return query
 
     def city(self, query):
-        """
+        '''
         Return a dictionary of city information for the given IP address or
         Fully Qualified Domain Name (FQDN). Some information in the dictionary
         may be undefined (None).
-        """
+        '''
         enc_query = self._check_query(query, city=True)
         return City(self._city.city(enc_query))
 
     def country_code(self, query):
-        "Return the country code for the given IP Address or FQDN."
+        'Return the country code for the given IP Address or FQDN.'
         enc_query = self._check_query(query, city_or_country=True)
         return self.country(enc_query)['country_code']
 
     def country_name(self, query):
-        "Return the country name for the given IP Address or FQDN."
+        'Return the country name for the given IP Address or FQDN.'
         enc_query = self._check_query(query, city_or_country=True)
         return self.country(enc_query)['country_name']
 
@@ -201,15 +199,15 @@ class GeoIP2:
             return tuple(cdict[o] for o in ordering)
 
     def lon_lat(self, query):
-        "Return a tuple of the (longitude, latitude) for the given query."
+        'Return a tuple of the (longitude, latitude) for the given query.'
         return self.coords(query)
 
     def lat_lon(self, query):
-        "Return a tuple of the (latitude, longitude) for the given query."
+        'Return a tuple of the (latitude, longitude) for the given query.'
         return self.coords(query, ('latitude', 'longitude'))
 
     def geos(self, query):
-        "Return a GEOS Point object for the given query."
+        'Return a GEOS Point object for the given query.'
         ll = self.lon_lat(query)
         if ll:
             from django.contrib.gis.geos import Point
@@ -220,7 +218,7 @@ class GeoIP2:
     # #### GeoIP Database Information Routines ####
     @property
     def info(self):
-        "Return information about the GeoIP library and databases in use."
+        'Return information about the GeoIP library and databases in use.'
         meta = self._reader.metadata()
         return 'GeoIP Library:\n\t%s.%s\n' % (meta.binary_format_major_version, meta.binary_format_minor_version)
 

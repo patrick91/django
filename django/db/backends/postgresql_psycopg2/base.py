@@ -1,1 +1,1 @@
-from ..postgresql.base import *  # NOQA
+from ..postgresql.base import * # NOQA

@@ -1,11 +1,11 @@
-"""
+'''
  This module houses the ctypes initialization procedures, as well
  as the notice and error handler function callbacks (get called
  when an error occurs in GEOS).
 
  This module also houses GEOS Pointer utilities, including
  get_pointer_arr(), and GEOM_PTR.
-"""
+'''
 import logging
 import os
 from ctypes import CDLL, CFUNCTYPE, POINTER, Structure, c_char_p
@@ -23,10 +23,8 @@ def load_geos():
     try:
         from django.conf import settings
         lib_path = settings.GEOS_LIBRARY_PATH
-    except (AttributeError, EnvironmentError,
-            ImportError, ImproperlyConfigured):
+    except (AttributeError, EnvironmentError, ImportError, ImproperlyConfigured):
         lib_path = None
-
     # Setting the appropriate names for the GEOS-C library.
     if lib_path:
         lib_names = None
@@ -38,7 +36,6 @@ def load_geos():
         lib_names = ['geos_c', 'GEOS']
     else:
         raise ImportError('Unsupported OS "%s"' % os.name)
-
     # Using the ctypes `find_library` utility to find the path to the GEOS
     # shared library.  This is better than manually specifying each library name
     # and extension (e.g., libgeos_c.[so|so.1|dylib].).
@@ -47,14 +44,13 @@ def load_geos():
             lib_path = find_library(lib_name)
             if lib_path is not None:
                 break
-
     # No GEOS library could be found.
     if lib_path is None:
-        raise ImportError(
-            'Could not find the GEOS library (tried "%s"). '
-            'Try setting GEOS_LIBRARY_PATH in your settings.' %
-            '", "'.join(lib_names)
-        )
+        raise
+        ImportError('Could not find the GEOS library (tried "%s"). '
+            'Try setting GEOS_LIBRARY_PATH in your settings.' \
+        % \
+        '", "'.join(lib_names))
     # Getting the GEOS C library.  The C interface (CDLL) is used for
     # both *NIX and Windows.
     # See the GEOS C API source code for more details on the library function calls:
@@ -102,8 +98,8 @@ def error_h(fmt, lst):
 
 error_h = ERRORFUNC(error_h)
 
-# #### GEOS Geometry C data structures, and utility functions. ####
 
+# #### GEOS Geometry C data structures, and utility functions. ####
 
 # Opaque GEOS geometry structures, used for GEOM_PTR and CS_PTR
 class GEOSGeom_t(Structure):
@@ -133,9 +129,9 @@ lgeos = SimpleLazyObject(load_geos)
 
 
 class GEOSFuncFactory:
-    """
+    '''
     Lazy loading of GEOS functions.
-    """
+    '''
     argtypes = None
     restype = None
     errcheck = None
@@ -166,10 +162,10 @@ class GEOSFuncFactory:
 
 
 def geos_version():
-    """Return the string version of the GEOS library."""
+    '''Return the string version of the GEOS library.'''
     return lgeos.GEOSversion()
 
 
 def geos_version_tuple():
-    """Return the GEOS version as a tuple (major, minor, subminor)."""
+    '''Return the GEOS version as a tuple (major, minor, subminor).'''
     return get_version_tuple(geos_version().decode())

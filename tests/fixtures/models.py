@@ -41,8 +41,7 @@ class Article(models.Model):
 class Blog(models.Model):
     name = models.CharField(max_length=100)
     featured = models.ForeignKey(Article, models.CASCADE, related_name='fixtures_featured_set')
-    articles = models.ManyToManyField(Article, blank=True,
-                                      related_name='fixtures_articles_set')
+    articles = models.ManyToManyField(Article, blank=True, related_name='fixtures_articles_set')
 
     def __str__(self):
         return self.name
@@ -50,13 +49,12 @@ class Blog(models.Model):
 
 class Tag(models.Model):
     name = models.CharField(max_length=100)
-    tagged_type = models.ForeignKey(ContentType, models.CASCADE, related_name="fixtures_tag_set")
+    tagged_type = models.ForeignKey(ContentType, models.CASCADE, related_name='fixtures_tag_set')
     tagged_id = models.PositiveIntegerField(default=0)
     tagged = GenericForeignKey(ct_field='tagged_type', fk_field='tagged_id')
 
     def __str__(self):
-        return '<%s: %s> tagged "%s"' % (self.tagged.__class__.__name__,
-                                         self.tagged, self.name)
+        return '<%s: %s> tagged "%s"' % (self.tagged.__class__.__name__, self.tagged, self.name)
 
 
 class PersonManager(models.Manager):
@@ -75,7 +73,7 @@ class Person(models.Model):
         ordering = ('name',)
 
     def natural_key(self):
-        return (self.name,)
+        return self.name,
 
 
 class SpyManager(PersonManager):
@@ -98,8 +96,7 @@ class Visa(models.Model):
     permissions = models.ManyToManyField(Permission, blank=True)
 
     def __str__(self):
-        return '%s %s' % (self.person.name,
-                          ', '.join(p.name for p in self.permissions.all()))
+        return '%s %s' % (self.person.name, ', '.join(p.name for p in self.permissions.all()))
 
 
 class Book(models.Model):

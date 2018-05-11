@@ -13,11 +13,11 @@ from django.utils.module_loading import module_dir
 
 
 class MigrationTestBase(TransactionTestCase):
-    """
+    '''
     Contains an extended set of asserts for testing migrations and schema operations.
-    """
+    '''
 
-    available_apps = ["migrations"]
+    available_apps = ['migrations']
     multi_db = True
 
     def tearDown(self):
@@ -55,28 +55,22 @@ class MigrationTestBase(TransactionTestCase):
 
     def assertIndexExists(self, table, columns, value=True, using='default'):
         with connections[using].cursor() as cursor:
-            self.assertEqual(
-                value,
-                any(
-                    c["index"]
-                    for c in connections[using].introspection.get_constraints(cursor, table).values()
-                    if c['columns'] == list(columns)
-                ),
-            )
+            self.assertEqual(value, any(
+                c['index']
+                for c in connections[using].introspection.get_constraints(cursor, table).values()
+                if c['columns'] == list(columns)
+            ))
 
     def assertIndexNotExists(self, table, columns):
         return self.assertIndexExists(table, columns, False)
 
     def assertFKExists(self, table, columns, to, value=True, using='default'):
         with connections[using].cursor() as cursor:
-            self.assertEqual(
-                value,
-                any(
-                    c["foreign_key"] == to
-                    for c in connections[using].introspection.get_constraints(cursor, table).values()
-                    if c['columns'] == list(columns)
-                ),
-            )
+            self.assertEqual(value, any(
+                c['foreign_key'] == to
+                for c in connections[using].introspection.get_constraints(cursor, table).values()
+                if c['columns'] == list(columns)
+            ))
 
     def assertFKNotExists(self, table, columns, to):
         return self.assertFKExists(table, columns, to, False)

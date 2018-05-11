@@ -12,9 +12,6 @@ class AdminAuthenticationFormTests(TestCase):
         User.objects.create_user(username='inactive', password='password', is_active=False)
 
     def test_inactive_user(self):
-        data = {
-            'username': 'inactive',
-            'password': 'password',
-        }
+        data = {'username': 'inactive', 'password': 'password'}
         form = AdminAuthenticationForm(None, data)
         self.assertEqual(form.non_field_errors(), ['This account is inactive.'])

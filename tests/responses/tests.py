@@ -33,10 +33,10 @@ class HttpResponseBaseTests(SimpleTestCase):
             r.tell()
 
     def test_setdefault(self):
-        """
+        '''
         HttpResponseBase.setdefault() should not change an existing header
         and should be case insensitive.
-        """
+        '''
         r = HttpResponseBase()
 
         r['Header'] = 'Value'
@@ -51,13 +51,13 @@ class HttpResponseTests(SimpleTestCase):
     def test_status_code(self):
         resp = HttpResponse(status=503)
         self.assertEqual(resp.status_code, 503)
-        self.assertEqual(resp.reason_phrase, "Service Unavailable")
+        self.assertEqual(resp.reason_phrase, 'Service Unavailable')
 
     def test_change_status_code(self):
         resp = HttpResponse()
         resp.status_code = 503
         self.assertEqual(resp.status_code, 503)
-        self.assertEqual(resp.reason_phrase, "Service Unavailable")
+        self.assertEqual(resp.reason_phrase, 'Service Unavailable')
 
     def test_valid_status_code_string(self):
         resp = HttpResponse(status='100')
@@ -86,7 +86,7 @@ class HttpResponseTests(SimpleTestCase):
         self.assertEqual(resp.reason_phrase, reason)
 
     def test_charset_detection(self):
-        """ HttpResponse should parse charset from content_type."""
+        ''' HttpResponse should parse charset from content_type.'''
         response = HttpResponse('ok')
         self.assertEqual(response.charset, settings.DEFAULT_CHARSET)
 
@@ -110,8 +110,8 @@ class HttpResponseTests(SimpleTestCase):
         self.assertEqual(response.charset, settings.DEFAULT_CHARSET)
 
     def test_response_content_charset(self):
-        """HttpResponse should encode based on charset."""
-        content = "Café :)"
+        '''HttpResponse should encode based on charset.'''
+        content = 'Café :)'
         utf8_content = content.encode(UTF8)
         iso_content = content.encode(ISO88591)
 
@@ -128,7 +128,7 @@ class HttpResponseTests(SimpleTestCase):
         self.assertContains(response, iso_content)
 
     def test_repr(self):
-        response = HttpResponse(content="Café :)".encode(UTF8), status=201)
+        response = HttpResponse(content='Café :)'.encode(UTF8), status=201)
         expected = '<HttpResponse status_code=201, "text/html; charset=utf-8">'
         self.assertEqual(repr(response), expected)
 
@@ -138,14 +138,14 @@ class HttpResponseTests(SimpleTestCase):
         self.assertEqual(repr(response), '<HttpResponse status_code=204>')
 
     def test_wrap_textiowrapper(self):
-        content = "Café :)"
+        content = 'Café :)'
         r = HttpResponse()
         with io.TextIOWrapper(r, UTF8) as buf:
             buf.write(content)
         self.assertEqual(r.content, content.encode(UTF8))
 
     def test_generator_cache(self):
-        generator = ("{}".format(i) for i in range(10))
+        generator = ('{}'.format(i) for i in range(10))
         response = HttpResponse(content=generator)
         self.assertEqual(response.content, b'0123456789')
         with self.assertRaises(StopIteration):

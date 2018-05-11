@@ -4,9 +4,9 @@ from ..utils import SafeClass, UnsafeClass, setup
 
 
 class AutoescapeStringfilterTests(SimpleTestCase):
-    """
+    '''
     Filters decorated with stringfilter still respect is_safe.
-    """
+    '''
 
     @setup({'autoescape-stringfilter01': '{{ unsafe|capfirst }}'})
     def test_autoescape_stringfilter01(self):

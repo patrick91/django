@@ -6,50 +6,40 @@ from zipimport import zipimporter
 
 from django.test import SimpleTestCase, TestCase, modify_settings
 from django.test.utils import extend_sys_path
-from django.utils.module_loading import (
-    autodiscover_modules, import_string, module_has_submodule,
-)
+from django.utils.module_loading import autodiscover_modules, import_string, module_has_submodule
 
 
 class DefaultLoader(unittest.TestCase):
-
     def test_loader(self):
-        "Normal module existence can be tested"
+        'Normal module existence can be tested'
         test_module = import_module('utils_tests.test_module')
-        test_no_submodule = import_module(
-            'utils_tests.test_no_submodule')
-
+        test_no_submodule = import_module('utils_tests.test_no_submodule')
         # An importable child
         self.assertTrue(module_has_submodule(test_module, 'good_module'))
         mod = import_module('utils_tests.test_module.good_module')
         self.assertEqual(mod.content, 'Good Module')
-
         # A child that exists, but will generate an import error if loaded
         self.assertTrue(module_has_submodule(test_module, 'bad_module'))
         with self.assertRaises(ImportError):
             import_module('utils_tests.test_module.bad_module')
-
         # A child that doesn't exist
         self.assertFalse(module_has_submodule(test_module, 'no_such_module'))
         with self.assertRaises(ImportError):
             import_module('utils_tests.test_module.no_such_module')
-
         # A child that doesn't exist, but is the name of a package on the path
         self.assertFalse(module_has_submodule(test_module, 'django'))
         with self.assertRaises(ImportError):
             import_module('utils_tests.test_module.django')
-
         # Don't be confused by caching of import misses
-        import types  # NOQA: causes attempted import of utils_tests.types
+        import types # NOQA: causes attempted import of utils_tests.types
         self.assertFalse(module_has_submodule(sys.modules['utils_tests'], 'types'))
-
         # A module which doesn't have a __path__ (so no submodules)
         self.assertFalse(module_has_submodule(test_no_submodule, 'anything'))
         with self.assertRaises(ImportError):
             import_module('utils_tests.test_no_submodule.anything')
 
     def test_has_sumbodule_with_dotted_path(self):
-        """Nested module existence can be tested."""
+        '''Nested module existence can be tested.'''
         test_module = import_module('utils_tests.test_module')
         # A grandchild that exists.
         self.assertIs(module_has_submodule(test_module, 'child_module.grandchild_module'), True)
@@ -77,42 +67,36 @@ class EggLoader(unittest.TestCase):
         sys.modules.pop('egg_module', None)
 
     def test_shallow_loader(self):
-        "Module existence can be tested inside eggs"
+        'Module existence can be tested inside eggs'
         egg_name = '%s/test_egg.egg' % self.egg_dir
         with extend_sys_path(egg_name):
             egg_module = import_module('egg_module')
-
             # An importable child
             self.assertTrue(module_has_submodule(egg_module, 'good_module'))
             mod = import_module('egg_module.good_module')
             self.assertEqual(mod.content, 'Good Module')
-
             # A child that exists, but will generate an import error if loaded
             self.assertTrue(module_has_submodule(egg_module, 'bad_module'))
             with self.assertRaises(ImportError):
                 import_module('egg_module.bad_module')
-
             # A child that doesn't exist
             self.assertFalse(module_has_submodule(egg_module, 'no_such_module'))
             with self.assertRaises(ImportError):
                 import_module('egg_module.no_such_module')
 
     def test_deep_loader(self):
-        "Modules deep inside an egg can still be tested for existence"
+        'Modules deep inside an egg can still be tested for existence'
         egg_name = '%s/test_egg.egg' % self.egg_dir
         with extend_sys_path(egg_name):
             egg_module = import_module('egg_module.sub1.sub2')
-
             # An importable child
             self.assertTrue(module_has_submodule(egg_module, 'good_module'))
             mod = import_module('egg_module.sub1.sub2.good_module')
             self.assertEqual(mod.content, 'Deep Good Module')
-
             # A child that exists, but will generate an import error if loaded
             self.assertTrue(module_has_submodule(egg_module, 'bad_module'))
             with self.assertRaises(ImportError):
                 import_module('egg_module.sub1.sub2.bad_module')
-
             # A child that doesn't exist
             self.assertFalse(module_has_submodule(egg_module, 'no_such_module'))
             with self.assertRaises(ImportError):
@@ -123,7 +107,6 @@ class ModuleImportTestCase(TestCase):
     def test_import_string(self):
         cls = import_string('django.utils.module_loading.import_string')
         self.assertEqual(cls, import_string)
-
         # Test exceptions raised
         with self.assertRaises(ImportError):
             import_string('no_dots_in_path')
@@ -134,7 +117,6 @@ class ModuleImportTestCase(TestCase):
 
 @modify_settings(INSTALLED_APPS={'append': 'utils_tests.test_module'})
 class AutodiscoverModulesTestCase(SimpleTestCase):
-
     def tearDown(self):
         sys.path_importer_cache.clear()
 
@@ -168,13 +150,13 @@ class AutodiscoverModulesTestCase(SimpleTestCase):
 
     def test_validate_registry_keeps_intact(self):
         from .test_module import site
-        with self.assertRaisesMessage(Exception, "Some random exception."):
+        with self.assertRaisesMessage(Exception, 'Some random exception.'):
             autodiscover_modules('another_bad_module', register_to=site)
         self.assertEqual(site._registry, {})
 
     def test_validate_registry_resets_after_erroneous_module(self):
         from .test_module import site
-        with self.assertRaisesMessage(Exception, "Some random exception."):
+        with self.assertRaisesMessage(Exception, 'Some random exception.'):
             autodiscover_modules('another_good_module', 'another_bad_module', register_to=site)
         self.assertEqual(site._registry, {'lorem': 'ipsum'})
 
@@ -211,6 +193,7 @@ class CustomLoader(EggLoader):
     split into two classes. Although the EggLoader combines both functions
     into one class, this isn't required.
     """
+
     def setUp(self):
         super().setUp()
         sys.path_hooks.insert(0, TestFinder)

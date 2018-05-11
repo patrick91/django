@@ -8,29 +8,17 @@ from .models import Thing
 class ReservedNameTests(TestCase):
     def generate(self):
         day1 = datetime.date(2005, 1, 1)
-        Thing.objects.create(
-            when='a', join='b', like='c', drop='d', alter='e', having='f',
-            where=day1, has_hyphen='h',
-        )
+        Thing.objects.create(when='a', join='b', like='c', drop='d', alter='e', having='f', where=day1, has_hyphen='h')
         day2 = datetime.date(2006, 2, 2)
-        Thing.objects.create(
-            when='h', join='i', like='j', drop='k', alter='l', having='m',
-            where=day2,
-        )
+        Thing.objects.create(when='h', join='i', like='j', drop='k', alter='l', having='m', where=day2)
 
     def test_simple(self):
         day1 = datetime.date(2005, 1, 1)
-        t = Thing.objects.create(
-            when='a', join='b', like='c', drop='d',
-            alter='e', having='f', where=day1, has_hyphen='h',
-        )
+        t = Thing.objects.create(when='a', join='b', like='c', drop='d', alter='e', having='f', where=day1, has_hyphen='h')
         self.assertEqual(t.when, 'a')
 
         day2 = datetime.date(2006, 2, 2)
-        u = Thing.objects.create(
-            when='h', join='i', like='j', drop='k', alter='l', having='m',
-            where=day2,
-        )
+        u = Thing.objects.create(when='h', join='i', like='j', drop='k', alter='l', having='m', where=day2)
         self.assertEqual(u.when, 'h')
 
     def test_order_by(self):
@@ -47,10 +35,7 @@ class ReservedNameTests(TestCase):
     def test_dates(self):
         self.generate()
         resp = Thing.objects.dates('where', 'year')
-        self.assertEqual(list(resp), [
-            datetime.date(2005, 1, 1),
-            datetime.date(2006, 1, 1),
-        ])
+        self.assertEqual(list(resp), [datetime.date(2005, 1, 1), datetime.date(2006, 1, 1)])
 
     def test_month_filter(self):
         self.generate()

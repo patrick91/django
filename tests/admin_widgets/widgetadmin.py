@@ -1,9 +1,6 @@
 from django.contrib import admin
 
-from .models import (
-    Advisor, Album, Band, Bee, Car, CarTire, Event, Inventory, Member, Profile,
-    School, User,
-)
+from .models import Advisor, Album, Band, Bee, Car, CarTire, Event, Inventory, Member, Profile, School, User
 
 
 class WidgetAdmin(admin.AdminSite):
@@ -17,8 +14,8 @@ class CarAdmin(admin.ModelAdmin):
 
 class CarTireAdmin(admin.ModelAdmin):
     def formfield_for_foreignkey(self, db_field, request, **kwargs):
-        if db_field.name == "car":
-            kwargs["queryset"] = Car.objects.filter(owner=request.user)
+        if db_field.name == 'car':
+            kwargs['queryset'] = Car.objects.filter(owner=request.user)
             return db_field.formfield(**kwargs)
         return super().formfield_for_foreignkey(db_field, request, **kwargs)
 
@@ -28,7 +25,7 @@ class EventAdmin(admin.ModelAdmin):
 
 
 class AlbumAdmin(admin.ModelAdmin):
-    fields = ('name', 'cover_art',)
+    fields = ('name', 'cover_art')
     readonly_fields = ('cover_art',)
 
 

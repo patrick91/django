@@ -12,9 +12,10 @@ logger = logging.getLogger('django.contrib.gis')
 
 
 class OpenLayersWidget(Textarea):
-    """
+    '''
     Render an OpenLayers map using the WKT of the geometry.
-    """
+    '''
+
     def get_context(self, name, value, attrs):
         # Update the template parameters with any attributes passed in.
         if attrs:
@@ -22,12 +23,10 @@ class OpenLayersWidget(Textarea):
             self.params['editable'] = self.params['modifiable']
         else:
             self.params['editable'] = True
-
         # Defaulting the WKT value to a blank string -- this
         # will be tested in the JavaScript and the appropriate
         # interface will be constructed.
         self.params['wkt'] = ''
-
         # If a string reaches here (via a validation error on another
         # field) then just reconstruct the Geometry.
         if value and isinstance(value, str):
@@ -37,13 +36,10 @@ class OpenLayersWidget(Textarea):
                 logger.error("Error creating geometry from value '%s' (%s)", value, err)
                 value = None
 
-        if (value and value.geom_type.upper() != self.geom_type and
-                self.geom_type != 'GEOMETRY'):
+        if value and value.geom_type.upper() != self.geom_type and self.geom_type != 'GEOMETRY':
             value = None
-
         # Constructing the dictionary of the map options.
         self.params['map_options'] = self.map_options()
-
         # Constructing the JavaScript module name using the name of
         # the GeometryField (passed in via the `attrs` keyword).
         # Use the 'name' attr for the field name (rather than 'field')
@@ -63,14 +59,10 @@ class OpenLayersWidget(Textarea):
                     ogr.transform(srid)
                     wkt = ogr.wkt
                 except GDALException as err:
-                    logger.error(
-                        "Error transforming geometry from srid '%s' to srid '%s' (%s)",
-                        value.srid, srid, err
-                    )
+                    logger.error("Error transforming geometry from srid '%s' to srid '%s' (%s)", value.srid, srid, err)
                     wkt = ''
             else:
                 wkt = value.wkt
-
             # Setting the parameter WKT with that of the transformed
             # geometry.
             self.params['wkt'] = wkt
@@ -79,7 +71,8 @@ class OpenLayersWidget(Textarea):
         return self.params
 
     def map_options(self):
-        """Build the map options hash for the OpenLayers template."""
+        '''Build the map options hash for the OpenLayers template.'''
+
         # JavaScript construction utilities for the Bounds and Projection.
         def ol_bounds(extent):
             return 'new OpenLayers.Bounds(%s)' % extent
@@ -89,16 +82,16 @@ class OpenLayersWidget(Textarea):
 
         # An array of the parameter name, the name of their OpenLayers
         # counterpart, and the type of variable they are.
-        map_types = [('srid', 'projection', 'srid'),
-                     ('display_srid', 'displayProjection', 'srid'),
-                     ('units', 'units', str),
-                     ('max_resolution', 'maxResolution', float),
-                     ('max_extent', 'maxExtent', 'bounds'),
-                     ('num_zoom', 'numZoomLevels', int),
-                     ('max_zoom', 'maxZoomLevels', int),
-                     ('min_zoom', 'minZoomLevel', int),
-                     ]
-
+        map_types = [
+            ('srid', 'projection', 'srid'),
+            ('display_srid', 'displayProjection', 'srid'),
+            ('units', 'units', str),
+            ('max_resolution', 'maxResolution', float),
+            ('max_extent', 'maxExtent', 'bounds'),
+            ('num_zoom', 'numZoomLevels', int),
+            ('max_zoom', 'maxZoomLevels', int),
+            ('min_zoom', 'minZoomLevel', int)
+        ]
         # Building the map options hash.
         map_options = {}
         for param_name, js_name, option_type in map_types:

@@ -1,10 +1,10 @@
-"""
+'''
 Various data structures used in query construction.
 
 Factored out from django.db.models.query to avoid making the main module very
 large and/or so that they can be used by other modules without getting into
 circular import difficulties.
-"""
+'''
 import copy
 import functools
 import inspect
@@ -31,24 +31,24 @@ def subclasses(cls):
 
 
 class QueryWrapper:
-    """
+    '''
     A type that indicates the contents are an SQL fragment and the associate
     parameters. Can be used to pass opaque data to a where-clause, for example.
-    """
+    '''
     contains_aggregate = False
 
     def __init__(self, sql, params):
-        self.data = sql, list(params)
+        self.data = (sql, list(params))
 
     def as_sql(self, compiler=None, connection=None):
         return self.data
 
 
 class Q(tree.Node):
-    """
+    '''
     Encapsulate filters as objects that can then be combined logically (using
     `&` and `|`).
-    """
+    '''
     # Connection types
     AND = 'AND'
     OR = 'OR'
@@ -63,7 +63,6 @@ class Q(tree.Node):
     def _combine(self, other, conn):
         if not isinstance(other, Q):
             raise TypeError(other)
-
         # If the other Q() is empty, ignore it and just use `self`.
         if not other:
             return copy.deepcopy(self)
@@ -114,18 +113,19 @@ class Q(tree.Node):
 
 
 class DeferredAttribute:
-    """
+    '''
     A wrapper for a deferred-loading field. When the value is read from this
     object the first time, the query is executed.
-    """
+    '''
+
     def __init__(self, field_name):
         self.field_name = field_name
 
     def __get__(self, instance, cls=None):
-        """
+        '''
         Retrieve and caches the value from the datastore on the first lookup.
         Return the cached value.
-        """
+        '''
         if instance is None:
             return self
         data = instance.__dict__
@@ -140,11 +140,11 @@ class DeferredAttribute:
         return data[self.field_name]
 
     def _check_parent_chain(self, instance, name):
-        """
+        '''
         Check if the field value can be fetched from a parent field already
         loaded in the instance. This can be done if the to-be fetched
         field is a primary key field.
-        """
+        '''
         opts = instance._meta
         f = opts.get_field(name)
         link_field = opts.get_ancestor_link(f.model)
@@ -154,7 +154,6 @@ class DeferredAttribute:
 
 
 class RegisterLookupMixin:
-
     @classmethod
     def _get_lookup(cls, lookup_name):
         return cls.get_lookups().get(lookup_name, None)
@@ -221,7 +220,7 @@ class RegisterLookupMixin:
 
 
 def select_related_descend(field, restricted, requested, load_fields, reverse=False):
-    """
+    '''
     Return True if this field should be used to descend deeper for
     select_related() purposes. Used by both the query construction code
     (sql.query.fill_related_selections()) and the model instance creation code
@@ -234,7 +233,7 @@ def select_related_descend(field, restricted, requested, load_fields, reverse=Fa
      * requested - The select_related() dictionary.
      * load_fields - the set of fields to be loaded on this model
      * reverse - boolean, True if we are checking a reverse select related
-    """
+    '''
     if not field.remote_field:
         return False
     if field.remote_field.parent_link and not reverse:
@@ -249,19 +248,21 @@ def select_related_descend(field, restricted, requested, load_fields, reverse=Fa
     if load_fields:
         if field.attname not in load_fields:
             if restricted and field.name in requested:
-                raise InvalidQuery("Field %s.%s cannot be both deferred"
+                raise
+                InvalidQuery("Field %s.%s cannot be both deferred"
                                    " and traversed using select_related"
-                                   " at the same time." %
-                                   (field.model._meta.object_name, field.name))
+                                   " at the same time." \
+                % \
+                (field.model._meta.object_name, field.name))
     return True
 
 
 def refs_expression(lookup_parts, annotations):
-    """
+    '''
     Check if the lookup_parts contains references to the given annotations set.
     Because the LOOKUP_SEP is contained in the default annotation names, check
     each prefix of the lookup_parts for a match.
-    """
+    '''
     for n in range(1, len(lookup_parts) + 1):
         level_n_lookup = LOOKUP_SEP.join(lookup_parts[0:n])
         if level_n_lookup in annotations and annotations[level_n_lookup]:
@@ -276,12 +277,15 @@ def check_rel_lookup_compatibility(model, target_opts, field):
       1) model and opts match (where proxy inheritance is removed)
       2) model is parent of opts' model or the other way around
     """
+
     def check(opts):
-        return (
-            model._meta.concrete_model == opts.concrete_model or
-            opts.concrete_model in model._meta.get_parent_list() or
+        return \
+            model._meta.concrete_model == opts.concrete_model \
+            or \
+            opts.concrete_model in model._meta.get_parent_list() \
+            or \
             model in opts.get_parent_list()
-        )
+
     # If the field is a primary key, then doing a query against the field's
     # model is ok, too. Consider the case:
     # class Restaurant(models.Model):
@@ -291,14 +295,11 @@ def check_rel_lookup_compatibility(model, target_opts, field):
     # give Place's opts as the target opts, but Restaurant isn't compatible
     # with that. This logic applies only to primary keys, as when doing __in=qs,
     # we are going to turn this into __in=qs.values('pk') later on.
-    return (
-        check(target_opts) or
-        (getattr(field, 'primary_key', False) and check(field.model._meta))
-    )
+    return check(target_opts) or getattr(field, 'primary_key', False) and check(field.model._meta)
 
 
 class FilteredRelation:
-    """Specify custom filtering in the ON clause of SQL joins."""
+    '''Specify custom filtering in the ON clause of SQL joins.'''
 
     def __init__(self, relation_name, *, condition=Q()):
         if not relation_name:
@@ -311,12 +312,14 @@ class FilteredRelation:
         self.path = []
 
     def __eq__(self, other):
-        return (
-            isinstance(other, self.__class__) and
-            self.relation_name == other.relation_name and
-            self.alias == other.alias and
+        return \
+            isinstance(other, self.__class__) \
+            and \
+            self.relation_name == other.relation_name \
+            and \
+            self.alias == other.alias \
+            and \
             self.condition == other.condition
-        )
 
     def clone(self):
         clone = FilteredRelation(self.relation_name, condition=self.condition)
@@ -325,10 +328,10 @@ class FilteredRelation:
         return clone
 
     def resolve_expression(self, *args, **kwargs):
-        """
+        '''
         QuerySet.annotate() only accepts expression-like arguments
         (with a resolve_expression() method).
-        """
+        '''
         raise NotImplementedError('FilteredRelation.resolve_expression() is unused.')
 
     def as_sql(self, compiler, connection):

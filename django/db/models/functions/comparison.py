@@ -1,9 +1,9 @@
-"""Database functions that do comparisons or type conversions."""
+'''Database functions that do comparisons or type conversions.'''
 from django.db.models import Func
 
 
 class Cast(Func):
-    """Coerce an expression to a new field type."""
+    '''Coerce an expression to a new field type.'''
     function = 'CAST'
     template = '%(function)s(%(expressions)s AS %(db_type)s)'
 
@@ -27,7 +27,7 @@ class Cast(Func):
 
 
 class Coalesce(Func):
-    """Return, from left to right, the first non-null expression."""
+    '''Return, from left to right, the first non-null expression.'''
     function = 'COALESCE'
 
     def __init__(self, *expressions, **extra):
@@ -42,9 +42,7 @@ class Coalesce(Func):
             class ToNCLOB(Func):
                 function = 'TO_NCLOB'
 
-            expressions = [
-                ToNCLOB(expression) for expression in self.get_source_expressions()
-            ]
+            expressions = [ToNCLOB(expression) for expression in self.get_source_expressions()]
             clone = self.copy()
             clone.set_source_expressions(expressions)
             return super(Coalesce, clone).as_sql(compiler, connection)
@@ -52,13 +50,13 @@ class Coalesce(Func):
 
 
 class Greatest(Func):
-    """
+    '''
     Return the maximum expression.
 
     If any expression is null the return value is database-specific:
     On PostgreSQL, the maximum not-null expression is returned.
     On MySQL, Oracle, and SQLite, if any expression is null, null is returned.
-    """
+    '''
     function = 'GREATEST'
 
     def __init__(self, *expressions, **extra):
@@ -67,18 +65,18 @@ class Greatest(Func):
         super().__init__(*expressions, **extra)
 
     def as_sqlite(self, compiler, connection):
-        """Use the MAX function on SQLite."""
+        '''Use the MAX function on SQLite.'''
         return super().as_sqlite(compiler, connection, function='MAX')
 
 
 class Least(Func):
-    """
+    '''
     Return the minimum expression.
 
     If any expression is null the return value is database-specific:
     On PostgreSQL, return the minimum not-null expression.
     On MySQL, Oracle, and SQLite, if any expression is null, return null.
-    """
+    '''
     function = 'LEAST'
 
     def __init__(self, *expressions, **extra):
@@ -87,5 +85,5 @@ class Least(Func):
         super().__init__(*expressions, **extra)
 
     def as_sqlite(self, compiler, connection):
-        """Use the MIN function on SQLite."""
+        '''Use the MIN function on SQLite.'''
         return super().as_sqlite(compiler, connection, function='MIN')

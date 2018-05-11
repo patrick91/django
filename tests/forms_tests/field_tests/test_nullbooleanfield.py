@@ -4,8 +4,7 @@ from django.test import SimpleTestCase
 from . import FormFieldAssertionsMixin
 
 
-class NullBooleanFieldTest(FormFieldAssertionsMixin, SimpleTestCase):
-
+class NullBooleanFieldTest(FormFieldAssertionsMixin,SimpleTestCase):
     def test_nullbooleanfield_clean(self):
         f = NullBooleanField()
         self.assertIsNone(f.clean(''))
@@ -25,17 +24,16 @@ class NullBooleanFieldTest(FormFieldAssertionsMixin, SimpleTestCase):
         class HiddenNullBooleanForm(Form):
             hidden_nullbool1 = NullBooleanField(widget=HiddenInput, initial=True)
             hidden_nullbool2 = NullBooleanField(widget=HiddenInput, initial=False)
+
         f = HiddenNullBooleanForm()
-        self.assertHTMLEqual(
-            '<input type="hidden" name="hidden_nullbool1" value="True" id="id_hidden_nullbool1">'
-            '<input type="hidden" name="hidden_nullbool2" value="False" id="id_hidden_nullbool2">',
-            str(f)
-        )
+        self.assertHTMLEqual('<input type="hidden" name="hidden_nullbool1" value="True" id="id_hidden_nullbool1">'
+            '<input type="hidden" name="hidden_nullbool2" value="False" id="id_hidden_nullbool2">', str(f))
 
     def test_nullbooleanfield_3(self):
         class HiddenNullBooleanForm(Form):
             hidden_nullbool1 = NullBooleanField(widget=HiddenInput, initial=True)
             hidden_nullbool2 = NullBooleanField(widget=HiddenInput, initial=False)
+
         f = HiddenNullBooleanForm({'hidden_nullbool1': 'True', 'hidden_nullbool2': 'False'})
         self.assertIsNone(f.full_clean())
         self.assertTrue(f.cleaned_data['hidden_nullbool1'])
@@ -50,6 +48,7 @@ class NullBooleanFieldTest(FormFieldAssertionsMixin, SimpleTestCase):
             nullbool0 = NullBooleanField(widget=RadioSelect(choices=NULLBOOL_CHOICES))
             nullbool1 = NullBooleanField(widget=RadioSelect(choices=NULLBOOL_CHOICES))
             nullbool2 = NullBooleanField(widget=RadioSelect(choices=NULLBOOL_CHOICES))
+
         f = MySQLNullBooleanForm({'nullbool0': '1', 'nullbool1': '0', 'nullbool2': ''})
         self.assertIsNone(f.full_clean())
         self.assertTrue(f.cleaned_data['nullbool0'])

@@ -13,11 +13,7 @@ ADDITION = 1
 CHANGE = 2
 DELETION = 3
 
-ACTION_FLAG_CHOICES = (
-    (ADDITION, _('Addition')),
-    (CHANGE, _('Change')),
-    (DELETION, _('Deletion')),
-)
+ACTION_FLAG_CHOICES = ((ADDITION, _('Addition')), (CHANGE, _('Change')), (DELETION, _('Deletion')))
 
 
 class LogEntryManager(models.Manager):
@@ -26,33 +22,16 @@ class LogEntryManager(models.Manager):
     def log_action(self, user_id, content_type_id, object_id, object_repr, action_flag, change_message=''):
         if isinstance(change_message, list):
             change_message = json.dumps(change_message)
-        return self.model.objects.create(
-            user_id=user_id,
-            content_type_id=content_type_id,
-            object_id=str(object_id),
-            object_repr=object_repr[:200],
-            action_flag=action_flag,
-            change_message=change_message,
-        )
+        return \
+            self.model.objects.create(user_id=user_id, content_type_id=content_type_id, object_id=str(object_id), object_repr=object_repr[
+                :200
+            ], action_flag=action_flag, change_message=change_message)
 
 
 class LogEntry(models.Model):
-    action_time = models.DateTimeField(
-        _('action time'),
-        default=timezone.now,
-        editable=False,
-    )
-    user = models.ForeignKey(
-        settings.AUTH_USER_MODEL,
-        models.CASCADE,
-        verbose_name=_('user'),
-    )
-    content_type = models.ForeignKey(
-        ContentType,
-        models.SET_NULL,
-        verbose_name=_('content type'),
-        blank=True, null=True,
-    )
+    action_time = models.DateTimeField(_('action time'), default=timezone.now, editable=False)
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, models.CASCADE, verbose_name=_('user'))
+    content_type = models.ForeignKey(ContentType, models.SET_NULL, verbose_name=_('content type'), blank=True, null=True)
     object_id = models.TextField(_('object id'), blank=True, null=True)
     # Translators: 'repr' means representation (https://docs.python.org/3/library/functions.html#repr)
     object_repr = models.CharField(_('object repr'), max_length=200)
@@ -75,10 +54,10 @@ class LogEntry(models.Model):
         if self.is_addition():
             return gettext('Added "%(object)s".') % {'object': self.object_repr}
         elif self.is_change():
-            return gettext('Changed "%(object)s" - %(changes)s') % {
-                'object': self.object_repr,
-                'changes': self.get_change_message(),
-            }
+            return \
+                gettext('Changed "%(object)s" - %(changes)s') \
+                % \
+                {'object': self.object_repr, 'changes': self.get_change_message()}
         elif self.is_deletion():
             return gettext('Deleted "%(object)s."') % {'object': self.object_repr}
 
@@ -94,10 +73,10 @@ class LogEntry(models.Model):
         return self.action_flag == DELETION
 
     def get_change_message(self):
-        """
+        '''
         If self.change_message is a JSON structure, interpret it as a change
         string, properly translated.
-        """
+        '''
         if self.change_message and self.change_message[0] == '[':
             try:
                 change_message = json.loads(self.change_message)
@@ -111,19 +90,15 @@ class LogEntry(models.Model):
                         messages.append(gettext('Added {name} "{object}".').format(**sub_message['added']))
                     else:
                         messages.append(gettext('Added.'))
-
                 elif 'changed' in sub_message:
-                    sub_message['changed']['fields'] = get_text_list(
-                        sub_message['changed']['fields'], gettext('and')
-                    )
+                    sub_message['changed']['fields'] = get_text_list(sub_message['changed']['fields'], gettext('and'))
                     if 'name' in sub_message['changed']:
                         sub_message['changed']['name'] = gettext(sub_message['changed']['name'])
-                        messages.append(gettext('Changed {fields} for {name} "{object}".').format(
-                            **sub_message['changed']
-                        ))
+                        messages.append(gettext('Changed {fields} for {name} "{object}".').format(**sub_message[
+                            'changed'
+                        ]))
                     else:
                         messages.append(gettext('Changed {fields}.').format(**sub_message['changed']))
-
                 elif 'deleted' in sub_message:
                     sub_message['deleted']['name'] = gettext(sub_message['deleted']['name'])
                     messages.append(gettext('Deleted {name} "{object}".').format(**sub_message['deleted']))
@@ -134,13 +109,13 @@ class LogEntry(models.Model):
             return self.change_message
 
     def get_edited_object(self):
-        """Return the edited object represented by this log entry."""
+        '''Return the edited object represented by this log entry.'''
         return self.content_type.get_object_for_this_type(pk=self.object_id)
 
     def get_admin_url(self):
-        """
+        '''
         Return the admin URL to edit the object represented by this log entry.
-        """
+        '''
         if self.content_type and self.object_id:
             url_name = 'admin:%s_%s_change' % (self.content_type.app_label, self.content_type.model)
             try:

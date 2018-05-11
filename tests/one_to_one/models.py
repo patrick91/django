@@ -1,10 +1,10 @@
-"""
+'''
 One-to-one relationships
 
 To define a one-to-one relationship, use ``OneToOneField()``.
 
 In this example, a ``Place`` optionally can be a ``Restaurant``.
-"""
+'''
 from django.db import models
 
 
@@ -13,7 +13,7 @@ class Place(models.Model):
     address = models.CharField(max_length=80)
 
     def __str__(self):
-        return "%s the place" % self.name
+        return '%s the place' % self.name
 
 
 class Restaurant(models.Model):
@@ -22,7 +22,7 @@ class Restaurant(models.Model):
     serves_pizza = models.BooleanField(default=False)
 
     def __str__(self):
-        return "%s the restaurant" % self.place.name
+        return '%s the restaurant' % self.place.name
 
 
 class Bar(models.Model):
@@ -30,7 +30,7 @@ class Bar(models.Model):
     serves_cocktails = models.BooleanField(default=True)
 
     def __str__(self):
-        return "%s the bar" % self.place.name
+        return '%s the bar' % self.place.name
 
 
 class UndergroundBar(models.Model):
@@ -43,7 +43,7 @@ class Waiter(models.Model):
     name = models.CharField(max_length=50)
 
     def __str__(self):
-        return "%s the waiter at %s" % (self.name, self.restaurant)
+        return '%s the waiter at %s' % (self.name, self.restaurant)
 
 
 class Favorites(models.Model):
@@ -51,7 +51,7 @@ class Favorites(models.Model):
     restaurants = models.ManyToManyField(Restaurant)
 
     def __str__(self):
-        return "Favorites for %s" % self.name
+        return 'Favorites for %s' % self.name
 
 
 class ManualPrimaryKey(models.Model):
@@ -70,7 +70,7 @@ class MultiModel(models.Model):
     name = models.CharField(max_length=50)
 
     def __str__(self):
-        return "Multimodel %s" % self.name
+        return 'Multimodel %s' % self.name
 
 
 class Target(models.Model):

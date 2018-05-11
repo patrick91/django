@@ -6,7 +6,6 @@ from ..utils import setup
 
 
 class JoinTests(SimpleTestCase):
-
     @setup({'join01': '{{ a|join:", " }}'})
     def test_join01(self):
         output = self.engine.render_to_string('join01', {'a': ['alpha', 'beta & me']})
@@ -50,21 +49,14 @@ class JoinTests(SimpleTestCase):
 
 
 class FunctionTests(SimpleTestCase):
-
     def test_list(self):
         self.assertEqual(join([0, 1, 2], 'glue'), '0glue1glue2')
 
     def test_autoescape(self):
-        self.assertEqual(
-            join(['<a>', '<img>', '</a>'], '<br>'),
-            '&lt;a&gt;&lt;br&gt;&lt;img&gt;&lt;br&gt;&lt;/a&gt;',
-        )
+        self.assertEqual(join(['<a>', '<img>', '</a>'], '<br>'), '&lt;a&gt;&lt;br&gt;&lt;img&gt;&lt;br&gt;&lt;/a&gt;')
 
     def test_autoescape_off(self):
-        self.assertEqual(
-            join(['<a>', '<img>', '</a>'], '<br>', autoescape=False),
-            '<a>&lt;br&gt;<img>&lt;br&gt;</a>',
-        )
+        self.assertEqual(join(['<a>', '<img>', '</a>'], '<br>', autoescape=False), '<a>&lt;br&gt;<img>&lt;br&gt;</a>')
 
     def test_noniterable_arg(self):
         obj = object()

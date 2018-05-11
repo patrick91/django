@@ -1,9 +1,7 @@
 from django.contrib.postgres.fields import ArrayField, JSONField
 from django.db.models.aggregates import Aggregate
 
-__all__ = [
-    'ArrayAgg', 'BitAnd', 'BitOr', 'BoolAnd', 'BoolOr', 'JSONBAgg', 'StringAgg',
-]
+__all__ = ['ArrayAgg', 'BitAnd', 'BitOr', 'BoolAnd', 'BoolOr', 'JSONBAgg', 'StringAgg']
 
 
 class ArrayAgg(Aggregate):

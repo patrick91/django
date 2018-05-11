@@ -1,9 +1,9 @@
-"""
+'''
 Cross Site Request Forgery Middleware.
 
 This module provides a middleware that implements protection
 against request forgeries from other sites.
-"""
+'''
 import logging
 import re
 import string
@@ -20,12 +20,12 @@ from django.utils.log import log_response
 
 logger = logging.getLogger('django.security.csrf')
 
-REASON_NO_REFERER = "Referer checking failed - no Referer."
-REASON_BAD_REFERER = "Referer checking failed - %s does not match any trusted origins."
-REASON_NO_CSRF_COOKIE = "CSRF cookie not set."
-REASON_BAD_TOKEN = "CSRF token missing or incorrect."
-REASON_MALFORMED_REFERER = "Referer checking failed - Referer is malformed."
-REASON_INSECURE_REFERER = "Referer checking failed - Referer is insecure while host is secure."
+REASON_NO_REFERER = 'Referer checking failed - no Referer.'
+REASON_BAD_REFERER = 'Referer checking failed - %s does not match any trusted origins.'
+REASON_NO_CSRF_COOKIE = 'CSRF cookie not set.'
+REASON_BAD_TOKEN = 'CSRF token missing or incorrect.'
+REASON_MALFORMED_REFERER = 'Referer checking failed - Referer is malformed.'
+REASON_INSECURE_REFERER = 'Referer checking failed - Referer is insecure while host is secure.'
 
 CSRF_SECRET_LENGTH = 32
 CSRF_TOKEN_LENGTH = 2 * CSRF_SECRET_LENGTH
@@ -34,7 +34,7 @@ CSRF_SESSION_KEY = '_csrftoken'
 
 
 def _get_failure_view():
-    """Return the view to be used for CSRF rejections."""
+    '''Return the view to be used for CSRF rejections.'''
     return get_callable(settings.CSRF_FAILURE_VIEW)
 
 
@@ -43,28 +43,28 @@ def _get_new_csrf_string():
 
 
 def _salt_cipher_secret(secret):
-    """
+    '''
     Given a secret (assumed to be a string of CSRF_ALLOWED_CHARS), generate a
     token by adding a salt and using it to encrypt the secret.
-    """
+    '''
     salt = _get_new_csrf_string()
     chars = CSRF_ALLOWED_CHARS
     pairs = zip((chars.index(x) for x in secret), (chars.index(x) for x in salt))
-    cipher = ''.join(chars[(x + y) % len(chars)] for x, y in pairs)
+    cipher = ''.join(chars[x + y % len(chars)] for (x, y) in pairs)
     return salt + cipher
 
 
 def _unsalt_cipher_token(token):
-    """
+    '''
     Given a token (assumed to be a string of CSRF_ALLOWED_CHARS, of length
     CSRF_TOKEN_LENGTH, and that its first half is a salt), use it to decrypt
     the second half to produce the original secret.
-    """
+    '''
     salt = token[:CSRF_SECRET_LENGTH]
     token = token[CSRF_SECRET_LENGTH:]
     chars = CSRF_ALLOWED_CHARS
     pairs = zip((chars.index(x) for x in token), (chars.index(x) for x in salt))
-    secret = ''.join(chars[x - y] for x, y in pairs)  # Note negative values are ok
+    secret = ''.join(chars[x - y] for (x, y) in pairs) # Note negative values are ok
     return secret
 
 
@@ -82,24 +82,21 @@ def get_token(request):
     header to the outgoing response.  For this reason, you may need to use this
     function lazily, as is done by the csrf context processor.
     """
-    if "CSRF_COOKIE" not in request.META:
+    if 'CSRF_COOKIE' not in request.META:
         csrf_secret = _get_new_csrf_string()
-        request.META["CSRF_COOKIE"] = _salt_cipher_secret(csrf_secret)
+        request.META['CSRF_COOKIE'] = _salt_cipher_secret(csrf_secret)
     else:
-        csrf_secret = _unsalt_cipher_token(request.META["CSRF_COOKIE"])
-    request.META["CSRF_COOKIE_USED"] = True
+        csrf_secret = _unsalt_cipher_token(request.META['CSRF_COOKIE'])
+    request.META['CSRF_COOKIE_USED'] = True
     return _salt_cipher_secret(csrf_secret)
 
 
 def rotate_token(request):
-    """
+    '''
     Change the CSRF token in use for a request - should be done on login
     for security purposes.
-    """
-    request.META.update({
-        "CSRF_COOKIE_USED": True,
-        "CSRF_COOKIE": _get_new_csrf_token(),
-    })
+    '''
+    request.META.update({'CSRF_COOKIE_USED': True, 'CSRF_COOKIE': _get_new_csrf_token()})
     request.csrf_cookie_needs_reset = True
 
 
@@ -123,20 +120,18 @@ def _sanitize_token(token):
 def _compare_salted_tokens(request_csrf_token, csrf_token):
     # Assume both arguments are sanitized -- that is, strings of
     # length CSRF_TOKEN_LENGTH, all CSRF_ALLOWED_CHARS.
-    return constant_time_compare(
-        _unsalt_cipher_token(request_csrf_token),
-        _unsalt_cipher_token(csrf_token),
-    )
+    return constant_time_compare(_unsalt_cipher_token(request_csrf_token), _unsalt_cipher_token(csrf_token))
 
 
 class CsrfViewMiddleware(MiddlewareMixin):
-    """
+    '''
     Require a present and correct csrfmiddlewaretoken for POST requests that
     have a CSRF cookie, and set an outgoing CSRF cookie.
 
     This middleware should be used in conjunction with the {% csrf_token %}
     template tag.
-    """
+    '''
+
     # The _accept and _reject methods currently only exist for the sake of the
     # requires_csrf_token decorator.
     def _accept(self, request):
@@ -148,12 +143,7 @@ class CsrfViewMiddleware(MiddlewareMixin):
 
     def _reject(self, request, reason):
         response = _get_failure_view()(request, reason=reason)
-        log_response(
-            'Forbidden (%s): %s', reason, request.path,
-            response=response,
-            request=request,
-            logger=logger,
-        )
+        log_response('Forbidden (%s): %s', reason, request.path, response=response, request=request, logger=logger)
         return response
 
     def _get_token(self, request):
@@ -161,17 +151,17 @@ class CsrfViewMiddleware(MiddlewareMixin):
             try:
                 return request.session.get(CSRF_SESSION_KEY)
             except AttributeError:
-                raise ImproperlyConfigured(
-                    'CSRF_USE_SESSIONS is enabled, but request.session is not '
+                raise
+                ImproperlyConfigured('CSRF_USE_SESSIONS is enabled, but request.session is not '
                     'set. SessionMiddleware must appear before CsrfViewMiddleware '
-                    'in MIDDLEWARE%s.' % ('_CLASSES' if settings.MIDDLEWARE is None else '')
-                )
+                    'in MIDDLEWARE%s.' \
+                % \
+                '_CLASSES' if settings.MIDDLEWARE is None else '')
         else:
             try:
                 cookie_token = request.COOKIES[settings.CSRF_COOKIE_NAME]
             except KeyError:
                 return None
-
             csrf_token = _sanitize_token(cookie_token)
             if csrf_token != cookie_token:
                 # Cookie token needed to be replaced;
@@ -183,16 +173,9 @@ class CsrfViewMiddleware(MiddlewareMixin):
         if settings.CSRF_USE_SESSIONS:
             request.session[CSRF_SESSION_KEY] = request.META['CSRF_COOKIE']
         else:
-            response.set_cookie(
-                settings.CSRF_COOKIE_NAME,
-                request.META['CSRF_COOKIE'],
-                max_age=settings.CSRF_COOKIE_AGE,
-                domain=settings.CSRF_COOKIE_DOMAIN,
-                path=settings.CSRF_COOKIE_PATH,
-                secure=settings.CSRF_COOKIE_SECURE,
-                httponly=settings.CSRF_COOKIE_HTTPONLY,
-                samesite=settings.CSRF_COOKIE_SAMESITE,
-            )
+            response.set_cookie(settings.CSRF_COOKIE_NAME, request.META[
+                'CSRF_COOKIE'
+            ], max_age=settings.CSRF_COOKIE_AGE, domain=settings.CSRF_COOKIE_DOMAIN, path=settings.CSRF_COOKIE_PATH, secure=settings.CSRF_COOKIE_SECURE, httponly=settings.CSRF_COOKIE_HTTPONLY, samesite=settings.CSRF_COOKIE_SAMESITE)
             # Set the Vary header since content varies with the CSRF cookie.
             patch_vary_headers(response, ('Cookie',))
 
@@ -205,12 +188,10 @@ class CsrfViewMiddleware(MiddlewareMixin):
     def process_view(self, request, callback, callback_args, callback_kwargs):
         if getattr(request, 'csrf_processing_done', False):
             return None
-
         # Wait until request.META["CSRF_COOKIE"] has been manipulated before
         # bailing out, so that get_token still works
         if getattr(callback, 'csrf_exempt', False):
             return None
-
         # Assume that anything not defined as 'safe' by RFC7231 needs protection
         if request.method not in ('GET', 'HEAD', 'OPTIONS', 'TRACE'):
             if getattr(request, '_dont_enforce_csrf_checks', False):
@@ -242,23 +223,16 @@ class CsrfViewMiddleware(MiddlewareMixin):
                     return self._reject(request, REASON_NO_REFERER)
 
                 referer = urlparse(referer)
-
                 # Make sure we have a valid URL for Referer.
                 if '' in (referer.scheme, referer.netloc):
                     return self._reject(request, REASON_MALFORMED_REFERER)
-
                 # Ensure that our Referer is also secure.
                 if referer.scheme != 'https':
                     return self._reject(request, REASON_INSECURE_REFERER)
-
                 # If there isn't a CSRF_COOKIE_DOMAIN, require an exact match
                 # match on host:port. If not, obey the cookie rules (or those
                 # for the session cookie, if CSRF_USE_SESSIONS).
-                good_referer = (
-                    settings.SESSION_COOKIE_DOMAIN
-                    if settings.CSRF_USE_SESSIONS
-                    else settings.CSRF_COOKIE_DOMAIN
-                )
+                good_referer = settings.SESSION_COOKIE_DOMAIN if settings.CSRF_USE_SESSIONS else settings.CSRF_COOKIE_DOMAIN
                 if good_referer is not None:
                     server_port = request.get_port()
                     if server_port not in ('443', '80'):
@@ -269,7 +243,6 @@ class CsrfViewMiddleware(MiddlewareMixin):
                         good_referer = request.get_host()
                     except DisallowedHost:
                         pass
-
                 # Create a list of all acceptable HTTP referers, including the
                 # current host if it's permitted by ALLOWED_HOSTS.
                 good_hosts = list(settings.CSRF_TRUSTED_ORIGINS)
@@ -286,10 +259,9 @@ class CsrfViewMiddleware(MiddlewareMixin):
                 # and in this way we can avoid all CSRF attacks, including login
                 # CSRF.
                 return self._reject(request, REASON_NO_CSRF_COOKIE)
-
             # Check non-cookie token for match.
-            request_csrf_token = ""
-            if request.method == "POST":
+            request_csrf_token = ''
+            if request.method == 'POST':
                 try:
                     request_csrf_token = request.POST.get('csrfmiddlewaretoken', '')
                 except IOError:
@@ -300,7 +272,7 @@ class CsrfViewMiddleware(MiddlewareMixin):
                     # aren't because of the error).
                     pass
 
-            if request_csrf_token == "":
+            if request_csrf_token == '':
                 # Fall back to X-CSRFToken, to make things easier for AJAX,
                 # and possible for PUT/DELETE.
                 request_csrf_token = request.META.get(settings.CSRF_HEADER_NAME, '')
@@ -316,9 +288,8 @@ class CsrfViewMiddleware(MiddlewareMixin):
             if getattr(response, 'csrf_cookie_set', False):
                 return response
 
-        if not request.META.get("CSRF_COOKIE_USED", False):
+        if not request.META.get('CSRF_COOKIE_USED', False):
             return response
-
         # Set the CSRF cookie even if it's already set, so we renew
         # the expiry timer.
         self._set_token(request, response)

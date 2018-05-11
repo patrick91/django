@@ -10,7 +10,6 @@ from .models import Person
 
 @unittest.skipUnless(connection.vendor == 'sqlite', 'Only run on sqlite so we can check output SQL.')
 class TestDebugSQL(unittest.TestCase):
-
     class PassingTest(TestCase):
         def runTest(self):
             Person.objects.filter(first_name='pass').count()
@@ -54,11 +53,7 @@ class TestDebugSQL(unittest.TestCase):
         old_config = runner.setup_databases()
         stream = StringIO()
         resultclass = runner.get_resultclass()
-        runner.test_runner(
-            verbosity=verbosity,
-            stream=stream,
-            resultclass=resultclass,
-        ).run(suite)
+        runner.test_runner(verbosity=verbosity, stream=stream, resultclass=resultclass).run(suite)
         runner.teardown_databases(old_config)
 
         return stream.getvalue()
@@ -78,18 +73,18 @@ class TestDebugSQL(unittest.TestCase):
             self.assertIn(output, full_output)
 
     expected_outputs = [
-        ('''SELECT COUNT(*) AS "__count" '''
+        '''SELECT COUNT(*) AS "__count" '''
             '''FROM "test_runner_person" WHERE '''
-            '''"test_runner_person"."first_name" = 'error';'''),
-        ('''SELECT COUNT(*) AS "__count" '''
+            '''"test_runner_person"."first_name" = 'error';''',
+        '''SELECT COUNT(*) AS "__count" '''
             '''FROM "test_runner_person" WHERE '''
-            '''"test_runner_person"."first_name" = 'fail';'''),
-        ('''SELECT COUNT(*) AS "__count" '''
+            '''"test_runner_person"."first_name" = 'fail';''',
+        '''SELECT COUNT(*) AS "__count" '''
             '''FROM "test_runner_person" WHERE '''
-            '''"test_runner_person"."first_name" = 'subtest-error';'''),
-        ('''SELECT COUNT(*) AS "__count" '''
+            '''"test_runner_person"."first_name" = 'subtest-error';''',
+        '''SELECT COUNT(*) AS "__count" '''
             '''FROM "test_runner_person" WHERE '''
-            '''"test_runner_person"."first_name" = 'subtest-fail';'''),
+            '''"test_runner_person"."first_name" = 'subtest-fail';'''
     ]
 
     verbose_expected_outputs = [
@@ -100,10 +95,10 @@ class TestDebugSQL(unittest.TestCase):
         # the status is not written. That behavior comes from Python.
         'runTest (test_runner.test_debug_sql.TestDebugSQL.FailingSubTest) ...',
         'runTest (test_runner.test_debug_sql.TestDebugSQL.ErrorSubTest) ...',
-        ('''SELECT COUNT(*) AS "__count" '''
+        '''SELECT COUNT(*) AS "__count" '''
             '''FROM "test_runner_person" WHERE '''
-            '''"test_runner_person"."first_name" = 'pass';'''),
-        ('''SELECT COUNT(*) AS "__count" '''
+            '''"test_runner_person"."first_name" = 'pass';''',
+        '''SELECT COUNT(*) AS "__count" '''
             '''FROM "test_runner_person" WHERE '''
-            '''"test_runner_person"."first_name" = 'subtest-pass';'''),
+            '''"test_runner_person"."first_name" = 'subtest-pass';'''
     ]

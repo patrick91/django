@@ -5,7 +5,6 @@ from .models.default_related_name import Author, Book, Editor
 
 
 class DefaultRelatedNameTests(TestCase):
-
     @classmethod
     def setUpTestData(cls):
         cls.author = Author.objects.create(first_name='Dave', last_name='Loper')

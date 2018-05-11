@@ -1,4 +1,4 @@
-"""
+'''
 Giving models a custom manager
 
 You can use a custom ``Manager`` in a particular model by extending the base
@@ -7,11 +7,9 @@ You can use a custom ``Manager`` in a particular model by extending the base
 There are two reasons you might want to customize a ``Manager``: to add extra
 ``Manager`` methods, and/or to modify the initial ``QuerySet`` the ``Manager``
 returns.
-"""
+'''
 
-from django.contrib.contenttypes.fields import (
-    GenericForeignKey, GenericRelation,
-)
+from django.contrib.contenttypes.fields import GenericForeignKey, GenericRelation
 from django.db import models
 
 
@@ -27,9 +25,7 @@ class PublishedBookManager(models.Manager):
 
 class AnnotatedBookManager(models.Manager):
     def get_queryset(self):
-        return super().get_queryset().annotate(
-            favorite_avg=models.Avg('favorite_books__favorite_thing_id')
-        )
+        return super().get_queryset().annotate(favorite_avg=models.Avg('favorite_books__favorite_thing_id'))
 
 
 class CustomQuerySet(models.QuerySet):
@@ -46,10 +42,12 @@ class CustomQuerySet(models.QuerySet):
 
     def optout_public_method(self, *args, **kwargs):
         return self.all()
+
     optout_public_method.queryset_only = True
 
     def _optin_private_method(self, *args, **kwargs):
         return self.all()
+
     _optin_private_method.queryset_only = False
 
 
@@ -77,7 +75,6 @@ class CustomInitQuerySet(models.QuerySet):
 
 
 class DeconstructibleCustomManager(BaseCustomManager.from_queryset(CustomQuerySet)):
-
     def __init__(self, a, b, c=1, d=2):
         super().__init__(a)
 
@@ -111,19 +108,14 @@ class Person(models.Model):
     custom_init_queryset_manager = CustomInitQuerySet.as_manager()
 
     def __str__(self):
-        return "%s %s" % (self.first_name, self.last_name)
+        return '%s %s' % (self.first_name, self.last_name)
 
 
 class FunPerson(models.Model):
     first_name = models.CharField(max_length=30)
     last_name = models.CharField(max_length=30)
     fun = models.BooleanField(default=True)
-    favorite_book = models.ForeignKey(
-        'Book',
-        models.SET_NULL,
-        null=True,
-        related_name='fun_people_favorite_books',
-    )
+    favorite_book = models.ForeignKey('Book', models.SET_NULL, null=True, related_name='fun_people_favorite_books')
     favorite_thing_type = models.ForeignKey('contenttypes.ContentType', models.SET_NULL, null=True)
     favorite_thing_id = models.IntegerField(null=True)
     favorite_thing = GenericForeignKey('favorite_thing_type', 'favorite_thing_id')
@@ -131,7 +123,7 @@ class FunPerson(models.Model):
     objects = FunPeopleManager()
 
     def __str__(self):
-        return "%s %s" % (self.first_name, self.last_name)
+        return '%s %s' % (self.first_name, self.last_name)
 
 
 class Book(models.Model):
@@ -140,16 +132,8 @@ class Book(models.Model):
     is_published = models.BooleanField(default=False)
     authors = models.ManyToManyField(Person, related_name='books')
     fun_authors = models.ManyToManyField(FunPerson, related_name='books')
-    favorite_things = GenericRelation(
-        Person,
-        content_type_field='favorite_thing_type',
-        object_id_field='favorite_thing_id',
-    )
-    fun_people_favorite_things = GenericRelation(
-        FunPerson,
-        content_type_field='favorite_thing_type',
-        object_id_field='favorite_thing_id',
-    )
+    favorite_things = GenericRelation(Person, content_type_field='favorite_thing_type', object_id_field='favorite_thing_id')
+    fun_people_favorite_things = GenericRelation(FunPerson, content_type_field='favorite_thing_type', object_id_field='favorite_thing_id')
 
     published_objects = PublishedBookManager()
     annotated_objects = AnnotatedBookManager()
@@ -169,7 +153,7 @@ class FastCarManager(models.Manager):
 class Car(models.Model):
     name = models.CharField(max_length=10)
     mileage = models.IntegerField()
-    top_speed = models.IntegerField(help_text="In miles per hour.")
+    top_speed = models.IntegerField(help_text='In miles per hour.')
     cars = models.Manager()
     fast_cars = FastCarManager()
 

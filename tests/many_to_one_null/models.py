@@ -1,9 +1,9 @@
-"""
+'''
 Many-to-one relationships that can be null
 
 To define a many-to-one relationship that can have a null foreign key, use
 ``ForeignKey()`` with ``null=True`` .
-"""
+'''
 
 from django.db import models
 

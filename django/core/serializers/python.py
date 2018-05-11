@@ -1,8 +1,8 @@
-"""
+'''
 A Python "serializer". Doesn't do much serializing per se -- just converts to
 and from basic Python data types (lists, dicts, strings, etc.). Useful as a basis for
 other serializers.
-"""
+'''
 from collections import OrderedDict
 
 from django.apps import apps
@@ -12,9 +12,9 @@ from django.utils.encoding import is_protected_type
 
 
 class Serializer(base.Serializer):
-    """
+    '''
     Serialize a QuerySet to basic Python objects.
-    """
+    '''
 
     internal_use_only = True
 
@@ -35,7 +35,7 @@ class Serializer(base.Serializer):
     def get_dump_object(self, obj):
         data = OrderedDict([('model', str(obj._meta))])
         if not self.use_natural_primary_keys or not hasattr(obj, 'natural_key'):
-            data["pk"] = self._value_from_field(obj, obj._meta.pk)
+            data['pk'] = self._value_from_field(obj, obj._meta.pk)
         data['fields'] = self._current
         return data
 
@@ -68,9 +68,7 @@ class Serializer(base.Serializer):
             else:
                 def m2m_value(value):
                     return self._value_from_field(value, value._meta.pk)
-            self._current[field.name] = [
-                m2m_value(related) for related in getattr(obj, field.name).iterator()
-            ]
+            self._current[field.name] = [m2m_value(related) for related in getattr(obj, field.name).iterator()]
 
     def getvalue(self):
         return self.objects
@@ -83,12 +81,12 @@ def Deserializer(object_list, *, using=DEFAULT_DB_ALIAS, ignorenonexistent=False
     It's expected that you pass the Python objects themselves (instead of a
     stream or a string) to the constructor
     """
-    field_names_cache = {}  # Model: <list of field_names>
+    field_names_cache = {} # Model: <list of field_names>
 
     for d in object_list:
         # Look up the model and starting build a dict of data for it.
         try:
-            Model = _get_model(d["model"])
+            Model = _get_model(d['model'])
         except base.DeserializationError:
             if ignorenonexistent:
                 continue
@@ -105,16 +103,13 @@ def Deserializer(object_list, *, using=DEFAULT_DB_ALIAS, ignorenonexistent=False
         if Model not in field_names_cache:
             field_names_cache[Model] = {f.name for f in Model._meta.get_fields()}
         field_names = field_names_cache[Model]
-
         # Handle each field
-        for (field_name, field_value) in d["fields"].items():
-
+        for field_name, field_value in d['fields'].items():
             if ignorenonexistent and field_name not in field_names:
                 # skip fields no longer on model
                 continue
 
             field = Model._meta.get_field(field_name)
-
             # Handle M2M relations
             if field.remote_field and isinstance(field.remote_field, models.ManyToManyRel):
                 try:
@@ -129,8 +124,8 @@ def Deserializer(object_list, *, using=DEFAULT_DB_ALIAS, ignorenonexistent=False
                 except Exception as e:
                     raise base.DeserializationError.WithData(e, d['model'], d.get('pk'), field_value)
                 data[field.attname] = value
-            # Handle all other fields
             else:
+                # Handle all other fields
                 try:
                     data[field.name] = field.to_python(field_value)
                 except Exception as e:
@@ -141,7 +136,7 @@ def Deserializer(object_list, *, using=DEFAULT_DB_ALIAS, ignorenonexistent=False
 
 
 def _get_model(model_identifier):
-    """Look up a model from an "app_label.model_name" string."""
+    '''Look up a model from an "app_label.model_name" string.'''
     try:
         return apps.get_model(model_identifier)
     except (LookupError, TypeError):

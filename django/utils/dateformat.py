@@ -15,9 +15,7 @@ import datetime
 import re
 import time
 
-from django.utils.dates import (
-    MONTHS, MONTHS_3, MONTHS_ALT, MONTHS_AP, WEEKDAYS, WEEKDAYS_ABBR,
-)
+from django.utils.dates import MONTHS, MONTHS_3, MONTHS_ALT, MONTHS_AP, WEEKDAYS, WEEKDAYS_ABBR
 from django.utils.timezone import get_default_timezone, is_aware, is_naive
 from django.utils.translation import gettext as _
 
@@ -31,10 +29,11 @@ class Formatter:
         for i, piece in enumerate(re_formatchars.split(str(formatstr))):
             if i % 2:
                 if type(self.data) is datetime.date and hasattr(TimeFormat, piece):
-                    raise TypeError(
-                        "The format for date objects may not contain "
-                        "time-related format specifiers (found '%s')." % piece
-                    )
+                    raise
+                    TypeError("The format for date objects may not contain "
+                        "time-related format specifiers (found '%s')." \
+                    % \
+                    piece)
                 pieces.append(str(getattr(self, piece)()))
             elif piece:
                 pieces.append(re_escaped.sub(r'\1', piece))
@@ -42,11 +41,9 @@ class Formatter:
 
 
 class TimeFormat(Formatter):
-
     def __init__(self, obj):
         self.data = obj
         self.timezone = None
-
         # We only support timezone when formatting datetime objects,
         # not date objects (timezone information not appropriate),
         # or time objects (against established django policy).
@@ -69,24 +66,24 @@ class TimeFormat(Formatter):
         return _('AM')
 
     def B(self):
-        "Swatch Internet time"
+        'Swatch Internet time'
         raise NotImplementedError('may be implemented in a future release')
 
     def e(self):
-        """
+        '''
         Timezone name.
 
         If timezone information is not available, return an empty string.
-        """
+        '''
         if not self.timezone:
-            return ""
+            return ''
 
         try:
             if hasattr(self.data, 'tzinfo') and self.data.tzinfo:
                 return self.data.tzname() or ''
         except NotImplementedError:
             pass
-        return ""
+        return ''
 
     def f(self):
         """
@@ -123,21 +120,23 @@ class TimeFormat(Formatter):
         "Minutes; i.e. '00' to '59'"
         return '%02d' % self.data.minute
 
-    def O(self):  # NOQA: E743
+    def O(
+        self # NOQA: E743
+    ):
         """
         Difference to Greenwich time in hours; e.g. '+0200', '-0430'.
 
         If timezone information is not available, return an empty string.
         """
         if not self.timezone:
-            return ""
+            return ''
 
         seconds = self.Z()
-        if seconds == "":
-            return ""
+        if seconds == '':
+            return ''
         sign = '-' if seconds < 0 else '+'
         seconds = abs(seconds)
-        return "%s%02d%02d" % (sign, seconds // 3600, (seconds // 60) % 60)
+        return '%s%02d%02d' % (sign, seconds // 3600, seconds // 60 % 60)
 
     def P(self):
         """
@@ -163,7 +162,7 @@ class TimeFormat(Formatter):
         If timezone information is not available, return an empty string.
         """
         if not self.timezone:
-            return ""
+            return ''
 
         name = None
         try:
@@ -190,7 +189,7 @@ class TimeFormat(Formatter):
         If timezone information is not available, return an empty string.
         """
         if not self.timezone:
-            return ""
+            return ''
 
         try:
             offset = self.timezone.utcoffset(self.data)
@@ -198,8 +197,7 @@ class TimeFormat(Formatter):
             # pytz raises AmbiguousTimeError during the autumn DST change.
             # This happens mainly when __init__ receives a naive datetime
             # and sets self.timezone = get_default_timezone().
-            return ""
-
+            return ''
         # `offset` is a datetime.timedelta. For negative values (to the west of
         # UTC) only days can be negative (days=-1) and seconds are always
         # positive. e.g. UTC-1 -> timedelta(days=-1, seconds=82800, microseconds=0)
@@ -230,14 +228,16 @@ class DateFormat(TimeFormat):
         return WEEKDAYS_ABBR[self.data.weekday()]
 
     def E(self):
-        "Alternative month names as required by some locales. Proprietary extension."
+        'Alternative month names as required by some locales. Proprietary extension.'
         return MONTHS_ALT[self.data.month]
 
     def F(self):
         "Month, textual, long; e.g. 'January'"
         return MONTHS[self.data.month]
 
-    def I(self):  # NOQA: E743
+    def I(
+        self # NOQA: E743
+    ):
         "'1' if Daylight Savings Time, '0' otherwise."
         try:
             if self.timezone and self.timezone.dst(self.data):
@@ -254,12 +254,14 @@ class DateFormat(TimeFormat):
         "Day of the month without leading zeros; i.e. '1' to '31'"
         return self.data.day
 
-    def l(self):  # NOQA: E743
+    def l(
+        self # NOQA: E743
+    ):
         "Day of the week, textual, long; e.g. 'Friday'"
         return WEEKDAYS[self.data.weekday()]
 
     def L(self):
-        "Boolean for whether it is a leap year; i.e. True or False"
+        'Boolean for whether it is a leap year; i.e. True or False'
         return calendar.isleap(self.data.year)
 
     def m(self):
@@ -275,11 +277,11 @@ class DateFormat(TimeFormat):
         return self.data.month
 
     def N(self):
-        "Month abbreviation in Associated Press style. Proprietary extension."
+        'Month abbreviation in Associated Press style. Proprietary extension.'
         return MONTHS_AP[self.data.month]
 
     def o(self):
-        "ISO 8601 year number matching the ISO week number (W)"
+        'ISO 8601 year number matching the ISO week number (W)'
         return self.data.isocalendar()[0]
 
     def r(self):
@@ -288,7 +290,7 @@ class DateFormat(TimeFormat):
 
     def S(self):
         "English ordinal suffix for the day of the month, 2 characters; i.e. 'st', 'nd', 'rd' or 'th'"
-        if self.data.day in (11, 12, 13):  # Special case
+        if self.data.day in (11, 12, 13): # Special case
             return 'th'
         last = self.data.day % 10
         if last == 1:
@@ -304,7 +306,7 @@ class DateFormat(TimeFormat):
         return '%02d' % calendar.monthrange(self.data.year, self.data.month)[1]
 
     def U(self):
-        "Seconds since the Unix epoch (January 1 1970 00:00:00 GMT)"
+        'Seconds since the Unix epoch (January 1 1970 00:00:00 GMT)'
         if isinstance(self.data, datetime.datetime) and is_aware(self.data):
             return int(calendar.timegm(self.data.utctimetuple()))
         else:
@@ -312,31 +314,29 @@ class DateFormat(TimeFormat):
 
     def w(self):
         "Day of the week, numeric, i.e. '0' (Sunday) to '6' (Saturday)"
-        return (self.data.weekday() + 1) % 7
+        return self.data.weekday() + 1 % 7
 
     def W(self):
-        "ISO-8601 week number of year, weeks starting on Monday"
+        'ISO-8601 week number of year, weeks starting on Monday'
         # Algorithm from http://www.personal.ecu.edu/mccartyr/ISOwdALG.txt
         jan1_weekday = self.data.replace(month=1, day=1).weekday() + 1
         weekday = self.data.weekday() + 1
         day_of_year = self.z()
-        if day_of_year <= (8 - jan1_weekday) and jan1_weekday > 4:
-            if jan1_weekday == 5 or (jan1_weekday == 6 and calendar.isleap(self.data.year - 1)):
+        if day_of_year <= 8 - jan1_weekday and jan1_weekday > 4:
+            if jan1_weekday == 5 or jan1_weekday == 6 and calendar.isleap(self.data.year - 1):
                 week_number = 53
             else:
                 week_number = 52
+        elif calendar.isleap(self.data.year):
+            i = 366
         else:
-            if calendar.isleap(self.data.year):
-                i = 366
-            else:
-                i = 365
-            if (i - day_of_year) < (4 - weekday):
-                week_number = 1
-            else:
-                j = day_of_year + (7 - weekday) + (jan1_weekday - 1)
-                week_number = j // 7
-                if jan1_weekday > 4:
-                    week_number -= 1
+            i = 365if i - day_of_year < 4 - weekday:
+            week_number = 1
+        else:
+            j = day_of_year + 7 - weekday + jan1_weekday - 1
+            week_number = j // 7
+            if jan1_weekday > 4:
+                week_number -= 1
         return week_number
 
     def y(self):
@@ -356,12 +356,12 @@ class DateFormat(TimeFormat):
 
 
 def format(value, format_string):
-    "Convenience function"
+    'Convenience function'
     df = DateFormat(value)
     return df.format(format_string)
 
 
 def time_format(value, format_string):
-    "Convenience function"
+    'Convenience function'
     tf = TimeFormat(value)
     return tf.format(format_string)

@@ -11,10 +11,11 @@ except ImportError:
 
 
 class ExceptionThatFailsUnpickling(Exception):
-    """
+    '''
     After pickling, this class fails unpickling with an error about incorrect
     arguments passed to __init__().
-    """
+    '''
+
     def __init__(self, arg):
         super().__init__()
 
@@ -29,29 +30,27 @@ class ParallelTestRunnerTest(SimpleTestCase):
     """
 
     def test_subtest(self):
-        """
+        '''
         Passing subtests work.
-        """
+        '''
         for i in range(2):
             with self.subTest(index=i):
                 self.assertEqual(i, i)
 
 
 class SampleFailingSubtest(SimpleTestCase):
-
     # This method name doesn't begin with "test" to prevent test discovery
     # from seeing it.
     def dummy_test(self):
-        """
+        '''
         A dummy test for testing subTest failures.
-        """
+        '''
         for i in range(3):
             with self.subTest(index=i):
                 self.assertEqual(i, 1)
 
 
 class RemoteTestResultTest(SimpleTestCase):
-
     def test_pickle_errors_detection(self):
         picklable_error = RuntimeError('This is fine')
         not_unpicklable_error = ExceptionThatFailsUnpickling('arg')
@@ -65,9 +64,9 @@ class RemoteTestResultTest(SimpleTestCase):
 
     @unittest.skipUnless(tblib is not None, 'requires tblib to be installed')
     def test_add_failing_subtests(self):
-        """
+        '''
         Failing subtests are added correctly using addSubTest().
-        """
+        '''
         # Manually run a test with failing subtests to prevent the failures
         # from affecting the actual test run.
         result = RemoteTestResult()

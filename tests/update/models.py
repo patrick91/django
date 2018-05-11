@@ -1,7 +1,7 @@
-"""
+'''
 Tests for the update() queryset method that allows in-place, multi-object
 updates.
-"""
+'''
 
 from django.db import models
 

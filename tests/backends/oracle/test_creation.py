@@ -13,21 +13,30 @@ from django.test import TestCase
 @mock.patch('sys.stdout', new_callable=StringIO)
 @mock.patch('sys.stderr', new_callable=StringIO)
 class DatabaseCreationTests(TestCase):
-
     def _execute_raise_user_already_exists(self, cursor, statements, parameters, verbosity, allow_quiet_fail=False):
         # Raise "user already exists" only in test user creation
         if statements and statements[0].startswith('CREATE USER'):
             raise DatabaseError("ORA-01920: user name 'string' conflicts with another user or role name")
 
     def _execute_raise_tablespace_already_exists(
-        self, cursor, statements, parameters, verbosity, allow_quiet_fail=False
+        self,
+        cursor,
+        statements,
+        parameters,
+        verbosity,
+        allow_quiet_fail=False
     ):
         raise DatabaseError("ORA-01543: tablespace 'string' already exists")
 
     def _execute_raise_insufficient_privileges(
-        self, cursor, statements, parameters, verbosity, allow_quiet_fail=False
+        self,
+        cursor,
+        statements,
+        parameters,
+        verbosity,
+        allow_quiet_fail=False
     ):
-        raise DatabaseError("ORA-01031: insufficient privileges")
+        raise DatabaseError('ORA-01031: insufficient privileges')
 
     def _test_database_passwd(self):
         # Mocked to avoid test user password changed

@@ -6,7 +6,6 @@ from ..utils import setup
 
 
 class LengthTests(SimpleTestCase):
-
     @setup({'length01': '{{ list|length }}'})
     def test_length01(self):
         output = self.engine.render_to_string('length01', {'list': ['4', None, True, {}]})
@@ -45,7 +44,6 @@ class LengthTests(SimpleTestCase):
 
 
 class FunctionTests(SimpleTestCase):
-
     def test_string(self):
         self.assertEqual(length('1234'), 4)
 

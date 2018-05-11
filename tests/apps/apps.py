@@ -3,13 +3,13 @@ from django.apps import AppConfig
 
 class MyAdmin(AppConfig):
     name = 'django.contrib.admin'
-    verbose_name = "Admin sweet admin."
+    verbose_name = 'Admin sweet admin.'
 
 
 class MyAuth(AppConfig):
     name = 'django.contrib.auth'
     label = 'myauth'
-    verbose_name = "All your password are belong to us."
+    verbose_name = 'All your password are belong to us.'
 
 
 class BadConfig(AppConfig):

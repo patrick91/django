@@ -1,4 +1,4 @@
-"""
+'''
  This module contains the spatial lookup types, and the `get_geo_where_clause`
  routine for Oracle Spatial.
 
@@ -6,12 +6,10 @@
  this backend will not work on such platforms.  Specifically, XE lacks
  support for an internal JVM, and Java libraries are required to use
  the WKT constructors.
-"""
+'''
 import re
 
-from django.contrib.gis.db.backends.base.operations import (
-    BaseSpatialOperations,
-)
+from django.contrib.gis.db.backends.base.operations import BaseSpatialOperations
 from django.contrib.gis.db.backends.oracle.adapter import OracleSpatialAdapter
 from django.contrib.gis.db.backends.utils import SpatialOperator
 from django.contrib.gis.db.models import aggregates
@@ -49,8 +47,7 @@ class SDORelate(SpatialOperator):
         return super().as_sql(connection, lookup, template_params, sql_params)
 
 
-class OracleOperations(BaseSpatialOperations, DatabaseOperations):
-
+class OracleOperations(BaseSpatialOperations,DatabaseOperations):
     name = 'oracle'
     oracle = True
     disallowed_aggregates = (aggregates.Collect, aggregates.Extent3D, aggregates.MakeLine)
@@ -78,9 +75,8 @@ class OracleOperations(BaseSpatialOperations, DatabaseOperations):
         'Reverse': 'SDO_UTIL.REVERSE_LINESTRING',
         'SymDifference': 'SDO_GEOM.SDO_XOR',
         'Transform': 'SDO_CS.TRANSFORM',
-        'Union': 'SDO_GEOM.SDO_UNION',
+        'Union': 'SDO_GEOM.SDO_UNION'
     }
-
     # We want to get SDO Geometries as WKT because it is much easier to
     # instantiate GEOS proxies from WKT than SDO_GEOMETRY(...) strings.
     # However, this adversely affects performance (i.e., Java is called
@@ -93,21 +89,34 @@ class OracleOperations(BaseSpatialOperations, DatabaseOperations):
         'coveredby': SDOOperator(func='SDO_COVEREDBY'),
         'covers': SDOOperator(func='SDO_COVERS'),
         'disjoint': SDODisjoint(),
-        'intersects': SDOOperator(func='SDO_OVERLAPBDYINTERSECT'),  # TODO: Is this really the same as ST_Intersects()?
+        'intersects':
+            SDOOperator(func='SDO_OVERLAPBDYINTERSECT'), # TODO: Is this really the same as ST_Intersects()?
         'equals': SDOOperator(func='SDO_EQUAL'),
         'exact': SDOOperator(func='SDO_EQUAL'),
         'overlaps': SDOOperator(func='SDO_OVERLAPS'),
         'same_as': SDOOperator(func='SDO_EQUAL'),
-        'relate': SDORelate(),  # Oracle uses a different syntax, e.g., 'mask=inside+touch'
+        'relate':
+            SDORelate(), # Oracle uses a different syntax, e.g., 'mask=inside+touch'
         'touches': SDOOperator(func='SDO_TOUCH'),
         'within': SDOOperator(func='SDO_INSIDE'),
-        'dwithin': SDODWithin(),
+        'dwithin': SDODWithin()
     }
 
     unsupported_functions = {
-        'AsGeoJSON', 'AsKML', 'AsSVG', 'Azimuth', 'Envelope',
-        'ForcePolygonCW', 'ForceRHR', 'GeoHash', 'LineLocatePoint',
-        'MakeValid', 'MemSize', 'Scale', 'SnapToGrid', 'Translate',
+        'AsGeoJSON',
+        'AsKML',
+        'AsSVG',
+        'Azimuth',
+        'Envelope',
+        'ForcePolygonCW',
+        'ForceRHR',
+        'GeoHash',
+        'LineLocatePoint',
+        'MakeValid',
+        'MemSize',
+        'Scale',
+        'SnapToGrid',
+        'Translate'
     }
 
     def geo_quote_name(self, name):
@@ -131,7 +140,7 @@ class OracleOperations(BaseSpatialOperations, DatabaseOperations):
                 raise Exception('Unexpected geometry type returned for extent: %s' % gtype)
             xmin, ymin = ll
             xmax, ymax = ur
-            return (xmin, ymin, xmax, ymax)
+            return xmin, ymin, xmax, ymax
         else:
             return None
 
@@ -144,12 +153,12 @@ class OracleOperations(BaseSpatialOperations, DatabaseOperations):
         return 'MDSYS.SDO_GEOMETRY'
 
     def get_distance(self, f, value, lookup_type):
-        """
+        '''
         Return the distance parameters given the value and the lookup type.
         On Oracle, geometry columns with a geodetic coordinate system behave
         implicitly like a geography column, and thus meters will be used as
         the distance parameter on them.
-        """
+        '''
         if not value:
             return []
         value = value[0]
@@ -160,7 +169,6 @@ class OracleOperations(BaseSpatialOperations, DatabaseOperations):
                 dist_param = getattr(value, Distance.unit_attname(f.units_name(self.connection)))
         else:
             dist_param = value
-
         # dwithin lookups on Oracle require a special string parameter
         # that starts with "distance=".
         if lookup_type == 'dwithin':
@@ -174,9 +182,9 @@ class OracleOperations(BaseSpatialOperations, DatabaseOperations):
         return super().get_geom_placeholder(f, value, compiler)
 
     def spatial_aggregate_name(self, agg_name):
-        """
+        '''
         Return the spatial aggregate SQL name.
-        """
+        '''
         agg_name = 'unionagg' if agg_name.lower() == 'union' else agg_name.lower()
         return getattr(self, agg_name)
 
@@ -190,9 +198,9 @@ class OracleOperations(BaseSpatialOperations, DatabaseOperations):
         return OracleSpatialRefSys
 
     def modify_insert_params(self, placeholder, params):
-        """Drop out insert parameters for NULL placeholder. Needed for Oracle Spatial
+        '''Drop out insert parameters for NULL placeholder. Needed for Oracle Spatial
         backend due to #10888.
-        """
+        '''
         if placeholder == 'NULL':
             return []
         return super().modify_insert_params(placeholder, params)
@@ -210,6 +218,7 @@ class OracleOperations(BaseSpatialOperations, DatabaseOperations):
                 if srid:
                     geom.srid = srid
                 return geom
+
         return converter
 
     def get_area_att_for_field(self, field):

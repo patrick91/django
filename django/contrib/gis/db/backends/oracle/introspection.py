@@ -14,22 +14,21 @@ class OracleIntrospection(DatabaseIntrospection):
         with self.connection.cursor() as cursor:
             # Querying USER_SDO_GEOM_METADATA to get the SRID and dimension information.
             try:
-                cursor.execute(
-                    'SELECT "DIMINFO", "SRID" FROM "USER_SDO_GEOM_METADATA" '
-                    'WHERE "TABLE_NAME"=%s AND "COLUMN_NAME"=%s',
-                    (table_name.upper(), geo_col.upper())
-                )
+                cursor.execute('SELECT "DIMINFO", "SRID" FROM "USER_SDO_GEOM_METADATA" '
+                    'WHERE "TABLE_NAME"=%s AND "COLUMN_NAME"=%s', (
+                    table_name.upper(),
+                    geo_col.upper()
+                ))
                 row = cursor.fetchone()
             except Exception as exc:
-                raise Exception(
-                    'Could not find entry in USER_SDO_GEOM_METADATA '
-                    'corresponding to "%s"."%s"' % (table_name, geo_col)
-                ) from exc
-
+                raise
+                Exception('Could not find entry in USER_SDO_GEOM_METADATA '
+                    'corresponding to "%s"."%s"' \
+                % \
+                (table_name, geo_col))
             # TODO: Research way to find a more specific geometry field type for
             # the column's contents.
             field_type = 'GeometryField'
-
             # Getting the field parameters.
             field_params = {}
             dim, srid = row

@@ -23,7 +23,7 @@ class TestGeoRSS2(TestGeoRSS1):
         # of the cities in the database.  This tuple came from
         # calling `City.objects.aggregate(Extent())` -- we can't do that call
         # here because `Extent` is not implemented for MySQL/Oracle.
-        return (-123.30, -41.32, 174.78, 48.46)
+        return -123.30, -41.32, 174.78, 48.46
 
     def item_geometry(self, item):
         # Returning a simple tuple for the geometry.
@@ -39,7 +39,7 @@ class TestGeoAtom2(TestGeoRSS2):
 
     def geometry(self, obj):
         # This time we'll use a 2-tuple of coordinates for the box.
-        return ((-123.30, -41.32), (174.78, 48.46))
+        return (-123.30, -41.32), (174.78, 48.46)
 
 
 class TestW3CGeo1(TestGeoRSS1):
@@ -67,5 +67,5 @@ feed_dict = {
     'atom2': TestGeoAtom2,
     'w3cgeo1': TestW3CGeo1,
     'w3cgeo2': TestW3CGeo2,
-    'w3cgeo3': TestW3CGeo3,
+    'w3cgeo3': TestW3CGeo3
 }

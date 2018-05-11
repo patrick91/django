@@ -3,9 +3,9 @@ from django.test import RequestFactory, SimpleTestCase
 
 
 class DummyStorage:
-    """
+    '''
     dummy message-store to test the api methods
-    """
+    '''
 
     def __init__(self):
         self.store = []
@@ -56,10 +56,11 @@ class CustomRequest:
 
 
 class CustomRequestApiTests(ApiTests):
-    """
+    '''
     add_message() should use ducktyping to allow request wrappers such as the
     one in Django REST framework.
-    """
+    '''
+
     def setUp(self):
         super().setUp()
         self.request = CustomRequest(self.request)

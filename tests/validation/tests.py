@@ -4,14 +4,10 @@ from django.test import TestCase
 from django.utils.functional import lazy
 
 from . import ValidationTestCase
-from .models import (
-    Article, Author, GenericIPAddressTestModel, GenericIPAddrUnpackUniqueTest,
-    ModelToValidate,
-)
+from .models import Article, Author, GenericIPAddressTestModel, GenericIPAddrUnpackUniqueTest, ModelToValidate
 
 
 class BaseModelValidationTests(ValidationTestCase):
-
     def test_missing_required_field_raises_error(self):
         mtv = ModelToValidate(f_with_custom_validator=42)
         self.assertFailsValidation(mtv.full_clean, ['name', 'number'])
@@ -26,15 +22,13 @@ class BaseModelValidationTests(ValidationTestCase):
 
     def test_wrong_FK_value_raises_error(self):
         mtv = ModelToValidate(number=10, name='Some Name', parent_id=3)
-        self.assertFieldFailsValidationWithMessage(
-            mtv.full_clean, 'parent',
-            ['model to validate instance with id %r does not exist.' % mtv.parent_id]
-        )
+        self.assertFieldFailsValidationWithMessage(mtv.full_clean, 'parent', [
+            'model to validate instance with id %r does not exist.' % mtv.parent_id
+        ])
         mtv = ModelToValidate(number=10, name='Some Name', ufm_id='Some Name')
-        self.assertFieldFailsValidationWithMessage(
-            mtv.full_clean, 'ufm',
-            ["unique fields model instance with unique_charfield %r does not exist." % mtv.name]
-        )
+        self.assertFieldFailsValidationWithMessage(mtv.full_clean, 'ufm', [
+            'unique fields model instance with unique_charfield %r does not exist.' % mtv.name
+        ])
 
     def test_correct_FK_value_validates(self):
         parent = ModelToValidate.objects.create(number=10, name='Some Name')
@@ -89,10 +83,7 @@ class ModelFormsTests(TestCase):
     def test_partial_validation(self):
         # Make sure the "commit=False and set field values later" idiom still
         # works with model validation.
-        data = {
-            'title': 'The state of model validation',
-            'pub_date': '2010-1-10 14:49:00'
-        }
+        data = {'title': 'The state of model validation', 'pub_date': '2010-1-10 14:49:00'}
         form = ArticleForm(data)
         self.assertEqual(list(form.errors), [])
         article = form.save(commit=False)
@@ -105,9 +96,7 @@ class ModelFormsTests(TestCase):
         # Also, Article.clean() should be run, so pub_date will be filled after
         # validation, so the form should save cleanly even though pub_date is
         # not allowed to be null.
-        data = {
-            'title': 'The state of model validation',
-        }
+        data = {'title': 'The state of model validation'}
         article = Article(author_id=self.author.id)
         form = ArticleForm(data, instance=article)
         self.assertEqual(list(form.errors), [])
@@ -117,79 +106,74 @@ class ModelFormsTests(TestCase):
     def test_validation_with_invalid_blank_field(self):
         # Even though pub_date is set to blank=True, an invalid value was
         # provided, so it should fail validation.
-        data = {
-            'title': 'The state of model validation',
-            'pub_date': 'never'
-        }
+        data = {'title': 'The state of model validation', 'pub_date': 'never'}
         article = Article(author_id=self.author.id)
         form = ArticleForm(data, instance=article)
         self.assertEqual(list(form.errors), ['pub_date'])
 
 
 class GenericIPAddressFieldTests(ValidationTestCase):
-
     def test_correct_generic_ip_passes(self):
-        giptm = GenericIPAddressTestModel(generic_ip="1.2.3.4")
+        giptm = GenericIPAddressTestModel(generic_ip='1.2.3.4')
         self.assertIsNone(giptm.full_clean())
-        giptm = GenericIPAddressTestModel(generic_ip=" 1.2.3.4 ")
+        giptm = GenericIPAddressTestModel(generic_ip=' 1.2.3.4 ')
         self.assertIsNone(giptm.full_clean())
-        giptm = GenericIPAddressTestModel(generic_ip="1.2.3.4\n")
+        giptm = GenericIPAddressTestModel(generic_ip='1.2.3.4\n')
         self.assertIsNone(giptm.full_clean())
-        giptm = GenericIPAddressTestModel(generic_ip="2001::2")
+        giptm = GenericIPAddressTestModel(generic_ip='2001::2')
         self.assertIsNone(giptm.full_clean())
 
     def test_invalid_generic_ip_raises_error(self):
-        giptm = GenericIPAddressTestModel(generic_ip="294.4.2.1")
+        giptm = GenericIPAddressTestModel(generic_ip='294.4.2.1')
         self.assertFailsValidation(giptm.full_clean, ['generic_ip'])
-        giptm = GenericIPAddressTestModel(generic_ip="1:2")
+        giptm = GenericIPAddressTestModel(generic_ip='1:2')
         self.assertFailsValidation(giptm.full_clean, ['generic_ip'])
         giptm = GenericIPAddressTestModel(generic_ip=1)
         self.assertFailsValidation(giptm.full_clean, ['generic_ip'])
-        giptm = GenericIPAddressTestModel(generic_ip=lazy(lambda: 1, int))
+        giptm = GenericIPAddressTestModel(generic_ip=lazy(lambda : 1, int))
         self.assertFailsValidation(giptm.full_clean, ['generic_ip'])
 
     def test_correct_v4_ip_passes(self):
-        giptm = GenericIPAddressTestModel(v4_ip="1.2.3.4")
+        giptm = GenericIPAddressTestModel(v4_ip='1.2.3.4')
         self.assertIsNone(giptm.full_clean())
 
     def test_invalid_v4_ip_raises_error(self):
-        giptm = GenericIPAddressTestModel(v4_ip="294.4.2.1")
+        giptm = GenericIPAddressTestModel(v4_ip='294.4.2.1')
         self.assertFailsValidation(giptm.full_clean, ['v4_ip'])
-        giptm = GenericIPAddressTestModel(v4_ip="2001::2")
+        giptm = GenericIPAddressTestModel(v4_ip='2001::2')
         self.assertFailsValidation(giptm.full_clean, ['v4_ip'])
 
     def test_correct_v6_ip_passes(self):
-        giptm = GenericIPAddressTestModel(v6_ip="2001::2")
+        giptm = GenericIPAddressTestModel(v6_ip='2001::2')
         self.assertIsNone(giptm.full_clean())
 
     def test_invalid_v6_ip_raises_error(self):
-        giptm = GenericIPAddressTestModel(v6_ip="1.2.3.4")
+        giptm = GenericIPAddressTestModel(v6_ip='1.2.3.4')
         self.assertFailsValidation(giptm.full_clean, ['v6_ip'])
-        giptm = GenericIPAddressTestModel(v6_ip="1:2")
+        giptm = GenericIPAddressTestModel(v6_ip='1:2')
         self.assertFailsValidation(giptm.full_clean, ['v6_ip'])
 
     def test_v6_uniqueness_detection(self):
         # These two addresses are the same with different syntax
-        giptm = GenericIPAddressTestModel(generic_ip="2001::1:0:0:0:0:2")
+        giptm = GenericIPAddressTestModel(generic_ip='2001::1:0:0:0:0:2')
         giptm.save()
-        giptm = GenericIPAddressTestModel(generic_ip="2001:0:1:2")
+        giptm = GenericIPAddressTestModel(generic_ip='2001:0:1:2')
         self.assertFailsValidation(giptm.full_clean, ['generic_ip'])
 
     def test_v4_unpack_uniqueness_detection(self):
         # These two are different, because we are not doing IPv4 unpacking
-        giptm = GenericIPAddressTestModel(generic_ip="::ffff:10.10.10.10")
+        giptm = GenericIPAddressTestModel(generic_ip='::ffff:10.10.10.10')
         giptm.save()
-        giptm = GenericIPAddressTestModel(generic_ip="10.10.10.10")
+        giptm = GenericIPAddressTestModel(generic_ip='10.10.10.10')
         self.assertIsNone(giptm.full_clean())
-
         # These two are the same, because we are doing IPv4 unpacking
-        giptm = GenericIPAddrUnpackUniqueTest(generic_v4unpack_ip="::ffff:18.52.18.52")
+        giptm = GenericIPAddrUnpackUniqueTest(generic_v4unpack_ip='::ffff:18.52.18.52')
         giptm.save()
-        giptm = GenericIPAddrUnpackUniqueTest(generic_v4unpack_ip="18.52.18.52")
+        giptm = GenericIPAddrUnpackUniqueTest(generic_v4unpack_ip='18.52.18.52')
         self.assertFailsValidation(giptm.full_clean, ['generic_v4unpack_ip'])
 
     def test_empty_generic_ip_passes(self):
-        giptm = GenericIPAddressTestModel(generic_ip="")
+        giptm = GenericIPAddressTestModel(generic_ip='')
         self.assertIsNone(giptm.full_clean())
         giptm = GenericIPAddressTestModel(generic_ip=None)
         self.assertIsNone(giptm.full_clean())

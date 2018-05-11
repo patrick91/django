@@ -56,159 +56,101 @@ class SimpleTests(HStoreTestCase):
         self.assertEqual(instance.field, expected_value)
 
     def test_array_field(self):
-        value = [
-            {'a': 1, 'b': 'B', 2: 'c', 'ï': 'ê'},
-            {'a': 1, 'b': 'B', 2: 'c', 'ï': 'ê'},
-        ]
-        expected_value = [
-            {'a': '1', 'b': 'B', '2': 'c', 'ï': 'ê'},
-            {'a': '1', 'b': 'B', '2': 'c', 'ï': 'ê'},
-        ]
+        value = [{'a': 1, 'b': 'B', 2: 'c', 'ï': 'ê'}, {'a': 1, 'b': 'B', 2: 'c', 'ï': 'ê'}]
+        expected_value = [{'a': '1', 'b': 'B', '2': 'c', 'ï': 'ê'}, {'a': '1', 'b': 'B', '2': 'c', 'ï': 'ê'}]
         instance = HStoreModel.objects.create(array_field=value)
         instance.refresh_from_db()
         self.assertEqual(instance.array_field, expected_value)
 
 
 class TestQuerying(HStoreTestCase):
-
     def setUp(self):
         self.objs = [
             HStoreModel.objects.create(field={'a': 'b'}),
             HStoreModel.objects.create(field={'a': 'b', 'c': 'd'}),
             HStoreModel.objects.create(field={'c': 'd'}),
             HStoreModel.objects.create(field={}),
-            HStoreModel.objects.create(field=None),
+            HStoreModel.objects.create(field=None)
         ]
 
     def test_exact(self):
-        self.assertSequenceEqual(
-            HStoreModel.objects.filter(field__exact={'a': 'b'}),
-            self.objs[:1]
-        )
+        self.assertSequenceEqual(HStoreModel.objects.filter(field__exact={'a': 'b'}), self.objs[:1])
 
     def test_contained_by(self):
-        self.assertSequenceEqual(
-            HStoreModel.objects.filter(field__contained_by={'a': 'b', 'c': 'd'}),
-            self.objs[:4]
-        )
+        self.assertSequenceEqual(HStoreModel.objects.filter(field__contained_by={'a': 'b', 'c': 'd'}), self.objs[:4])
 
     def test_contains(self):
-        self.assertSequenceEqual(
-            HStoreModel.objects.filter(field__contains={'a': 'b'}),
-            self.objs[:2]
-        )
+        self.assertSequenceEqual(HStoreModel.objects.filter(field__contains={'a': 'b'}), self.objs[:2])
 
     def test_in_generator(self):
         def search():
             yield {'a': 'b'}
-        self.assertSequenceEqual(
-            HStoreModel.objects.filter(field__in=search()),
-            self.objs[:1]
-        )
+
+        self.assertSequenceEqual(HStoreModel.objects.filter(field__in=search()), self.objs[:1])
 
     def test_has_key(self):
-        self.assertSequenceEqual(
-            HStoreModel.objects.filter(field__has_key='c'),
-            self.objs[1:3]
-        )
+        self.assertSequenceEqual(HStoreModel.objects.filter(field__has_key='c'), self.objs[1:3])
 
     def test_has_keys(self):
-        self.assertSequenceEqual(
-            HStoreModel.objects.filter(field__has_keys=['a', 'c']),
-            self.objs[1:2]
-        )
+        self.assertSequenceEqual(HStoreModel.objects.filter(field__has_keys=['a', 'c']), self.objs[1:2])
 
     def test_has_any_keys(self):
-        self.assertSequenceEqual(
-            HStoreModel.objects.filter(field__has_any_keys=['a', 'c']),
-            self.objs[:3]
-        )
+        self.assertSequenceEqual(HStoreModel.objects.filter(field__has_any_keys=['a', 'c']), self.objs[:3])
 
     def test_key_transform(self):
-        self.assertSequenceEqual(
-            HStoreModel.objects.filter(field__a='b'),
-            self.objs[:2]
-        )
+        self.assertSequenceEqual(HStoreModel.objects.filter(field__a='b'), self.objs[:2])
 
     def test_keys(self):
-        self.assertSequenceEqual(
-            HStoreModel.objects.filter(field__keys=['a']),
-            self.objs[:1]
-        )
+        self.assertSequenceEqual(HStoreModel.objects.filter(field__keys=['a']), self.objs[:1])
 
     def test_values(self):
-        self.assertSequenceEqual(
-            HStoreModel.objects.filter(field__values=['b']),
-            self.objs[:1]
-        )
+        self.assertSequenceEqual(HStoreModel.objects.filter(field__values=['b']), self.objs[:1])
 
     def test_field_chaining(self):
-        self.assertSequenceEqual(
-            HStoreModel.objects.filter(field__a__contains='b'),
-            self.objs[:2]
-        )
+        self.assertSequenceEqual(HStoreModel.objects.filter(field__a__contains='b'), self.objs[:2])
 
     def test_order_by_field(self):
         more_objs = (
             HStoreModel.objects.create(field={'g': '637'}),
             HStoreModel.objects.create(field={'g': '002'}),
             HStoreModel.objects.create(field={'g': '042'}),
-            HStoreModel.objects.create(field={'g': '981'}),
+            HStoreModel.objects.create(field={'g': '981'})
         )
-        self.assertSequenceEqual(
-            HStoreModel.objects.filter(field__has_key='g').order_by('field__g'),
-            [more_objs[1], more_objs[2], more_objs[0], more_objs[3]]
-        )
+        self.assertSequenceEqual(HStoreModel.objects.filter(field__has_key='g').order_by('field__g'), [
+            more_objs[1],
+            more_objs[2],
+            more_objs[0],
+            more_objs[3]
+        ])
 
     def test_keys_contains(self):
-        self.assertSequenceEqual(
-            HStoreModel.objects.filter(field__keys__contains=['a']),
-            self.objs[:2]
-        )
+        self.assertSequenceEqual(HStoreModel.objects.filter(field__keys__contains=['a']), self.objs[:2])
 
     def test_values_overlap(self):
-        self.assertSequenceEqual(
-            HStoreModel.objects.filter(field__values__overlap=['b', 'd']),
-            self.objs[:3]
-        )
+        self.assertSequenceEqual(HStoreModel.objects.filter(field__values__overlap=['b', 'd']), self.objs[:3])
 
     def test_key_isnull(self):
         obj = HStoreModel.objects.create(field={'a': None})
-        self.assertSequenceEqual(
-            HStoreModel.objects.filter(field__a__isnull=True),
-            self.objs[2:5] + [obj]
-        )
-        self.assertSequenceEqual(
-            HStoreModel.objects.filter(field__a__isnull=False),
-            self.objs[:2]
-        )
+        self.assertSequenceEqual(HStoreModel.objects.filter(field__a__isnull=True), self.objs[2:5] + [obj])
+        self.assertSequenceEqual(HStoreModel.objects.filter(field__a__isnull=False), self.objs[:2])
 
     def test_usage_in_subquery(self):
-        self.assertSequenceEqual(
-            HStoreModel.objects.filter(id__in=HStoreModel.objects.filter(field__a='b')),
-            self.objs[:2]
-        )
+        self.assertSequenceEqual(HStoreModel.objects.filter(id__in=HStoreModel.objects.filter(field__a='b')), self.objs[
+            :2
+        ])
 
 
 @isolate_apps('postgres_tests')
 class TestChecks(PostgreSQLTestCase):
-
     def test_invalid_default(self):
         class MyModel(PostgreSQLModel):
             field = HStoreField(default={})
 
         model = MyModel()
         self.assertEqual(model.check(), [
-            checks.Warning(
-                msg=(
-                    "HStoreField default should be a callable instead of an "
+            checks.Warning(msg="HStoreField default should be a callable instead of an "
                     "instance so that it's not shared between all field "
-                    "instances."
-                ),
-                hint='Use a callable instead, e.g., use `dict` instead of `{}`.',
-                obj=MyModel._meta.get_field('field'),
-                id='postgres.E003',
-            )
+                    "instances.", hint='Use a callable instead, e.g., use `dict` instead of `{}`.', obj=MyModel._meta.get_field('field'), id='postgres.E003')
         ])
 
     def test_valid_default(self):
@@ -219,17 +161,17 @@ class TestChecks(PostgreSQLTestCase):
 
 
 class TestSerialization(HStoreTestCase):
-    test_data = json.dumps([{
-        'model': 'postgres_tests.hstoremodel',
-        'pk': None,
-        'fields': {
-            'field': json.dumps({'a': 'b'}),
-            'array_field': json.dumps([
-                json.dumps({'a': 'b'}),
-                json.dumps({'b': 'a'}),
-            ]),
-        },
-    }])
+    test_data = json.dumps([
+        {
+            'model': 'postgres_tests.hstoremodel',
+            'pk': None,
+            'fields':
+                {
+                    'field': json.dumps({'a': 'b'}),
+                    'array_field': json.dumps([json.dumps({'a': 'b'}), json.dumps({'b': 'a'})])
+                }
+        }
+    ])
 
     def test_dumping(self):
         instance = HStoreModel(field={'a': 'b'}, array_field=[{'a': 'b'}, {'b': 'a'}])
@@ -249,7 +191,6 @@ class TestSerialization(HStoreTestCase):
 
 
 class TestValidation(HStoreTestCase):
-
     def test_not_a_string(self):
         field = HStoreField()
         with self.assertRaises(exceptions.ValidationError) as cm:
@@ -263,7 +204,6 @@ class TestValidation(HStoreTestCase):
 
 
 class TestFormField(HStoreTestCase):
-
     def test_valid(self):
         field = forms.HStoreField()
         value = field.clean('{"a": "b"}')
@@ -306,6 +246,7 @@ class TestFormField(HStoreTestCase):
     def test_field_has_changed(self):
         class HStoreFormTest(Form):
             f1 = forms.HStoreField()
+
         form_w_hstore = HStoreFormTest()
         self.assertFalse(form_w_hstore.has_changed())
 
@@ -318,15 +259,14 @@ class TestFormField(HStoreTestCase):
         form_w_hstore = HStoreFormTest({'f1': '{"a": 2}'}, initial={'f1': '{"a": 1}'})
         self.assertTrue(form_w_hstore.has_changed())
 
-        form_w_hstore = HStoreFormTest({'f1': '{"a": 1}'}, initial={'f1': {"a": 1}})
+        form_w_hstore = HStoreFormTest({'f1': '{"a": 1}'}, initial={'f1': {'a': 1}})
         self.assertFalse(form_w_hstore.has_changed())
 
-        form_w_hstore = HStoreFormTest({'f1': '{"a": 2}'}, initial={'f1': {"a": 1}})
+        form_w_hstore = HStoreFormTest({'f1': '{"a": 2}'}, initial={'f1': {'a': 1}})
         self.assertTrue(form_w_hstore.has_changed())
 
 
 class TestValidator(HStoreTestCase):
-
     def test_simple_valid(self):
         validator = KeysValidator(keys=['a', 'b'])
         validator({'a': 'foo', 'b': 'bar', 'c': 'baz'})
@@ -350,9 +290,7 @@ class TestValidator(HStoreTestCase):
         self.assertEqual(cm.exception.code, 'extra_keys')
 
     def test_custom_messages(self):
-        messages = {
-            'missing_keys': 'Foobar',
-        }
+        messages = {'missing_keys': 'Foobar'}
         validator = KeysValidator(keys=['a', 'b'], strict=True, messages=messages)
         with self.assertRaises(exceptions.ValidationError) as cm:
             validator({'a': 'foo', 'c': 'baz'})
@@ -364,9 +302,7 @@ class TestValidator(HStoreTestCase):
         self.assertEqual(cm.exception.code, 'extra_keys')
 
     def test_deconstruct(self):
-        messages = {
-            'missing_keys': 'Foobar',
-        }
+        messages = {'missing_keys': 'Foobar'}
         validator = KeysValidator(keys=['a', 'b'], strict=True, messages=messages)
         path, args, kwargs = validator.deconstruct()
         self.assertEqual(path, 'django.contrib.postgres.validators.KeysValidator')

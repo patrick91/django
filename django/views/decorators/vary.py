@@ -14,28 +14,33 @@ def vary_on_headers(*headers):
 
     Note that the header names are not case-sensitive.
     """
+
     def decorator(func):
         @wraps(func)
         def inner_func(*args, **kwargs):
             response = func(*args, **kwargs)
             patch_vary_headers(response, headers)
             return response
+
         return inner_func
+
     return decorator
 
 
 def vary_on_cookie(func):
-    """
+    '''
     A view decorator that adds "Cookie" to the Vary header of a response. This
     indicates that a page's contents depends on cookies. Usage:
 
         @vary_on_cookie
         def index(request):
             ...
-    """
+    '''
+
     @wraps(func)
     def inner_func(*args, **kwargs):
         response = func(*args, **kwargs)
         patch_vary_headers(response, ('Cookie',))
         return response
+
     return inner_func

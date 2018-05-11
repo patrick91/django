@@ -5,7 +5,6 @@ from django.test import SimpleTestCase
 
 
 class TranslatableFileTests(SimpleTestCase):
-
     def test_repr(self):
         dirpath = 'dir'
         file_name = 'example'

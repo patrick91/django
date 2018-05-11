@@ -1,6 +1,6 @@
-"""
+'''
 Tests for various ways of registering models with the admin site.
-"""
+'''
 
 from django.db import models
 

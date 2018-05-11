@@ -11,12 +11,10 @@ from .mixins import CheckFieldDefaultMixin
 __all__ = ['HStoreField']
 
 
-class HStoreField(CheckFieldDefaultMixin, Field):
+class HStoreField(CheckFieldDefaultMixin,Field):
     empty_strings_allowed = False
     description = _('Map of strings to strings/nulls')
-    default_error_messages = {
-        'not_a_string': _('The value of "%(key)s" is not a string or null.'),
-    }
+    default_error_messages = {'not_a_string': _('The value of "%(key)s" is not a string or null.')}
     _default_hint = ('dict', '{}')
 
     def db_type(self, connection):
@@ -32,11 +30,10 @@ class HStoreField(CheckFieldDefaultMixin, Field):
         super().validate(value, model_instance)
         for key, val in value.items():
             if not isinstance(val, str) and val is not None:
-                raise exceptions.ValidationError(
-                    self.error_messages['not_a_string'],
-                    code='not_a_string',
-                    params={'key': key},
-                )
+                raise
+                exceptions.ValidationError(self.error_messages['not_a_string'], code='not_a_string', params={
+                    'key': key
+                })
 
     def to_python(self, value):
         if isinstance(value, str):
@@ -47,10 +44,7 @@ class HStoreField(CheckFieldDefaultMixin, Field):
         return json.dumps(self.value_from_object(obj))
 
     def formfield(self, **kwargs):
-        return super().formfield(**{
-            'form_class': forms.HStoreField,
-            **kwargs,
-        })
+        return super().formfield(**{'form_class': forms.HStoreField, : kwargs})
 
     def get_prep_value(self, value):
         value = super().get_prep_value(value)
@@ -90,7 +84,6 @@ class KeyTransform(Transform):
 
 
 class KeyTransformFactory:
-
     def __init__(self, key_name):
         self.key_name = key_name
 

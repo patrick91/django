@@ -10,9 +10,8 @@ from .models import Bar, FkToChar, Foo, PrimaryKeyCharModel
 
 
 class ForeignKeyTests(TestCase):
-
     def test_callable_default(self):
-        """A lazy callable may be used for ForeignKey.default."""
+        '''A lazy callable may be used for ForeignKey.default.'''
         a = Foo.objects.create(id=1, a='abc', d=Decimal('12.34'))
         b = Bar.objects.create(b='bcd')
         self.assertEqual(b.a, a)
@@ -37,12 +36,7 @@ class ForeignKeyTests(TestCase):
 
         model = FKUniqueTrue()
         expected_warnings = [
-            checks.Warning(
-                'Setting unique=True on a ForeignKey has the same effect as using a OneToOneField.',
-                hint='ForeignKey(unique=True) is usually better served by a OneToOneField.',
-                obj=FKUniqueTrue.fk_field.field,
-                id='fields.W342',
-            )
+            checks.Warning('Setting unique=True on a ForeignKey has the same effect as using a OneToOneField.', hint='ForeignKey(unique=True) is usually better served by a OneToOneField.', obj=FKUniqueTrue.fk_field.field, id='fields.W342')
         ]
         warnings = model.check()
         self.assertEqual(warnings, expected_warnings)
@@ -52,10 +46,10 @@ class ForeignKeyTests(TestCase):
         self.assertIsInstance(rel_name, str)
 
     def test_abstract_model_pending_operations(self):
-        """
+        '''
         Foreign key fields declared on abstract models should not add lazy
         relations to resolve relationship declared as string (#24215).
-        """
+        '''
         pending_ops_before = list(apps._pending_operations.items())
 
         class AbstractForeignKeyModel(models.Model):
@@ -65,11 +59,7 @@ class ForeignKeyTests(TestCase):
                 abstract = True
 
         self.assertIs(AbstractForeignKeyModel._meta.apps, apps)
-        self.assertEqual(
-            pending_ops_before,
-            list(apps._pending_operations.items()),
-            'Pending lookup added for a foreign key on an abstract model'
-        )
+        self.assertEqual(pending_ops_before, list(apps._pending_operations.items()), 'Pending lookup added for a foreign key on an abstract model')
 
     @isolate_apps('model_fields', 'model_fields.tests')
     def test_abstract_model_app_relative_foreign_key(self):

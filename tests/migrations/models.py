@@ -6,7 +6,7 @@ class CustomModelBase(models.base.ModelBase):
     pass
 
 
-class ModelWithCustomBase(models.Model, metaclass=CustomModelBase):
+class ModelWithCustomBase(models.Model):
     pass
 
 
@@ -39,10 +39,10 @@ class UnserializableModel(models.Model):
 
 
 class UnmigratedModel(models.Model):
-    """
+    '''
     A model that is in a migration-less app (which this app is
     if its migrations directory has not been repointed)
-    """
+    '''
     pass
 
 

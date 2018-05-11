@@ -14,7 +14,7 @@ class VariableResolveLoggingTests(SimpleTestCase):
 
             @property
             def template_name(self):
-                return "template_name"
+                return 'template_name'
 
             @property
             def template(self):
@@ -22,10 +22,10 @@ class VariableResolveLoggingTests(SimpleTestCase):
 
             @property
             def article(self):
-                raise TestObject.SilentDoesNotExist("Attribute does not exist.")
+                raise TestObject.SilentDoesNotExist('Attribute does not exist.')
 
             def __iter__(self):
-                return iter(attr for attr in dir(TestObject) if attr[:2] != "__")
+                return iter(attr for attr in dir(TestObject) if attr[:2] != '__')
 
             def __getitem__(self, item):
                 return self.__dict__[item]
@@ -35,10 +35,7 @@ class VariableResolveLoggingTests(SimpleTestCase):
 
         self.assertEqual(len(cm.records), 1)
         log_record = cm.records[0]
-        self.assertEqual(
-            log_record.getMessage(),
-            "Exception while resolving variable 'article' in template 'template_name'."
-        )
+        self.assertEqual(log_record.getMessage(), "Exception while resolving variable 'article' in template 'template_name'.")
         self.assertIsNotNone(log_record.exc_info)
         raised_exception = log_record.exc_info[1]
         self.assertEqual(str(raised_exception), 'Attribute does not exist.')
@@ -50,16 +47,10 @@ class VariableResolveLoggingTests(SimpleTestCase):
 
         self.assertEqual(len(cm.records), 1)
         log_record = cm.records[0]
-        self.assertEqual(
-            log_record.getMessage(),
-            "Exception while resolving variable 'author' in template 'unknown'."
-        )
+        self.assertEqual(log_record.getMessage(), "Exception while resolving variable 'author' in template 'unknown'.")
         self.assertIsNotNone(log_record.exc_info)
         raised_exception = log_record.exc_info[1]
-        self.assertEqual(
-            str(raised_exception),
-            "Failed lookup for key [author] in {'section': 'News'}"
-        )
+        self.assertEqual(str(raised_exception), "Failed lookup for key [author] in {'section': 'News'}")
 
     def test_no_log_when_variable_exists(self):
         with self.assertRaisesMessage(AssertionError, 'no logs'):

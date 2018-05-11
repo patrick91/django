@@ -15,9 +15,7 @@ class JSONString(str):
 
 
 class JSONField(forms.CharField):
-    default_error_messages = {
-        'invalid': _("'%(value)s' value must be valid JSON."),
-    }
+    default_error_messages = {'invalid': _("'%(value)s' value must be valid JSON.")}
     widget = forms.Textarea
 
     def to_python(self, value):
@@ -30,11 +28,7 @@ class JSONField(forms.CharField):
         try:
             converted = json.loads(value)
         except json.JSONDecodeError:
-            raise forms.ValidationError(
-                self.error_messages['invalid'],
-                code='invalid',
-                params={'value': value},
-            )
+            raise forms.ValidationError(self.error_messages['invalid'], code='invalid', params={'value': value})
         if isinstance(converted, str):
             return JSONString(converted)
         else:

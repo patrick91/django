@@ -9,7 +9,7 @@ class Membership(models.Model):
     price = models.IntegerField(default=100)
 
     def __str__(self):
-        return "%s is a member of %s" % (self.person.name, self.group.name)
+        return '%s is a member of %s' % (self.person.name, self.group.name)
 
 
 # using custom id column to test ticket #11107
@@ -20,7 +20,7 @@ class UserMembership(models.Model):
     price = models.IntegerField(default=100)
 
     def __str__(self):
-        return "%s is a user and member of %s" % (self.user.username, self.group.name)
+        return '%s is a user and member of %s' % (self.user.username, self.group.name)
 
 
 class Person(models.Model):
@@ -65,14 +65,14 @@ class Car(models.Model):
     drivers = models.ManyToManyField('Driver', through='CarDriver')
 
     def __str__(self):
-        return "%s" % self.make
+        return '%s' % self.make
 
 
 class Driver(models.Model):
     name = models.CharField(max_length=20, unique=True, null=True)
 
     def __str__(self):
-        return "%s" % self.name
+        return '%s' % self.name
 
     class Meta:
         ordering = ('name',)
@@ -83,18 +83,14 @@ class CarDriver(models.Model):
     driver = models.ForeignKey('Driver', models.CASCADE, to_field='name')
 
     def __str__(self):
-        return "pk=%s car=%s driver=%s" % (str(self.pk), self.car, self.driver)
+        return 'pk=%s car=%s driver=%s' % (str(self.pk), self.car, self.driver)
 
 
 # Through models using multi-table inheritance
 class Event(models.Model):
     name = models.CharField(max_length=50, unique=True)
     people = models.ManyToManyField('Person', through='IndividualCompetitor')
-    special_people = models.ManyToManyField(
-        'Person',
-        through='ProxiedIndividualCompetitor',
-        related_name='special_event_set',
-    )
+    special_people = models.ManyToManyField('Person', through='ProxiedIndividualCompetitor', related_name='special_event_set')
     teams = models.ManyToManyField('Group', through='CompetingTeam')
 
 

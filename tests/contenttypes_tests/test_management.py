@@ -21,10 +21,10 @@ class UpdateContentTypesTests(TestCase):
         self.app_config = apps.get_app_config('contenttypes_tests')
 
     def test_interactive_true_with_dependent_objects(self):
-        """
+        '''
         interactive mode of remove_stale_contenttypes (the default) deletes
         stale contenttypes and warn of dependent objects.
-        """
+        '''
         post = Post.objects.create(title='post', content_type=self.content_type)
         # A related object is needed to show that a custom collector with
         # can_fast_delete=False is needed.
@@ -48,7 +48,7 @@ class UpdateContentTypesTests(TestCase):
         with mock.patch('builtins.input', return_value='yes'):
             with captured_stdout() as stdout:
                 call_command('remove_stale_contenttypes', verbosity=2)
-        self.assertIn("Deleting stale content type", stdout.getvalue())
+        self.assertIn('Deleting stale content type', stdout.getvalue())
         self.assertEqual(ContentType.objects.count(), self.before_count)
 
     def test_interactive_false(self):
@@ -58,7 +58,7 @@ class UpdateContentTypesTests(TestCase):
         """
         with captured_stdout() as stdout:
             call_command('remove_stale_contenttypes', interactive=False, verbosity=2)
-        self.assertIn("Stale content types remain.", stdout.getvalue())
+        self.assertIn('Stale content types remain.', stdout.getvalue())
         self.assertEqual(ContentType.objects.count(), self.before_count + 1)
 
     def test_unavailable_content_type_model(self):

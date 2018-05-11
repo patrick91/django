@@ -6,27 +6,23 @@ from django.db.backends.base.creation import BaseDatabaseCreation
 
 
 class DatabaseCreation(BaseDatabaseCreation):
-
     def _quote_name(self, name):
         return self.connection.ops.quote_name(name)
 
     def _get_database_create_suffix(self, encoding=None, template=None):
-        suffix = ""
+        suffix = ''
         if encoding:
             suffix += " ENCODING '{}'".format(encoding)
         if template:
-            suffix += " TEMPLATE {}".format(self._quote_name(template))
-        return suffix and "WITH" + suffix
+            suffix += ' TEMPLATE {}'.format(self._quote_name(template))
+        return suffix and 'WITH' + suffix
 
     def sql_table_creation_suffix(self):
         test_settings = self.connection.settings_dict['TEST']
-        assert test_settings['COLLATION'] is None, (
-            "PostgreSQL does not support collation setting at database creation time."
-        )
-        return self._get_database_create_suffix(
-            encoding=test_settings['CHARSET'],
-            template=test_settings.get('TEMPLATE'),
-        )
+        assert test_settings['COLLATION'] is None, \
+            'PostgreSQL does not support collation setting at database creation time.'
+        return \
+            self._get_database_create_suffix(encoding=test_settings['CHARSET'], template=test_settings.get('TEMPLATE'))
 
     def _execute_create_test_db(self, cursor, parameters, keepdb=False):
         try:
@@ -50,7 +46,7 @@ class DatabaseCreation(BaseDatabaseCreation):
         target_database_name = self.get_test_db_clone_settings(suffix)['NAME']
         test_db_params = {
             'dbname': self._quote_name(target_database_name),
-            'suffix': self._get_database_create_suffix(template=source_database_name),
+            'suffix': self._get_database_create_suffix(template=source_database_name)
         }
         with self._nodb_connection.cursor() as cursor:
             try:
@@ -58,11 +54,11 @@ class DatabaseCreation(BaseDatabaseCreation):
             except Exception as e:
                 try:
                     if verbosity >= 1:
-                        print("Destroying old test database for alias %s..." % (
-                            self._get_database_display_str(verbosity, target_database_name),
-                        ))
+                        print('Destroying old test database for alias %s...' \
+                        % \
+                        (self._get_database_display_str(verbosity, target_database_name),))
                     cursor.execute('DROP DATABASE %(dbname)s' % test_db_params)
                     self._execute_create_test_db(cursor, test_db_params, keepdb)
                 except Exception as e:
-                    sys.stderr.write("Got an error cloning the test database: %s\n" % e)
+                    sys.stderr.write('Got an error cloning the test database: %s\n' % e)
                     sys.exit(2)

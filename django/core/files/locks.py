@@ -22,20 +22,18 @@ __all__ = ('LOCK_EX', 'LOCK_SH', 'LOCK_NB', 'lock', 'unlock')
 
 
 def _fd(f):
-    """Get a filedescriptor from something which could be a file or an fd."""
+    '''Get a filedescriptor from something which could be a file or an fd.'''
     return f.fileno() if hasattr(f, 'fileno') else f
 
 
 if os.name == 'nt':
     import msvcrt
-    from ctypes import (sizeof, c_ulong, c_void_p, c_int64,
-                        Structure, Union, POINTER, windll, byref)
+    from ctypes import sizeof, c_ulong, c_void_p, c_int64, Structure, Union, POINTER, windll, byref
     from ctypes.wintypes import BOOL, DWORD, HANDLE
 
-    LOCK_SH = 0  # the default
-    LOCK_NB = 0x1  # LOCKFILE_FAIL_IMMEDIATELY
-    LOCK_EX = 0x2  # LOCKFILE_EXCLUSIVE_LOCK
-
+    LOCK_SH = 0 # the default
+    LOCK_NB = 0x1 # LOCKFILE_FAIL_IMMEDIATELY
+    LOCK_EX = 0x2 # LOCKFILE_EXCLUSIVE_LOCK
     # --- Adapted from the pyserial project ---
     # detect size of ULONG_PTR
     if sizeof(c_ulong) != sizeof(c_void_p):
@@ -46,15 +44,11 @@ if os.name == 'nt':
 
     # --- Union inside Structure by stackoverflow:3480240 ---
     class _OFFSET(Structure):
-        _fields_ = [
-            ('Offset', DWORD),
-            ('OffsetHigh', DWORD)]
+        _fields_ = [('Offset', DWORD), ('OffsetHigh', DWORD)]
 
     class _OFFSET_UNION(Union):
         _anonymous_ = ['_offset']
-        _fields_ = [
-            ('_offset', _OFFSET),
-            ('Pointer', PVOID)]
+        _fields_ = [('_offset', _OFFSET), ('Pointer', PVOID)]
 
     class OVERLAPPED(Structure):
         _anonymous_ = ['_offset_union']
@@ -62,10 +56,10 @@ if os.name == 'nt':
             ('Internal', ULONG_PTR),
             ('InternalHigh', ULONG_PTR),
             ('_offset_union', _OFFSET_UNION),
-            ('hEvent', HANDLE)]
+            ('hEvent', HANDLE)
+        ]
 
     LPOVERLAPPED = POINTER(OVERLAPPED)
-
     # --- Define function prototypes for extra safety ---
     LockFileEx = windll.kernel32.LockFileEx
     LockFileEx.restype = BOOL
@@ -88,8 +82,8 @@ if os.name == 'nt':
 else:
     try:
         import fcntl
-        LOCK_SH = fcntl.LOCK_SH  # shared lock
-        LOCK_NB = fcntl.LOCK_NB  # non-blocking
+        LOCK_SH = fcntl.LOCK_SH # shared lock
+        LOCK_NB = fcntl.LOCK_NB # non-blocking
         LOCK_EX = fcntl.LOCK_EX
     except (ImportError, AttributeError):
         # File locking is not supported.
@@ -106,8 +100,6 @@ else:
     else:
         def lock(f, flags):
             ret = fcntl.flock(_fd(f), flags)
-            return ret == 0
-
-        def unlock(f):
+            return ret == 0def unlock(f):
             ret = fcntl.flock(_fd(f), fcntl.LOCK_UN)
             return ret == 0

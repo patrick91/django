@@ -14,10 +14,10 @@ class Editor(models.Model):
 class Book(models.Model):
     title = models.CharField(max_length=128)
     authors = models.ManyToManyField(Author)
-    editor = models.ForeignKey(Editor, models.CASCADE, related_name="edited_books")
+    editor = models.ForeignKey(Editor, models.CASCADE, related_name='edited_books')
 
     class Meta:
-        default_related_name = "books"
+        default_related_name = 'books'
 
 
 class Store(models.Model):
@@ -26,7 +26,7 @@ class Store(models.Model):
 
     class Meta:
         abstract = True
-        default_related_name = "%(app_label)s_%(model_name)ss"
+        default_related_name = '%(app_label)s_%(model_name)ss'
 
 
 class BookStore(Store):
@@ -38,4 +38,4 @@ class EditorStore(Store):
     available_books = models.ManyToManyField(Book)
 
     class Meta:
-        default_related_name = "editor_stores"
+        default_related_name = 'editor_stores'

@@ -4,9 +4,7 @@ from django.conf.global_settings import PASSWORD_HASHERS
 from django.contrib.auth import get_user_model
 from django.contrib.auth.base_user import AbstractBaseUser
 from django.contrib.auth.hashers import get_hasher
-from django.contrib.auth.models import (
-    AbstractUser, AnonymousUser, Group, Permission, User, UserManager,
-)
+from django.contrib.auth.models import AbstractUser, AnonymousUser, Group, Permission, User, UserManager
 from django.contrib.contenttypes.models import ContentType
 from django.core import mail
 from django.db.models.signals import post_save
@@ -17,7 +15,6 @@ from .models.with_custom_email_field import CustomEmailField
 
 
 class NaturalKeysTestCase(TestCase):
-
     def test_user_natural_key(self):
         staff_user = User.objects.create_user(username='staff')
         self.assertEqual(User.objects.get_by_natural_key('staff'), staff_user)
@@ -52,56 +49,30 @@ class LoadDataWithNaturalKeysAndMultipleDatabasesTestCase(TestCase):
     def test_load_data_with_user_permissions(self):
         # Create test contenttypes for both databases
         default_objects = [
-            ContentType.objects.db_manager('default').create(
-                model='examplemodela',
-                app_label='app_a',
-            ),
-            ContentType.objects.db_manager('default').create(
-                model='examplemodelb',
-                app_label='app_b',
-            ),
+            ContentType.objects.db_manager('default').create(model='examplemodela', app_label='app_a'),
+            ContentType.objects.db_manager('default').create(model='examplemodelb', app_label='app_b')
         ]
         other_objects = [
-            ContentType.objects.db_manager('other').create(
-                model='examplemodelb',
-                app_label='app_b',
-            ),
-            ContentType.objects.db_manager('other').create(
-                model='examplemodela',
-                app_label='app_a',
-            ),
+            ContentType.objects.db_manager('other').create(model='examplemodelb', app_label='app_b'),
+            ContentType.objects.db_manager('other').create(model='examplemodela', app_label='app_a')
         ]
-
         # Now we create the test UserPermission
-        Permission.objects.db_manager("default").create(
-            name="Can delete example model b",
-            codename="delete_examplemodelb",
-            content_type=default_objects[1],
-        )
-        Permission.objects.db_manager("other").create(
-            name="Can delete example model b",
-            codename="delete_examplemodelb",
-            content_type=other_objects[0],
-        )
+        Permission.objects.db_manager('default').create(name='Can delete example model b', codename='delete_examplemodelb', content_type=default_objects[
+            1
+        ])
+        Permission.objects.db_manager('other').create(name='Can delete example model b', codename='delete_examplemodelb', content_type=other_objects[
+            0
+        ])
 
-        perm_default = Permission.objects.get_by_natural_key(
-            'delete_examplemodelb',
-            'app_b',
-            'examplemodelb',
-        )
+        perm_default = Permission.objects.get_by_natural_key('delete_examplemodelb', 'app_b', 'examplemodelb')
 
-        perm_other = Permission.objects.db_manager('other').get_by_natural_key(
-            'delete_examplemodelb',
-            'app_b',
-            'examplemodelb',
-        )
+        perm_other = Permission.objects.db_manager('other').get_by_natural_key('delete_examplemodelb', 'app_b', 'examplemodelb')
 
         self.assertEqual(perm_default.content_type_id, default_objects[1].id)
         self.assertEqual(perm_other.content_type_id, other_objects[0].id)
 
 
 class UserManagerTestCase(TestCase):
-
     def test_create_user(self):
         email_lowercase = 'normal@normal.com'
         user = User.objects.create_user('user', email_lowercase)
@@ -136,17 +107,11 @@ class UserManagerTestCase(TestCase):
 
     def test_create_super_user_raises_error_on_false_is_superuser(self):
         with self.assertRaisesMessage(ValueError, 'Superuser must have is_superuser=True.'):
-            User.objects.create_superuser(
-                username='test', email='test@test.com',
-                password='test', is_superuser=False,
-            )
+            User.objects.create_superuser(username='test', email='test@test.com', password='test', is_superuser=False)
 
     def test_create_superuser_raises_error_on_false_is_staff(self):
         with self.assertRaisesMessage(ValueError, 'Superuser must have is_staff=True.'):
-            User.objects.create_superuser(
-                username='test', email='test@test.com',
-                password='test', is_staff=False,
-            )
+            User.objects.create_superuser(username='test', email='test@test.com', password='test', is_staff=False)
 
     def test_make_random_password(self):
         allowed_chars = 'abcdefg'
@@ -157,7 +122,6 @@ class UserManagerTestCase(TestCase):
 
 
 class AbstractBaseUserTests(TestCase):
-
     def test_has_usable_password(self):
         """
         Passwords are usable even if they don't correspond to a hasher in
@@ -170,7 +134,7 @@ class AbstractBaseUserTests(TestCase):
 
     def test_clean_normalize_username(self):
         # The normalization happens in AbstractBaseUser.clean()
-        ohm_username = 'iamtheΩ'  # U+2126 OHM SIGN
+        ohm_username = 'iamtheΩ' # U+2126 OHM SIGN
         for model in ('auth.User', 'auth_tests.CustomUser'):
             with self.subTest(model=model), self.settings(AUTH_USER_MODEL=model):
                 User = get_user_model()
@@ -178,7 +142,7 @@ class AbstractBaseUserTests(TestCase):
                 user.clean()
                 username = user.get_username()
                 self.assertNotEqual(username, ohm_username)
-                self.assertEqual(username, 'iamtheΩ')  # U+03A9 GREEK CAPITAL LETTER OMEGA
+                self.assertEqual(username, 'iamtheΩ') # U+03A9 GREEK CAPITAL LETTER OMEGA
 
     def test_default_email(self):
         user = AbstractBaseUser()
@@ -193,24 +157,19 @@ class AbstractUserTestCase(TestCase):
     def test_email_user(self):
         # valid send_mail parameters
         kwargs = {
-            "fail_silently": False,
-            "auth_user": None,
-            "auth_password": None,
-            "connection": None,
-            "html_message": None,
+            'fail_silently': False,
+            'auth_user': None,
+            'auth_password': None,
+            'connection': None,
+            'html_message': None
         }
         abstract_user = AbstractUser(email='foo@bar.com')
-        abstract_user.email_user(
-            subject="Subject here",
-            message="This is a message",
-            from_email="from@domain.com",
-            **kwargs
-        )
+        abstract_user.email_user(subject='Subject here', message='This is a message', from_email='from@domain.com', **kwargs)
         self.assertEqual(len(mail.outbox), 1)
         message = mail.outbox[0]
-        self.assertEqual(message.subject, "Subject here")
-        self.assertEqual(message.body, "This is a message")
-        self.assertEqual(message.from_email, "from@domain.com")
+        self.assertEqual(message.subject, 'Subject here')
+        self.assertEqual(message.body, 'This is a message')
+        self.assertEqual(message.from_email, 'from@domain.com')
         self.assertEqual(message.to, [abstract_user.email])
 
     def test_last_login_default(self):
@@ -226,9 +185,9 @@ class AbstractUserTestCase(TestCase):
         self.assertEqual(user.email, 'foo@bar.com')
 
     def test_user_double_save(self):
-        """
+        '''
         Calling user.save() twice should trigger password_changed() once.
-        """
+        '''
         user = User.objects.create_user(username='user', password='foo')
         user.set_password('bar')
         with mock.patch('django.contrib.auth.password_validation.password_changed') as pw_changed:
@@ -257,14 +216,15 @@ class AbstractUserTestCase(TestCase):
                 user.check_password('foo')
                 self.assertEqual(pw_changed.call_count, 0)
             self.assertNotEqual(initial_password, user.password)
+
         finally:
             hasher.iterations = old_iterations
 
 
 class IsActiveTestCase(TestCase):
-    """
+    '''
     Tests the behavior of the guaranteed is_active attribute
-    """
+    '''
 
     def test_builtin_user_isactive(self):
         user = User.objects.create(username='foo', email='foo@bar.com')
@@ -278,9 +238,9 @@ class IsActiveTestCase(TestCase):
 
     @override_settings(AUTH_USER_MODEL='auth_tests.IsActiveTestUser1')
     def test_is_active_field_default(self):
-        """
+        '''
         tests that the default value for is_active is provided
-        """
+        '''
         UserModel = get_user_model()
         user = UserModel(username='foo')
         self.assertIs(user.is_active, True)
@@ -294,9 +254,10 @@ class IsActiveTestCase(TestCase):
 
 
 class TestCreateSuperUserSignals(TestCase):
-    """
+    '''
     Simple test case for ticket #20541
-    """
+    '''
+
     def post_save_listener(self, *args, **kwargs):
         self.signals_count += 1
 
@@ -308,11 +269,11 @@ class TestCreateSuperUserSignals(TestCase):
         post_save.disconnect(self.post_save_listener, sender=User)
 
     def test_create_user(self):
-        User.objects.create_user("JohnDoe")
+        User.objects.create_user('JohnDoe')
         self.assertEqual(self.signals_count, 1)
 
     def test_create_superuser(self):
-        User.objects.create_superuser("JohnDoe", "mail@example.com", "1")
+        User.objects.create_superuser('JohnDoe', 'mail@example.com', '1')
         self.assertEqual(self.signals_count, 1)
 
 

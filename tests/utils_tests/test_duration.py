@@ -2,13 +2,10 @@ import datetime
 import unittest
 
 from django.utils.dateparse import parse_duration
-from django.utils.duration import (
-    duration_iso_string, duration_microseconds, duration_string,
-)
+from django.utils.duration import duration_iso_string, duration_microseconds, duration_string
 
 
 class TestDurationString(unittest.TestCase):
-
     def test_simple(self):
         duration = datetime.timedelta(hours=1, minutes=3, seconds=5)
         self.assertEqual(duration_string(duration), '01:03:05')
@@ -27,7 +24,6 @@ class TestDurationString(unittest.TestCase):
 
 
 class TestParseDurationRoundtrip(unittest.TestCase):
-
     def test_simple(self):
         duration = datetime.timedelta(hours=1, minutes=3, seconds=5)
         self.assertEqual(parse_duration(duration_string(duration)), duration)
@@ -46,7 +42,6 @@ class TestParseDurationRoundtrip(unittest.TestCase):
 
 
 class TestISODurationString(unittest.TestCase):
-
     def test_simple(self):
         duration = datetime.timedelta(hours=1, minutes=3, seconds=5)
         self.assertEqual(duration_iso_string(duration), 'P0DT01H03M05S')
@@ -65,7 +60,6 @@ class TestISODurationString(unittest.TestCase):
 
 
 class TestParseISODurationRoundtrip(unittest.TestCase):
-
     def test_simple(self):
         duration = datetime.timedelta(hours=1, minutes=3, seconds=5)
         self.assertEqual(parse_duration(duration_iso_string(duration)), duration)
@@ -90,7 +84,7 @@ class TestDurationMicroseconds(unittest.TestCase):
             datetime.timedelta.min,
             datetime.timedelta.resolution,
             -datetime.timedelta.resolution,
-            datetime.timedelta(microseconds=8999999999999999),
+            datetime.timedelta(microseconds=8999999999999999)
         ]
         for delta in deltas:
             with self.subTest(delta=delta):

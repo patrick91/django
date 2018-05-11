@@ -5,7 +5,6 @@ from django.test.utils import freeze_time
 
 
 class SignedCookieTest(SimpleTestCase):
-
     def test_can_set_and_read_signed_cookies(self):
         response = HttpResponse()
         response.set_signed_cookie('c', 'hello')

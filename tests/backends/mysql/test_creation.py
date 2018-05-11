@@ -11,12 +11,11 @@ from django.test import SimpleTestCase
 
 @unittest.skipUnless(connection.vendor == 'mysql', 'MySQL tests')
 class DatabaseCreationTests(SimpleTestCase):
-
     def _execute_raise_database_exists(self, cursor, parameters, keepdb=False):
         raise DatabaseError(1007, "Can't create database '%s'; database exists" % parameters['dbname'])
 
     def _execute_raise_access_denied(self, cursor, parameters, keepdb=False):
-        raise DatabaseError(1044, "Access denied for user")
+        raise DatabaseError(1044, 'Access denied for user')
 
     def patch_test_db_creation(self, execute_create_test_db):
         return mock.patch.object(BaseDatabaseCreation, '_execute_create_test_db', execute_create_test_db)

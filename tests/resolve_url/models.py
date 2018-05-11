@@ -1,6 +1,6 @@
-"""
+'''
 Regression tests for the resolve_url function.
-"""
+'''
 
 from django.db import models
 

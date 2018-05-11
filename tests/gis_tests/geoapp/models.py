@@ -14,7 +14,7 @@ class NamedModel(models.Model):
 
 
 class Country(NamedModel):
-    mpoly = models.MultiPolygonField()  # SRID, by default, is 4326
+    mpoly = models.MultiPolygonField() # SRID, by default, is 4326
 
 
 class CountryWebMercator(NamedModel):
@@ -38,7 +38,7 @@ class PennsylvaniaCity(City):
 
 
 class State(NamedModel):
-    poly = models.PolygonField(null=gisfield_may_be_null)  # Allowing NULL geometries here.
+    poly = models.PolygonField(null=gisfield_may_be_null) # Allowing NULL geometries here.
 
     class Meta:
         app_label = 'geoapp'
@@ -72,11 +72,10 @@ class Feature(NamedModel):
 
 
 class MinusOneSRID(models.Model):
-    geom = models.PointField(srid=-1)  # Minus one SRID.
+    geom = models.PointField(srid=-1) # Minus one SRID.
 
 
 class NonConcreteField(models.IntegerField):
-
     def db_type(self, connection):
         return None
 

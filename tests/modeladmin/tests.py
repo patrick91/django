@@ -2,14 +2,13 @@ from datetime import date
 
 from django import forms
 from django.contrib.admin.models import ADDITION, CHANGE, DELETION, LogEntry
-from django.contrib.admin.options import (
-    HORIZONTAL, VERTICAL, ModelAdmin, TabularInline,
-    get_content_type_for_model,
-)
+from django.contrib.admin.options import HORIZONTAL, VERTICAL, ModelAdmin, TabularInline, get_content_type_for_model
 from django.contrib.admin.sites import AdminSite
 from django.contrib.admin.widgets import (
-    AdminDateWidget, AdminRadioSelect, AutocompleteSelect,
-    AutocompleteSelectMultiple,
+    AdminDateWidget,
+    AdminRadioSelect,
+    AutocompleteSelect,
+    AutocompleteSelectMultiple
 )
 from django.contrib.auth.models import User
 from django.db import models
@@ -34,13 +33,8 @@ request.user = MockSuperUser()
 
 
 class ModelAdminTests(TestCase):
-
     def setUp(self):
-        self.band = Band.objects.create(
-            name='The Doors',
-            bio='',
-            sign_date=date(1965, 1, 1),
-        )
+        self.band = Band.objects.create(name='The Doors', bio='', sign_date=date(1965, 1, 1))
         self.site = AdminSite()
 
     def test_modeladmin_str(self):
@@ -94,6 +88,7 @@ class ModelAdminTests(TestCase):
         A lookup_allowed allows a parameter whose field lookup doesn't exist.
         (#21129).
         """
+
         class BandAdmin(ModelAdmin):
             fields = ['name']
 
@@ -106,7 +101,7 @@ class ModelAdminTests(TestCase):
             code = models.CharField(max_length=4, unique=True)
 
         class Employee(models.Model):
-            department = models.ForeignKey(Department, models.CASCADE, to_field="code")
+            department = models.ForeignKey(Department, models.CASCADE, to_field='code')
 
         class EmployeeProfile(models.Model):
             employee = models.OneToOneField(Employee, models.CASCADE)
@@ -116,10 +111,7 @@ class ModelAdminTests(TestCase):
             description = models.CharField(max_length=100)
 
         class EmployeeProfileAdmin(ModelAdmin):
-            list_filter = [
-                'employee__employeeinfo__description',
-                'employee__department__code',
-            ]
+            list_filter = ['employee__employeeinfo__description', 'employee__department__code']
 
         ma = EmployeeProfileAdmin(EmployeeProfile, self.site)
         # Reverse OneToOneField
@@ -191,6 +183,7 @@ class ModelAdminTests(TestCase):
         conjunction with `ModelAdmin.readonly_fields` and when no
         `ModelAdmin.exclude` is defined (#14496).
         """
+
         # With ModelAdmin
         class AdminBandForm(forms.ModelForm):
             class Meta:
@@ -220,9 +213,12 @@ class ModelAdminTests(TestCase):
             inlines = [ConcertInline]
 
         ma = BandAdmin(Band, self.site)
-        self.assertEqual(
-            list(list(ma.get_formsets_with_inlines(request))[0][0]().forms[0].fields),
-            ['main_band', 'opening_band', 'id', 'DELETE'])
+        self.assertEqual(list(list(ma.get_formsets_with_inlines(request))[0][0]().forms[0].fields), [
+            'main_band',
+            'opening_band',
+            'id',
+            'DELETE'
+        ])
 
     def test_custom_formfield_override_readonly(self):
         class AdminBandForm(forms.ModelForm):
@@ -237,29 +233,20 @@ class ModelAdminTests(TestCase):
             readonly_fields = ['name']
 
         ma = BandAdmin(Band, self.site)
-
         # `name` shouldn't appear in base_fields because it's part of
         # readonly_fields.
-        self.assertEqual(
-            list(ma.get_form(request).base_fields),
-            ['bio', 'sign_date']
-        )
+        self.assertEqual(list(ma.get_form(request).base_fields), ['bio', 'sign_date'])
         # But it should appear in get_fields()/fieldsets() so it can be
         # displayed as read-only.
-        self.assertEqual(
-            list(ma.get_fields(request)),
-            ['bio', 'sign_date', 'name']
-        )
-        self.assertEqual(
-            list(ma.get_fieldsets(request)),
-            [(None, {'fields': ['bio', 'sign_date', 'name']})]
-        )
+        self.assertEqual(list(ma.get_fields(request)), ['bio', 'sign_date', 'name'])
+        self.assertEqual(list(ma.get_fieldsets(request)), [(None, {'fields': ['bio', 'sign_date', 'name']})])
 
     def test_custom_form_meta_exclude(self):
         """
         The custom ModelForm's `Meta.exclude` is overridden if
         `ModelAdmin.exclude` or `InlineModelAdmin.exclude` are defined (#14496).
         """
+
         # With ModelAdmin
         class AdminBandForm(forms.ModelForm):
             class Meta:
@@ -289,20 +276,20 @@ class ModelAdminTests(TestCase):
             inlines = [ConcertInline]
 
         ma = BandAdmin(Band, self.site)
-        self.assertEqual(
-            list(list(ma.get_formsets_with_inlines(request))[0][0]().forms[0].fields),
-            ['main_band', 'opening_band', 'day', 'id', 'DELETE']
-        )
+        self.assertEqual(list(list(ma.get_formsets_with_inlines(request))[0][0]().forms[0].fields), [
+            'main_band',
+            'opening_band',
+            'day',
+            'id',
+            'DELETE'
+        ])
 
     def test_overriding_get_exclude(self):
         class BandAdmin(ModelAdmin):
             def get_exclude(self, request, obj=None):
                 return ['name']
 
-        self.assertEqual(
-            list(BandAdmin(Band, self.site).get_form(request).base_fields),
-            ['bio', 'sign_date']
-        )
+        self.assertEqual(list(BandAdmin(Band, self.site).get_form(request).base_fields), ['bio', 'sign_date'])
 
     def test_get_exclude_overrides_exclude(self):
         class BandAdmin(ModelAdmin):
@@ -311,10 +298,7 @@ class ModelAdminTests(TestCase):
             def get_exclude(self, request, obj=None):
                 return ['name']
 
-        self.assertEqual(
-            list(BandAdmin(Band, self.site).get_form(request).base_fields),
-            ['bio', 'sign_date']
-        )
+        self.assertEqual(list(BandAdmin(Band, self.site).get_form(request).base_fields), ['bio', 'sign_date'])
 
     def test_get_exclude_takes_obj(self):
         class BandAdmin(ModelAdmin):
@@ -323,10 +307,7 @@ class ModelAdminTests(TestCase):
                     return ['sign_date']
                 return ['name']
 
-        self.assertEqual(
-            list(BandAdmin(Band, self.site).get_form(request, self.band).base_fields),
-            ['name', 'bio']
-        )
+        self.assertEqual(list(BandAdmin(Band, self.site).get_form(request, self.band).base_fields), ['name', 'bio'])
 
     def test_custom_form_validation(self):
         # If a form is specified, it should use it allowing custom validation
@@ -342,10 +323,11 @@ class ModelAdminTests(TestCase):
         self.assertEqual(type(ma.get_form(request).base_fields['sign_date'].widget), AdminDateWidget)
 
     def test_form_exclude_kwarg_override(self):
-        """
+        '''
         The `exclude` kwarg passed to `ModelAdmin.get_form()` overrides all
         other declarations (#8999).
-        """
+        '''
+
         class AdminBandForm(forms.ModelForm):
             class Meta:
                 model = Band
@@ -363,10 +345,11 @@ class ModelAdminTests(TestCase):
         self.assertEqual(list(ma.get_form(request).base_fields), ['name', 'sign_date'])
 
     def test_formset_exclude_kwarg_override(self):
-        """
+        '''
         The `exclude` kwarg passed to `InlineModelAdmin.get_formset()`
         overrides all other declarations (#8999).
-        """
+        '''
+
         class AdminConcertForm(forms.ModelForm):
             class Meta:
                 model = Concert
@@ -386,10 +369,13 @@ class ModelAdminTests(TestCase):
             inlines = [ConcertInline]
 
         ma = BandAdmin(Band, self.site)
-        self.assertEqual(
-            list(list(ma.get_formsets_with_inlines(request))[0][0]().forms[0].fields),
-            ['main_band', 'day', 'transport', 'id', 'DELETE']
-        )
+        self.assertEqual(list(list(ma.get_formsets_with_inlines(request))[0][0]().forms[0].fields), [
+            'main_band',
+            'day',
+            'transport',
+            'id',
+            'DELETE'
+        ])
 
     def test_formset_overriding_get_exclude_with_form_fields(self):
         class AdminConcertForm(forms.ModelForm):
@@ -409,10 +395,13 @@ class ModelAdminTests(TestCase):
             inlines = [ConcertInline]
 
         ma = BandAdmin(Band, self.site)
-        self.assertEqual(
-            list(list(ma.get_formsets_with_inlines(request))[0][0]().forms[0].fields),
-            ['main_band', 'day', 'transport', 'id', 'DELETE']
-        )
+        self.assertEqual(list(list(ma.get_formsets_with_inlines(request))[0][0]().forms[0].fields), [
+            'main_band',
+            'day',
+            'transport',
+            'id',
+            'DELETE'
+        ])
 
     def test_formset_overriding_get_exclude_with_form_exclude(self):
         class AdminConcertForm(forms.ModelForm):
@@ -432,10 +421,13 @@ class ModelAdminTests(TestCase):
             inlines = [ConcertInline]
 
         ma = BandAdmin(Band, self.site)
-        self.assertEqual(
-            list(list(ma.get_formsets_with_inlines(request))[0][0]().forms[0].fields),
-            ['main_band', 'day', 'transport', 'id', 'DELETE']
-        )
+        self.assertEqual(list(list(ma.get_formsets_with_inlines(request))[0][0]().forms[0].fields), [
+            'main_band',
+            'day',
+            'transport',
+            'id',
+            'DELETE'
+        ])
 
     def test_queryset_override(self):
         # If the queryset of a ModelChoiceField in a custom form is overridden,
@@ -445,20 +437,21 @@ class ModelAdminTests(TestCase):
         ma = ModelAdmin(Concert, self.site)
         form = ma.get_form(request)()
 
-        self.assertHTMLEqual(
-            str(form["main_band"]),
-            '<div class="related-widget-wrapper">'
+        self.assertHTMLEqual(str(form[
+            'main_band'
+        ]), '<div class="related-widget-wrapper">'
             '<select name="main_band" id="id_main_band" required>'
             '<option value="" selected>---------</option>'
             '<option value="%d">The Beatles</option>'
             '<option value="%d">The Doors</option>'
-            '</select></div>' % (band2.id, self.band.id)
-        )
+            '</select></div>' \
+        % \
+        (band2.id, self.band.id))
 
         class AdminConcertForm(forms.ModelForm):
             def __init__(self, *args, **kwargs):
                 super().__init__(*args, **kwargs)
-                self.fields["main_band"].queryset = Band.objects.filter(name='The Doors')
+                self.fields['main_band'].queryset = Band.objects.filter(name='The Doors')
 
         class ConcertAdminWithForm(ModelAdmin):
             form = AdminConcertForm
@@ -466,20 +459,22 @@ class ModelAdminTests(TestCase):
         ma = ConcertAdminWithForm(Concert, self.site)
         form = ma.get_form(request)()
 
-        self.assertHTMLEqual(
-            str(form["main_band"]),
-            '<div class="related-widget-wrapper">'
+        self.assertHTMLEqual(str(form[
+            'main_band'
+        ]), '<div class="related-widget-wrapper">'
             '<select name="main_band" id="id_main_band" required>'
             '<option value="" selected>---------</option>'
             '<option value="%d">The Doors</option>'
-            '</select></div>' % self.band.id
-        )
+            '</select></div>' \
+        % \
+        self.band.id)
 
     def test_regression_for_ticket_15820(self):
-        """
+        '''
         `obj` is passed from `InlineModelAdmin.get_fieldsets()` to
         `InlineModelAdmin.get_formset()`.
-        """
+        '''
+
         class CustomConcertForm(forms.ModelForm):
             class Meta:
                 model = Concert
@@ -517,24 +512,25 @@ class ModelAdminTests(TestCase):
         cmafa = cma.get_form(request)
 
         self.assertEqual(type(cmafa.base_fields['main_band'].widget.widget), Select)
-        self.assertEqual(
-            list(cmafa.base_fields['main_band'].widget.choices),
-            [('', '---------'), (self.band.id, 'The Doors')])
+        self.assertEqual(list(cmafa.base_fields['main_band'].widget.choices), [
+            ('', '---------'),
+            (self.band.id, 'The Doors')
+        ])
 
         self.assertEqual(type(cmafa.base_fields['opening_band'].widget.widget), Select)
-        self.assertEqual(
-            list(cmafa.base_fields['opening_band'].widget.choices),
-            [('', '---------'), (self.band.id, 'The Doors')]
-        )
+        self.assertEqual(list(cmafa.base_fields['opening_band'].widget.choices), [
+            ('', '---------'),
+            (self.band.id, 'The Doors')
+        ])
         self.assertEqual(type(cmafa.base_fields['day'].widget), Select)
-        self.assertEqual(
-            list(cmafa.base_fields['day'].widget.choices),
-            [('', '---------'), (1, 'Fri'), (2, 'Sat')]
-        )
+        self.assertEqual(list(cmafa.base_fields['day'].widget.choices), [('', '---------'), (1, 'Fri'), (2, 'Sat')])
         self.assertEqual(type(cmafa.base_fields['transport'].widget), Select)
-        self.assertEqual(
-            list(cmafa.base_fields['transport'].widget.choices),
-            [('', '---------'), (1, 'Plane'), (2, 'Train'), (3, 'Bus')])
+        self.assertEqual(list(cmafa.base_fields['transport'].widget.choices), [
+            ('', '---------'),
+            (1, 'Plane'),
+            (2, 'Train'),
+            (3, 'Bus')
+        ])
 
     def test_foreign_key_as_radio_field(self):
         # Now specify all the fields as radio_fields.  Widgets should now be
@@ -546,7 +542,7 @@ class ModelAdminTests(TestCase):
                 'main_band': HORIZONTAL,
                 'opening_band': VERTICAL,
                 'day': VERTICAL,
-                'transport': HORIZONTAL,
+                'transport': HORIZONTAL
             }
 
         cma = ConcertAdmin(Concert, self.site)
@@ -554,27 +550,26 @@ class ModelAdminTests(TestCase):
 
         self.assertEqual(type(cmafa.base_fields['main_band'].widget.widget), AdminRadioSelect)
         self.assertEqual(cmafa.base_fields['main_band'].widget.attrs, {'class': 'radiolist inline'})
-        self.assertEqual(
-            list(cmafa.base_fields['main_band'].widget.choices),
-            [(self.band.id, 'The Doors')]
-        )
+        self.assertEqual(list(cmafa.base_fields['main_band'].widget.choices), [(self.band.id, 'The Doors')])
 
         self.assertEqual(type(cmafa.base_fields['opening_band'].widget.widget), AdminRadioSelect)
         self.assertEqual(cmafa.base_fields['opening_band'].widget.attrs, {'class': 'radiolist'})
-        self.assertEqual(
-            list(cmafa.base_fields['opening_band'].widget.choices),
-            [('', 'None'), (self.band.id, 'The Doors')]
-        )
+        self.assertEqual(list(cmafa.base_fields['opening_band'].widget.choices), [
+            ('', 'None'),
+            (self.band.id, 'The Doors')
+        ])
         self.assertEqual(type(cmafa.base_fields['day'].widget), AdminRadioSelect)
         self.assertEqual(cmafa.base_fields['day'].widget.attrs, {'class': 'radiolist'})
         self.assertEqual(list(cmafa.base_fields['day'].widget.choices), [(1, 'Fri'), (2, 'Sat')])
 
         self.assertEqual(type(cmafa.base_fields['transport'].widget), AdminRadioSelect)
         self.assertEqual(cmafa.base_fields['transport'].widget.attrs, {'class': 'radiolist inline'})
-        self.assertEqual(
-            list(cmafa.base_fields['transport'].widget.choices),
-            [('', 'None'), (1, 'Plane'), (2, 'Train'), (3, 'Bus')]
-        )
+        self.assertEqual(list(cmafa.base_fields['transport'].widget.choices), [
+            ('', 'None'),
+            (1, 'Plane'),
+            (2, 'Train'),
+            (3, 'Bus')
+        ])
 
         class AdminConcertForm(forms.ModelForm):
             class Meta:
@@ -610,10 +605,13 @@ class ModelAdminTests(TestCase):
             inlines = [ConcertInline]
 
         ma = BandAdmin(Band, self.site)
-        self.assertEqual(
-            list(list(ma.get_formsets_with_inlines(request))[0][0]().forms[0].fields),
-            ['extra', 'transport', 'id', 'DELETE', 'main_band']
-        )
+        self.assertEqual(list(list(ma.get_formsets_with_inlines(request))[0][0]().forms[0].fields), [
+            'extra',
+            'transport',
+            'id',
+            'DELETE',
+            'main_band'
+        ])
 
     def test_log_actions(self):
         ma = ModelAdmin(Band, self.site)
@@ -623,7 +621,7 @@ class ModelAdminTests(TestCase):
         tests = (
             (ma.log_addition, ADDITION, {'added': {}}),
             (ma.log_change, CHANGE, {'changed': {'fields': ['name', 'bio']}}),
-            (ma.log_deletion, DELETION, str(self.band)),
+            (ma.log_deletion, DELETION, str(self.band))
         )
         for method, flag, message in tests:
             with self.subTest(name=method.__name__):
@@ -663,6 +661,7 @@ class ModelAdminTests(TestCase):
             model_admin = OtherSongAdmin(Song, self.site)
             form = model_admin.get_form(request)()
             self.assertIsInstance(form.fields['band'].widget.widget, AutocompleteSelect)
+
         finally:
             self.site.unregister(Band)
 
@@ -678,7 +677,6 @@ class ModelAdminTests(TestCase):
 
 
 class ModelAdminPermissionTests(SimpleTestCase):
-
     class MockUser:
         def has_module_perms(self, app_label):
             return app_label == 'modeladmin'
@@ -779,5 +777,6 @@ class ModelAdminPermissionTests(SimpleTestCase):
             self.assertFalse(ma.has_module_permission(request))
             request.user = self.MockDeleteUser()
             self.assertFalse(ma.has_module_permission(request))
+
         finally:
             ma.opts.app_label = original_app_label

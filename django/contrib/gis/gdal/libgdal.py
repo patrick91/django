@@ -8,13 +8,11 @@ from django.contrib.gis.gdal.error import GDALException
 from django.core.exceptions import ImproperlyConfigured
 
 logger = logging.getLogger('django.contrib.gis')
-
 # Custom library path set?
 try:
     from django.conf import settings
     lib_path = settings.GDAL_LIBRARY_PATH
-except (AttributeError, EnvironmentError,
-        ImportError, ImproperlyConfigured):
+except (AttributeError, EnvironmentError, ImportError, ImproperlyConfigured):
     lib_path = None
 
 if lib_path:
@@ -27,7 +25,6 @@ elif os.name == 'posix':
     lib_names = ['gdal', 'GDAL', 'gdal2.2.0', 'gdal2.1.0', 'gdal2.0.0', 'gdal1.11.0', 'gdal1.10.0', 'gdal1.9.0']
 else:
     raise ImproperlyConfigured('GDAL is unsupported on OS "%s".' % os.name)
-
 # Using the ctypes `find_library` utility  to find the
 # path to the GDAL library from the list of library names.
 if lib_names:
@@ -37,15 +34,13 @@ if lib_names:
             break
 
 if lib_path is None:
-    raise ImproperlyConfigured(
-        'Could not find the GDAL library (tried "%s"). Is GDAL installed? '
-        'If it is, try setting GDAL_LIBRARY_PATH in your settings.'
-        % '", "'.join(lib_names)
-    )
-
+    raise
+    ImproperlyConfigured('Could not find the GDAL library (tried "%s"). Is GDAL installed? '
+        'If it is, try setting GDAL_LIBRARY_PATH in your settings.' \
+    % \
+    '", "'.join(lib_names))
 # This loads the GDAL/OGR C library
 lgdal = CDLL(lib_path)
-
 # On Windows, the GDAL binaries have some OSR routines exported with
 # STDCALL, while others are not.  Thus, the library will also need to
 # be loaded up as WinDLL for said OSR functions that require the
@@ -56,10 +51,10 @@ if os.name == 'nt':
 
 
 def std_call(func):
-    """
+    '''
     Return the correct STDCALL function for certain OSR routines on Win32
     platforms.
-    """
+    '''
     if os.name == 'nt':
         return lwingdal[func]
     else:
@@ -75,12 +70,12 @@ _version_info.restype = c_char_p
 
 
 def gdal_version():
-    "Return only the GDAL version number information."
+    'Return only the GDAL version number information.'
     return _version_info(b'RELEASE_NAME')
 
 
 def gdal_full_version():
-    "Return the full GDAL version information."
+    'Return the full GDAL version information.'
     return _version_info('')
 
 
@@ -101,7 +96,6 @@ GDAL_MINOR_VERSION = int(_verinfo['minor'])
 GDAL_SUBMINOR_VERSION = _verinfo['subminor'] and int(_verinfo['subminor'])
 GDAL_VERSION = (GDAL_MAJOR_VERSION, GDAL_MINOR_VERSION, GDAL_SUBMINOR_VERSION)
 del _verinfo
-
 # Set library error handling so as errors are logged
 CPLErrorHandler = CFUNCTYPE(None, c_int, c_int, c_char_p)
 

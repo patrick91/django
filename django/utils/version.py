@@ -16,7 +16,7 @@ PY39 = sys.version_info >= (3, 9)
 
 
 def get_version(version=None):
-    """Return a PEP 440-compliant version number from VERSION."""
+    '''Return a PEP 440-compliant version number from VERSION.'''
     version = get_complete_version(version)
 
     # Now build the two parts of the version number:
@@ -31,7 +31,6 @@ def get_version(version=None):
         git_changeset = get_git_changeset()
         if git_changeset:
             sub = '.dev%s' % git_changeset
-
     elif version[3] != 'final':
         mapping = {'alpha': 'a', 'beta': 'b', 'rc': 'rc'}
         sub = mapping[version[3]] + str(version[4])
@@ -40,17 +39,17 @@ def get_version(version=None):
 
 
 def get_main_version(version=None):
-    """Return main version (X.Y[.Z]) from VERSION."""
+    '''Return main version (X.Y[.Z]) from VERSION.'''
     version = get_complete_version(version)
     parts = 2 if version[2] == 0 else 3
     return '.'.join(str(x) for x in version[:parts])
 
 
 def get_complete_version(version=None):
-    """
+    '''
     Return a tuple of the django version. If version argument is non-empty,
     check for correctness of the tuple provided.
-    """
+    '''
     if version is None:
         from django import VERSION as version
     else:
@@ -77,11 +76,7 @@ def get_git_changeset():
     so it's sufficient for generating the development version numbers.
     """
     repo_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-    git_log = subprocess.Popen(
-        'git log --pretty=format:%ct --quiet -1 HEAD',
-        stdout=subprocess.PIPE, stderr=subprocess.PIPE,
-        shell=True, cwd=repo_dir, universal_newlines=True,
-    )
+    git_log = subprocess.Popen('git log --pretty=format:%ct --quiet -1 HEAD', stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True, cwd=repo_dir, universal_newlines=True)
     timestamp = git_log.communicate()[0]
     try:
         timestamp = datetime.datetime.utcfromtimestamp(int(timestamp))

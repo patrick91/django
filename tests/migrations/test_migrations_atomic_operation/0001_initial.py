@@ -12,11 +12,6 @@ class Migration(migrations.Migration):
     atomic = False
 
     operations = [
-        migrations.CreateModel(
-            "Editor",
-            [
-                ("name", models.CharField(primary_key=True, max_length=255)),
-            ],
-        ),
-        migrations.RunPython(raise_error, reverse_code=raise_error, atomic=True),
+        migrations.CreateModel('Editor', [('name', models.CharField(primary_key=True, max_length=255))]),
+        migrations.RunPython(raise_error, reverse_code=raise_error, atomic=True)
     ]

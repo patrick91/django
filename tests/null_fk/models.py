@@ -1,6 +1,6 @@
-"""
+'''
 Regression tests for proper working of ForeignKey(null=True).
-"""
+'''
 
 from django.db import models
 
@@ -37,8 +37,8 @@ class Comment(models.Model):
     def __str__(self):
         return self.comment_text
 
-# Ticket 15823
 
+# Ticket 15823
 
 class Item(models.Model):
     title = models.CharField(max_length=100)

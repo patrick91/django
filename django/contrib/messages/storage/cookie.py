@@ -8,9 +8,9 @@ from django.utils.safestring import SafeData, mark_safe
 
 
 class MessageEncoder(json.JSONEncoder):
-    """
+    '''
     Compactly serialize instances of the ``Message`` class as JSON.
-    """
+    '''
     message_key = '__json_message'
 
     def default(self, obj):
@@ -25,9 +25,9 @@ class MessageEncoder(json.JSONEncoder):
 
 
 class MessageDecoder(json.JSONDecoder):
-    """
+    '''
     Decode JSON that includes serialized ``Message`` instances.
-    """
+    '''
 
     def process_messages(self, obj):
         if isinstance(obj, list) and obj:
@@ -40,8 +40,7 @@ class MessageDecoder(json.JSONDecoder):
                 return Message(*obj[2:])
             return [self.process_messages(item) for item in obj]
         if isinstance(obj, dict):
-            return {key: self.process_messages(value)
-                    for key, value in obj.items()}
+            return {key: self.process_messages(value) for (key, value) in obj.items()}
         return obj
 
     def decode(self, s, **kwargs):
@@ -50,9 +49,9 @@ class MessageDecoder(json.JSONDecoder):
 
 
 class CookieStorage(BaseStorage):
-    """
+    '''
     Store messages in a cookie.
-    """
+    '''
     cookie_name = 'messages'
     # uwsgi's default configuration enforces a maximum size of 4kb for all the
     # HTTP headers. In order to leave some room for other cookies and headers,
@@ -61,51 +60,47 @@ class CookieStorage(BaseStorage):
     not_finished = '__messagesnotfinished__'
 
     def _get(self, *args, **kwargs):
-        """
+        '''
         Retrieve a list of messages from the messages cookie. If the
         not_finished sentinel value is found at the end of the message list,
         remove it and return a result indicating that not all messages were
         retrieved by this storage.
-        """
+        '''
         data = self.request.COOKIES.get(self.cookie_name)
         messages = self._decode(data)
-        all_retrieved = not (messages and messages[-1] == self.not_finished)
+        all_retrieved = not messages and messages[-1] == self.not_finished
         if messages and not all_retrieved:
             # remove the sentinel value
             messages.pop()
         return messages, all_retrieved
 
     def _update_cookie(self, encoded_data, response):
-        """
+        '''
         Either set the cookie with the encoded data if there is any data to
         store, or delete the cookie.
-        """
+        '''
         if encoded_data:
-            response.set_cookie(
-                self.cookie_name, encoded_data,
-                domain=settings.SESSION_COOKIE_DOMAIN,
-                secure=settings.SESSION_COOKIE_SECURE or None,
-                httponly=settings.SESSION_COOKIE_HTTPONLY or None,
-                samesite=settings.SESSION_COOKIE_SAMESITE,
-            )
+            response.set_cookie(self.cookie_name, encoded_data, domain=settings.SESSION_COOKIE_DOMAIN, secure=settings.SESSION_COOKIE_SECURE \
+            or \
+            None, httponly=settings.SESSION_COOKIE_HTTPONLY or None, samesite=settings.SESSION_COOKIE_SAMESITE)
         else:
             response.delete_cookie(self.cookie_name, domain=settings.SESSION_COOKIE_DOMAIN)
 
     def _store(self, messages, response, remove_oldest=True, *args, **kwargs):
-        """
+        '''
         Store the messages to a cookie and return a list of any messages which
         could not be stored.
 
         If the encoded data is larger than ``max_cookie_size``, remove
         messages until the data fits (these are the messages which are
         returned), and add the not_finished sentinel value to indicate as much.
-        """
+        '''
         unstored_messages = []
         encoded_data = self._encode(messages)
         if self.max_cookie_size:
             # data is going to be stored eventually by SimpleCookie, which
             # adds its own overhead, which we must account for.
-            cookie = SimpleCookie()  # create outside the loop
+            cookie = SimpleCookie() # create outside the loop
 
             def stored_length(val):
                 return len(cookie.value_encode(val)[1])
@@ -115,8 +110,7 @@ class CookieStorage(BaseStorage):
                     unstored_messages.append(messages.pop(0))
                 else:
                     unstored_messages.insert(0, messages.pop())
-                encoded_data = self._encode(messages + [self.not_finished],
-                                            encode_empty=unstored_messages)
+                encoded_data = self._encode(messages + [self.not_finished], encode_empty=unstored_messages)
         self._update_cookie(encoded_data, response)
         return unstored_messages
 
@@ -129,25 +123,25 @@ class CookieStorage(BaseStorage):
         return salted_hmac(key_salt, value).hexdigest()
 
     def _encode(self, messages, encode_empty=False):
-        """
+        '''
         Return an encoded version of the messages list which can be stored as
         plain text.
 
         Since the data will be retrieved from the client-side, the encoded data
         also contains a hash to ensure that the data was not tampered with.
-        """
+        '''
         if messages or encode_empty:
             encoder = MessageEncoder(separators=(',', ':'))
             value = encoder.encode(messages)
             return '%s$%s' % (self._hash(value), value)
 
     def _decode(self, data):
-        """
+        '''
         Safely decode an encoded text stream back into a list of messages.
 
         If the encoded text stream contained an invalid hash or was in an
         invalid format, return None.
-        """
+        '''
         if not data:
             return None
         bits = data.split('$', 1)

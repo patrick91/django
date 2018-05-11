@@ -12,7 +12,7 @@ class Person(models.Model):
 
 
 class DefaultPerson(models.Model):
-    first_name = models.CharField(max_length=100, default="Anonymous")
+    first_name = models.CharField(max_length=100, default='Anonymous')
 
 
 class ManualPrimaryKeyTest(models.Model):
@@ -56,9 +56,4 @@ class Author(models.Model):
 class Book(models.Model):
     name = models.CharField(max_length=100)
     authors = models.ManyToManyField(Author, related_name='books')
-    publisher = models.ForeignKey(
-        Publisher,
-        models.CASCADE,
-        related_name='books',
-        db_column="publisher_id_column",
-    )
+    publisher = models.ForeignKey(Publisher, models.CASCADE, related_name='books', db_column='publisher_id_column')

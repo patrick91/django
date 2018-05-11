@@ -6,9 +6,17 @@ from django.db import models
 
 try:
     from django.contrib.postgres.fields import (
-        ArrayField, BigIntegerRangeField, CICharField, CIEmailField,
-        CITextField, DateRangeField, DateTimeRangeField, FloatRangeField,
-        HStoreField, IntegerRangeField, JSONField,
+        ArrayField,
+        BigIntegerRangeField,
+        CICharField,
+        CIEmailField,
+        CITextField,
+        DateRangeField,
+        DateTimeRangeField,
+        FloatRangeField,
+        HStoreField,
+        IntegerRangeField,
+        JSONField
     )
     from django.contrib.postgres.search import SearchVectorField
 except ImportError:
@@ -18,10 +26,7 @@ except ImportError:
 
         def deconstruct(self):
             name, path, args, kwargs = super().deconstruct()
-            kwargs.update({
-                'base_field': '',
-                'size': 1,
-            })
+            kwargs.update({'base_field': '', 'size': 1})
             return name, path, args, kwargs
 
     class DummyJSONField(models.Field):

@@ -28,7 +28,7 @@ class DatabaseFeatures(BaseDatabaseFeatures):
     nulls_order_largest = True
     requires_literal_defaults = True
     closed_cursor_error_class = InterfaceError
-    bare_select_suffix = " FROM DUAL"
+    bare_select_suffix = ' FROM DUAL'
     uppercases_column_names = True
     # select for update with limit can be achieved on Oracle, but not with the current backend.
     supports_select_for_update_with_limit = False
@@ -38,20 +38,20 @@ class DatabaseFeatures(BaseDatabaseFeatures):
     ignores_table_name_case = True
     supports_index_on_text_field = False
     has_case_insensitive_like = False
-    create_test_procedure_without_params_sql = """
+    create_test_procedure_without_params_sql = '''
         CREATE PROCEDURE "TEST_PROCEDURE" AS
             V_I INTEGER;
         BEGIN
             V_I := 1;
         END;
-    """
-    create_test_procedure_with_int_param_sql = """
+    '''
+    create_test_procedure_with_int_param_sql = '''
         CREATE PROCEDURE "TEST_PROCEDURE" (P_I INTEGER) AS
             V_I INTEGER;
         BEGIN
             V_I := P_I;
         END;
-    """
+    '''
     supports_callproc_kwargs = True
     supports_over_clause = True
-    max_query_params = 2**16 - 1
+    max_query_params = 2 ** 16 - 1

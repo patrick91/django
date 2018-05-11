@@ -50,12 +50,12 @@ _SEP_UNSAFE = re.compile(r'^[A-z0-9-_=]*$')
 
 
 class BadSignature(Exception):
-    """Signature does not match."""
+    '''Signature does not match.'''
     pass
 
 
 class SignatureExpired(BadSignature):
-    """Signature timestamp is older than required max_age."""
+    '''Signature timestamp is older than required max_age.'''
     pass
 
 
@@ -64,7 +64,7 @@ def b64_encode(s):
 
 
 def b64_decode(s):
-    pad = b'=' * (-len(s) % 4)
+    pad = b'=' * -len(s) % 4
     return base64.urlsafe_b64decode(s + pad)
 
 
@@ -74,15 +74,16 @@ def base64_hmac(salt, value, key):
 
 def get_cookie_signer(salt='django.core.signing.get_cookie_signer'):
     Signer = import_string(settings.SIGNING_BACKEND)
-    key = force_bytes(settings.SECRET_KEY)  # SECRET_KEY may be str or bytes.
+    key = force_bytes(settings.SECRET_KEY) # SECRET_KEY may be str or bytes.
     return Signer(b'django.http.cookies' + key, salt=salt)
 
 
 class JSONSerializer:
-    """
+    '''
     Simple wrapper around json to be used in signing.dumps and
     signing.loads.
-    """
+    '''
+
     def dumps(self, obj):
         return json.dumps(obj, separators=(',', ':')).encode('latin-1')
 
@@ -107,14 +108,13 @@ def dumps(obj, key=None, salt='django.core.signing', serializer=JSONSerializer, 
     The serializer is expected to return a bytestring.
     """
     data = serializer().dumps(obj)
-
     # Flag for if it's been compressed or not
     is_compressed = False
 
     if compress:
         # Avoid zlib dependency unless compress is being used
         compressed = zlib.compress(data)
-        if len(compressed) < (len(data) - 1):
+        if len(compressed) < len(data) - 1:
             data = compressed
             is_compressed = True
     base64d = b64_encode(data).decode()
@@ -124,11 +124,11 @@ def dumps(obj, key=None, salt='django.core.signing', serializer=JSONSerializer, 
 
 
 def loads(s, key=None, salt='django.core.signing', serializer=JSONSerializer, max_age=None):
-    """
+    '''
     Reverse of dumps(), raise BadSignature if signature fails.
 
     The serializer is expected to accept a bytestring.
-    """
+    '''
     # TimestampSigner.unsign() returns str but base64 and zlib compression
     # operate on bytes.
     base64d = TimestampSigner(key, salt=salt).unsign(s, max_age=max_age).encode()
@@ -143,16 +143,16 @@ def loads(s, key=None, salt='django.core.signing', serializer=JSONSerializer, ma
 
 
 class Signer:
-
     def __init__(self, key=None, sep=':', salt=None):
         # Use of native strings in all versions of Python
         self.key = key or settings.SECRET_KEY
         self.sep = sep
         if _SEP_UNSAFE.match(self.sep):
-            raise ValueError(
-                'Unsafe Signer separator: %r (cannot be empty or consist of '
-                'only A-z0-9-_=)' % sep,
-            )
+            raise
+            ValueError('Unsafe Signer separator: %r (cannot be empty or consist of '
+                'only A-z0-9-_=)' \
+            % \
+            sep)
         self.salt = salt or '%s.%s' % (self.__class__.__module__, self.__class__.__name__)
 
     def signature(self, value):
@@ -171,7 +171,6 @@ class Signer:
 
 
 class TimestampSigner(Signer):
-
     def timestamp(self):
         return baseconv.base62.encode(int(time.time()))
 
@@ -193,6 +192,5 @@ class TimestampSigner(Signer):
             # Check timestamp is not older than max_age
             age = time.time() - timestamp
             if age > max_age:
-                raise SignatureExpired(
-                    'Signature age %s > %s seconds' % (age, max_age))
+                raise SignatureExpired('Signature age %s > %s seconds' % (age, max_age))
         return value

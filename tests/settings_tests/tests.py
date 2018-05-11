@@ -7,21 +7,13 @@ from unittest import mock
 from django.conf import ENVIRONMENT_VARIABLE, LazySettings, Settings, settings
 from django.core.exceptions import ImproperlyConfigured
 from django.http import HttpRequest
-from django.test import (
-    SimpleTestCase, TestCase, TransactionTestCase, modify_settings,
-    override_settings, signals,
-)
+from django.test import SimpleTestCase, TestCase, TransactionTestCase, modify_settings, override_settings, signals
 from django.test.utils import requires_tz_support
 
 
-@modify_settings(ITEMS={
-    'prepend': ['b'],
-    'append': ['d'],
-    'remove': ['a', 'e']
-})
+@modify_settings(ITEMS={'prepend': ['b'], 'append': ['d'], 'remove': ['a', 'e']})
 @override_settings(ITEMS=['a', 'c', 'e'], ITEMS_OUTER=[1, 2, 3], TEST='override', TEST_OUTER='outer')
 class FullyDecoratedTranTestCase(TransactionTestCase):
-
     available_apps = []
 
     def test_override(self):
@@ -30,28 +22,16 @@ class FullyDecoratedTranTestCase(TransactionTestCase):
         self.assertEqual(settings.TEST, 'override')
         self.assertEqual(settings.TEST_OUTER, 'outer')
 
-    @modify_settings(ITEMS={
-        'append': ['e', 'f'],
-        'prepend': ['a'],
-        'remove': ['d', 'c'],
-    })
+    @modify_settings(ITEMS={'append': ['e', 'f'], 'prepend': ['a'], 'remove': ['d', 'c']})
     def test_method_list_override(self):
         self.assertEqual(settings.ITEMS, ['a', 'b', 'e', 'f'])
         self.assertEqual(settings.ITEMS_OUTER, [1, 2, 3])
 
-    @modify_settings(ITEMS={
-        'append': ['b'],
-        'prepend': ['d'],
-        'remove': ['a', 'c', 'e'],
-    })
+    @modify_settings(ITEMS={'append': ['b'], 'prepend': ['d'], 'remove': ['a', 'c', 'e']})
     def test_method_list_override_no_ops(self):
         self.assertEqual(settings.ITEMS, ['b', 'd'])
 
-    @modify_settings(ITEMS={
-        'append': 'e',
-        'prepend': 'a',
-        'remove': 'c',
-    })
+    @modify_settings(ITEMS={'append': 'e', 'prepend': 'a', 'remove': 'c'})
     def test_method_list_override_strings(self):
         self.assertEqual(settings.ITEMS, ['a', 'b', 'd', 'e'])
 
@@ -72,23 +52,14 @@ class FullyDecoratedTranTestCase(TransactionTestCase):
         self.assertEqual(FullyDecoratedTranTestCase.__module__, __name__)
 
 
-@modify_settings(ITEMS={
-    'prepend': ['b'],
-    'append': ['d'],
-    'remove': ['a', 'e']
-})
+@modify_settings(ITEMS={'prepend': ['b'], 'append': ['d'], 'remove': ['a', 'e']})
 @override_settings(ITEMS=['a', 'c', 'e'], TEST='override')
 class FullyDecoratedTestCase(TestCase):
-
     def test_override(self):
         self.assertEqual(settings.ITEMS, ['b', 'c', 'd'])
         self.assertEqual(settings.TEST, 'override')
 
-    @modify_settings(ITEMS={
-        'append': 'e',
-        'prepend': 'a',
-        'remove': 'c',
-    })
+    @modify_settings(ITEMS={'append': 'e', 'prepend': 'a', 'remove': 'c'})
     @override_settings(TEST='override2')
     def test_method_override(self):
         self.assertEqual(settings.ITEMS, ['a', 'b', 'd', 'e'])
@@ -96,17 +67,17 @@ class FullyDecoratedTestCase(TestCase):
 
 
 class ClassDecoratedTestCaseSuper(TestCase):
-    """
+    '''
     Dummy class for testing max recursion error in child class call to
     super().  Refs #17011.
-    """
+    '''
+
     def test_max_recursion_error(self):
         pass
 
 
 @override_settings(TEST='override')
 class ClassDecoratedTestCase(ClassDecoratedTestCaseSuper):
-
     @classmethod
     def setUpClass(cls):
         super().setUpClass()
@@ -116,7 +87,7 @@ class ClassDecoratedTestCase(ClassDecoratedTestCaseSuper):
         self.assertEqual(settings.TEST, 'override')
 
     def test_setupclass_override(self):
-        """Settings are overridden within setUpClass (#21281)."""
+        '''Settings are overridden within setUpClass (#21281).'''
         self.assertEqual(self.foo, 'override')
 
     @override_settings(TEST='override2')
@@ -124,10 +95,10 @@ class ClassDecoratedTestCase(ClassDecoratedTestCaseSuper):
         self.assertEqual(settings.TEST, 'override2')
 
     def test_max_recursion_error(self):
-        """
+        '''
         Overriding a method on a super class and then calling that method on
         the super class should not trigger infinite recursion. See #17011.
-        """
+        '''
         super().test_max_recursion_error()
 
 
@@ -211,7 +182,7 @@ class SettingsTests(SimpleTestCase):
         self.assertIsInstance(decorated, type)
         self.assertTrue(issubclass(decorated, SimpleTestCase))
 
-        with self.assertRaisesMessage(Exception, "Only subclasses of Django SimpleTestCase"):
+        with self.assertRaisesMessage(Exception, 'Only subclasses of Django SimpleTestCase'):
             decorated = override_settings(TEST='override')(UnittestTestCaseSubclass)
 
     def test_signal_callback_context_manager(self):
@@ -242,9 +213,9 @@ class SettingsTests(SimpleTestCase):
             delattr(settings, '_wrapped')
 
     def test_override_settings_delete(self):
-        """
+        '''
         Allow deletion of a setting in an overridden settings set (#18824)
-        """
+        '''
         previous_i18n = settings.USE_I18N
         previous_l10n = settings.USE_L10N
         with self.settings(USE_I18N=False):
@@ -261,10 +232,10 @@ class SettingsTests(SimpleTestCase):
         self.assertEqual(settings.USE_L10N, previous_l10n)
 
     def test_override_settings_nested(self):
-        """
+        '''
         override_settings uses the actual _wrapped attribute at
         runtime, not when it was instantiated.
-        """
+        '''
 
         with self.assertRaises(AttributeError):
             getattr(settings, 'TEST')
@@ -296,6 +267,7 @@ class SettingsTests(SimpleTestCase):
             settings = Settings('fake_settings_module')
             with self.assertRaisesMessage(ImproperlyConfigured, msg):
                 settings.SECRET_KEY
+
         finally:
             del sys.modules['fake_settings_module']
 
@@ -307,15 +279,14 @@ class SettingsTests(SimpleTestCase):
             msg = 'The SECRET_KEY setting must not be empty.'
             with self.assertRaisesMessage(ImproperlyConfigured, msg):
                 Settings('fake_settings_module')
+
         finally:
             del sys.modules['fake_settings_module']
 
     def test_no_settings_module(self):
-        msg = (
-            'Requested setting%s, but settings are not configured. You '
+        msg = 'Requested setting%s, but settings are not configured. You '
             'must either define the environment variable DJANGO_SETTINGS_MODULE '
             'or call settings.configure() before accessing settings.'
-        )
         orig_settings = os.environ[ENVIRONMENT_VARIABLE]
         os.environ[ENVIRONMENT_VARIABLE] = ''
         try:
@@ -323,6 +294,7 @@ class SettingsTests(SimpleTestCase):
                 settings._setup()
             with self.assertRaisesMessage(ImproperlyConfigured, msg % ' TEST'):
                 settings._setup('TEST')
+
         finally:
             os.environ[ENVIRONMENT_VARIABLE] = orig_settings
 
@@ -347,7 +319,7 @@ class TestComplexSettingOverride(SimpleTestCase):
         self.assertNotIn('TEST_WARN', signals.COMPLEX_OVERRIDE_SETTINGS)
 
     def test_complex_override_warning(self):
-        """Regression test for #19031"""
+        '''Regression test for #19031'''
         msg = 'Overriding setting TEST_WARN can lead to unexpected behavior.'
         with self.assertWarnsMessage(UserWarning, msg) as cm:
             with override_settings(TEST_WARN='override'):
@@ -356,7 +328,6 @@ class TestComplexSettingOverride(SimpleTestCase):
 
 
 class SecureProxySslHeaderTest(SimpleTestCase):
-
     @override_settings(SECURE_PROXY_SSL_HEADER=None)
     def test_none(self):
         req = HttpRequest()
@@ -396,6 +367,7 @@ class IsOverriddenTest(SimpleTestCase):
 
             self.assertTrue(s.is_overridden('SECRET_KEY'))
             self.assertFalse(s.is_overridden('ALLOWED_HOSTS'))
+
         finally:
             del sys.modules['fake_settings_module']
 
@@ -431,25 +403,21 @@ class IsOverriddenTest(SimpleTestCase):
 
 
 class TestListSettings(unittest.TestCase):
-    """
+    '''
     Make sure settings that should be lists or tuples throw
     ImproperlyConfigured if they are set to a string instead of a list or tuple.
-    """
-    list_or_tuple_settings = (
-        "INSTALLED_APPS",
-        "TEMPLATE_DIRS",
-        "LOCALE_PATHS",
-    )
+    '''
+    list_or_tuple_settings = ('INSTALLED_APPS', 'TEMPLATE_DIRS', 'LOCALE_PATHS')
 
     def test_tuple_settings(self):
         settings_module = ModuleType('fake_settings_module')
         settings_module.SECRET_KEY = 'foo'
         for setting in self.list_or_tuple_settings:
-            setattr(settings_module, setting, ('non_list_or_tuple_value'))
+            setattr(settings_module, setting, 'non_list_or_tuple_value')
             sys.modules['fake_settings_module'] = settings_module
             try:
                 with self.assertRaises(ImproperlyConfigured):
                     Settings('fake_settings_module')
+
             finally:
-                del sys.modules['fake_settings_module']
-                delattr(settings_module, setting)
+                del sys.modules['fake_settings_module']delattr(settings_module, setting)

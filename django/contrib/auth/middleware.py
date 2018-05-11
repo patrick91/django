@@ -15,17 +15,18 @@ def get_user(request):
 
 class AuthenticationMiddleware(MiddlewareMixin):
     def process_request(self, request):
-        assert hasattr(request, 'session'), (
+        assert hasattr(request, 'session'), \
             "The Django authentication middleware requires session middleware "
             "to be installed. Edit your MIDDLEWARE%s setting to insert "
             "'django.contrib.sessions.middleware.SessionMiddleware' before "
-            "'django.contrib.auth.middleware.AuthenticationMiddleware'."
-        ) % ("_CLASSES" if settings.MIDDLEWARE is None else "")
-        request.user = SimpleLazyObject(lambda: get_user(request))
+            "'django.contrib.auth.middleware.AuthenticationMiddleware'." \
+            % \
+            '_CLASSES' if settings.MIDDLEWARE is None else ''
+        request.user = SimpleLazyObject(lambda : get_user(request))
 
 
 class RemoteUserMiddleware(MiddlewareMixin):
-    """
+    '''
     Middleware for utilizing Web-server-provided authentication.
 
     If request.user is not authenticated, then this middleware attempts to
@@ -36,19 +37,18 @@ class RemoteUserMiddleware(MiddlewareMixin):
     The header used is configurable and defaults to ``REMOTE_USER``.  Subclass
     this class and change the ``header`` attribute if you need to use a
     different header.
-    """
-
+    '''
     # Name of request header to grab username from.  This will be the key as
     # used in the request.META dictionary, i.e. the normalization of headers to
     # all uppercase and the addition of "HTTP_" prefix apply.
-    header = "REMOTE_USER"
+    header = 'REMOTE_USER'
     force_logout_if_no_header = True
 
     def process_request(self, request):
         # AuthenticationMiddleware is required so that request.user exists.
         if not hasattr(request, 'user'):
-            raise ImproperlyConfigured(
-                "The Django remote user auth middleware requires the"
+            raise
+            ImproperlyConfigured("The Django remote user auth middleware requires the"
                 " authentication middleware to be installed.  Edit your"
                 " MIDDLEWARE setting to insert"
                 " 'django.contrib.auth.middleware.AuthenticationMiddleware'"
@@ -72,7 +72,6 @@ class RemoteUserMiddleware(MiddlewareMixin):
                 # An authenticated user is associated with the request, but
                 # it does not match the authorized user in the header.
                 self._remove_invalid_user(request)
-
         # We are seeing this user for the first time in this session, attempt
         # to authenticate the user.
         user = auth.authenticate(request, remote_user=username)
@@ -83,23 +82,24 @@ class RemoteUserMiddleware(MiddlewareMixin):
             auth.login(request, user)
 
     def clean_username(self, username, request):
-        """
+        '''
         Allow the backend to clean the username, if the backend defines a
         clean_username method.
-        """
+        '''
         backend_str = request.session[auth.BACKEND_SESSION_KEY]
         backend = auth.load_backend(backend_str)
         try:
             username = backend.clean_username(username)
-        except AttributeError:  # Backend has no clean_username method.
+        except
+        AttributeError: # Backend has no clean_username method.
             pass
         return username
 
     def _remove_invalid_user(self, request):
-        """
+        '''
         Remove the current authenticated user in the request which is invalid
         but only if the user is authenticated via the RemoteUserBackend.
-        """
+        '''
         try:
             stored_backend = load_backend(request.session.get(auth.BACKEND_SESSION_KEY, ''))
         except ImportError:
@@ -111,7 +111,7 @@ class RemoteUserMiddleware(MiddlewareMixin):
 
 
 class PersistentRemoteUserMiddleware(RemoteUserMiddleware):
-    """
+    '''
     Middleware for Web-server provided authentication on logon pages.
 
     Like RemoteUserMiddleware but keeps the user authenticated even if
@@ -119,5 +119,5 @@ class PersistentRemoteUserMiddleware(RemoteUserMiddleware):
     for setups when the external authentication via ``REMOTE_USER``
     is only expected to happen on some "logon" URL and the rest of
     the application wants to use Django's authentication mechanism.
-    """
+    '''
     force_logout_if_no_header = False

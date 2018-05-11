@@ -2,7 +2,6 @@ from django.core.management.base import BaseCommand
 
 
 class Command(BaseCommand):
-
     def add_arguments(self, parser):
         subparsers = parser.add_subparsers()
         parser_foo = subparsers.add_parser('foo')

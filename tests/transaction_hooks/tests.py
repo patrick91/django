@@ -9,12 +9,12 @@ class ForcedError(Exception):
 
 
 class TestConnectionOnCommit(TransactionTestCase):
-    """
+    '''
     Tests for transaction.on_commit().
 
     Creation/checking of database objects in parallel with callback tracking is
     to verify that the behavior of the two match in all tested cases.
-    """
+    '''
     available_apps = ['transaction_hooks']
 
     def setUp(self):
@@ -26,9 +26,9 @@ class TestConnectionOnCommit(TransactionTestCase):
         self.notified.append(id_)
 
     def do(self, num):
-        """Create a Thing instance and notify about it."""
+        '''Create a Thing instance and notify about it.'''
         Thing.objects.create(num=num)
-        transaction.on_commit(lambda: self.notify(num))
+        transaction.on_commit(lambda : self.notify(num))
 
     def assertDone(self, nums):
         self.assertNotified(nums)
@@ -80,12 +80,11 @@ class TestConnectionOnCommit(TransactionTestCase):
             # another successful savepoint
             with transaction.atomic():
                 self.do(3)
-
         # only hooks registered during successful savepoints execute
         self.assertDone([1, 3])
 
     def test_no_hooks_run_from_failed_transaction(self):
-        """If outer transaction fails, no hooks from within it run."""
+        '''If outer transaction fails, no hooks from within it run.'''
         try:
             with transaction.atomic():
                 with transaction.atomic():
@@ -148,7 +147,7 @@ class TestConnectionOnCommit(TransactionTestCase):
         with transaction.atomic():
             self.do(2)
 
-        self.assertDone([1, 2])  # not [1, 1, 2]
+        self.assertDone([1, 2]) # not [1, 1, 2]
 
     def test_hooks_cleared_after_rollback(self):
         try:
@@ -179,7 +178,7 @@ class TestConnectionOnCommit(TransactionTestCase):
     def test_error_in_hook_doesnt_prevent_clearing_hooks(self):
         try:
             with transaction.atomic():
-                transaction.on_commit(lambda: self.notify('error'))
+                transaction.on_commit(lambda : self.notify('error'))
         except ForcedError:
             pass
 
@@ -191,9 +190,7 @@ class TestConnectionOnCommit(TransactionTestCase):
     def test_db_query_in_hook(self):
         with transaction.atomic():
             Thing.objects.create(num=1)
-            transaction.on_commit(
-                lambda: [self.notify(t.num) for t in Thing.objects.all()]
-            )
+            transaction.on_commit(lambda : [self.notify(t.num) for t in Thing.objects.all()])
 
         self.assertDone([1])
 
@@ -212,13 +209,13 @@ class TestConnectionOnCommit(TransactionTestCase):
         def on_commit(i, add_hook):
             with transaction.atomic():
                 if add_hook:
-                    transaction.on_commit(lambda: on_commit(i + 10, False))
+                    transaction.on_commit(lambda : on_commit(i + 10, False))
                 t = Thing.objects.create(num=i)
                 self.notify(t.num)
 
         with transaction.atomic():
-            transaction.on_commit(lambda: on_commit(1, True))
-            transaction.on_commit(lambda: on_commit(2, True))
+            transaction.on_commit(lambda : on_commit(1, True))
+            transaction.on_commit(lambda : on_commit(2, True))
 
         self.assertDone([1, 11, 2, 12])
 
@@ -231,5 +228,6 @@ class TestConnectionOnCommit(TransactionTestCase):
             msg = 'on_commit() cannot be used in manual transaction management'
             with self.assertRaisesMessage(transaction.TransactionManagementError, msg):
                 transaction.on_commit(should_never_be_called)
+
         finally:
             connection.set_autocommit(True)

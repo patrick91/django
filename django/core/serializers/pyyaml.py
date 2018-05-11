@@ -11,9 +11,7 @@ from io import StringIO
 import yaml
 
 from django.core.serializers.base import DeserializationError
-from django.core.serializers.python import (
-    Deserializer as PythonDeserializer, Serializer as PythonSerializer,
-)
+from django.core.serializers.python import Deserializer as PythonDeserializer, Serializer as PythonSerializer
 from django.db import models
 
 # Use the C (faster) implementation if possible
@@ -37,7 +35,7 @@ DjangoSafeDumper.add_representer(collections.OrderedDict, DjangoSafeDumper.repre
 
 
 class Serializer(PythonSerializer):
-    """Convert a queryset to YAML."""
+    '''Convert a queryset to YAML.'''
 
     internal_use_only = False
 
@@ -62,7 +60,7 @@ class Serializer(PythonSerializer):
 
 
 def Deserializer(stream_or_string, **options):
-    """Deserialize a stream or string of YAML data."""
+    '''Deserialize a stream or string of YAML data.'''
     if isinstance(stream_or_string, bytes):
         stream_or_string = stream_or_string.decode()
     if isinstance(stream_or_string, str):
@@ -74,4 +72,4 @@ def Deserializer(stream_or_string, **options):
     except (GeneratorExit, DeserializationError):
         raise
     except Exception as exc:
-        raise DeserializationError() from exc
+        raise DeserializationError()

@@ -13,10 +13,10 @@ Both styles are demonstrated here.
 """
 from django.db import models
 
+
 #
 # Abstract base classes
 #
-
 
 class CommonInfo(models.Model):
     name = models.CharField(max_length=50)
@@ -50,12 +50,7 @@ class Post(models.Model):
 
 
 class Attachment(models.Model):
-    post = models.ForeignKey(
-        Post,
-        models.CASCADE,
-        related_name='attached_%(class)s_set',
-        related_query_name='attached_%(app_label)s_%(class)ss',
-    )
+    post = models.ForeignKey(Post, models.CASCADE, related_name='attached_%(class)s_set', related_query_name='attached_%(app_label)s_%(class)ss')
     content = models.TextField()
 
     class Meta:
@@ -81,7 +76,7 @@ class Chef(models.Model):
     name = models.CharField(max_length=50)
 
     def __str__(self):
-        return "%s the chef" % self.name
+        return '%s the chef' % self.name
 
 
 class Place(models.Model):
@@ -89,7 +84,7 @@ class Place(models.Model):
     address = models.CharField(max_length=80)
 
     def __str__(self):
-        return "%s the place" % self.name
+        return '%s the place' % self.name
 
 
 class Rating(models.Model):
@@ -100,7 +95,7 @@ class Rating(models.Model):
         ordering = ['-rating']
 
 
-class Restaurant(Place, Rating):
+class Restaurant(Place,Rating):
     serves_hot_dogs = models.BooleanField(default=False)
     serves_pizza = models.BooleanField(default=False)
     chef = models.ForeignKey(Chef, models.SET_NULL, null=True, blank=True)
@@ -109,21 +104,21 @@ class Restaurant(Place, Rating):
         db_table = 'my_restaurant'
 
     def __str__(self):
-        return "%s the restaurant" % self.name
+        return '%s the restaurant' % self.name
 
 
 class ItalianRestaurant(Restaurant):
     serves_gnocchi = models.BooleanField(default=False)
 
     def __str__(self):
-        return "%s the italian restaurant" % self.name
+        return '%s the italian restaurant' % self.name
 
 
 class Supplier(Place):
     customers = models.ManyToManyField(Restaurant, related_name='provider')
 
     def __str__(self):
-        return "%s the supplier" % self.name
+        return '%s the supplier' % self.name
 
 
 class ParkingLot(Place):
@@ -132,7 +127,7 @@ class ParkingLot(Place):
     main_site = models.ForeignKey(Place, models.CASCADE, related_name='lot')
 
     def __str__(self):
-        return "%s the parking lot" % self.name
+        return '%s the parking lot' % self.name
 
 
 #
@@ -162,7 +157,7 @@ class Mixin:
         super().__init__()
 
 
-class MixinModel(models.Model, Mixin):
+class MixinModel(models.Model,Mixin):
     pass
 
 

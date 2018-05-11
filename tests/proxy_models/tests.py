@@ -8,25 +8,42 @@ from django.test import TestCase, override_settings
 from django.test.utils import isolate_apps
 from django.urls import reverse
 
-from .admin import admin as force_admin_model_registration  # NOQA
+from .admin import admin as force_admin_model_registration # NOQA
 from .models import (
-    Abstract, BaseUser, Bug, Country, Improvement, Issue, LowerStatusPerson,
-    MultiUserProxy, MyPerson, MyPersonProxy, OtherPerson, Person, ProxyBug,
-    ProxyImprovement, ProxyProxyBug, ProxyTrackerUser, State, StateProxy,
-    StatusPerson, TrackerUser, User, UserProxy, UserProxyProxy,
+    Abstract,
+    BaseUser,
+    Bug,
+    Country,
+    Improvement,
+    Issue,
+    LowerStatusPerson,
+    MultiUserProxy,
+    MyPerson,
+    MyPersonProxy,
+    OtherPerson,
+    Person,
+    ProxyBug,
+    ProxyImprovement,
+    ProxyProxyBug,
+    ProxyTrackerUser,
+    State,
+    StateProxy,
+    StatusPerson,
+    TrackerUser,
+    User,
+    UserProxy,
+    UserProxyProxy
 )
 
 
 class ProxyModelTests(TestCase):
     def test_same_manager_queries(self):
-        """
+        '''
         The MyPerson model should be generating the same database queries as
         the Person model (when the same manager is used in each case).
-        """
-        my_person_sql = MyPerson.other.all().query.get_compiler(
-            DEFAULT_DB_ALIAS).as_sql()
-        person_sql = Person.objects.order_by("name").query.get_compiler(
-            DEFAULT_DB_ALIAS).as_sql()
+        '''
+        my_person_sql = MyPerson.other.all().query.get_compiler(DEFAULT_DB_ALIAS).as_sql()
+        person_sql = Person.objects.order_by('name').query.get_compiler(DEFAULT_DB_ALIAS).as_sql()
         self.assertEqual(my_person_sql, person_sql)
 
     def test_inheritance_new_table(self):
@@ -34,48 +51,46 @@ class ProxyModelTests(TestCase):
         The StatusPerson models should have its own table (it's using ORM-level
         inheritance).
         """
-        sp_sql = StatusPerson.objects.all().query.get_compiler(
-            DEFAULT_DB_ALIAS).as_sql()
-        p_sql = Person.objects.all().query.get_compiler(
-            DEFAULT_DB_ALIAS).as_sql()
+        sp_sql = StatusPerson.objects.all().query.get_compiler(DEFAULT_DB_ALIAS).as_sql()
+        p_sql = Person.objects.all().query.get_compiler(DEFAULT_DB_ALIAS).as_sql()
         self.assertNotEqual(sp_sql, p_sql)
 
     def test_basic_proxy(self):
-        """
+        '''
         Creating a Person makes them accessible through the MyPerson proxy.
-        """
-        person = Person.objects.create(name="Foo McBar")
+        '''
+        person = Person.objects.create(name='Foo McBar')
         self.assertEqual(len(Person.objects.all()), 1)
         self.assertEqual(len(MyPerson.objects.all()), 1)
-        self.assertEqual(MyPerson.objects.get(name="Foo McBar").id, person.id)
+        self.assertEqual(MyPerson.objects.get(name='Foo McBar').id, person.id)
         self.assertFalse(MyPerson.objects.get(id=person.id).has_special_name())
 
     def test_no_proxy(self):
-        """
+        '''
         Person is not proxied by StatusPerson subclass.
-        """
-        Person.objects.create(name="Foo McBar")
+        '''
+        Person.objects.create(name='Foo McBar')
         self.assertEqual(list(StatusPerson.objects.all()), [])
 
     def test_basic_proxy_reverse(self):
-        """
+        '''
         A new MyPerson also shows up as a standard Person.
-        """
-        MyPerson.objects.create(name="Bazza del Frob")
+        '''
+        MyPerson.objects.create(name='Bazza del Frob')
         self.assertEqual(len(MyPerson.objects.all()), 1)
         self.assertEqual(len(Person.objects.all()), 1)
 
-        LowerStatusPerson.objects.create(status="low", name="homer")
+        LowerStatusPerson.objects.create(status='low', name='homer')
         lsps = [lsp.name for lsp in LowerStatusPerson.objects.all()]
-        self.assertEqual(lsps, ["homer"])
+        self.assertEqual(lsps, ['homer'])
 
     def test_correct_type_proxy_of_proxy(self):
-        """
+        '''
         Correct type when querying a proxy of proxy
-        """
-        Person.objects.create(name="Foo McBar")
-        MyPerson.objects.create(name="Bazza del Frob")
-        LowerStatusPerson.objects.create(status="low", name="homer")
+        '''
+        Person.objects.create(name='Foo McBar')
+        MyPerson.objects.create(name='Bazza del Frob')
+        LowerStatusPerson.objects.create(status='low', name='homer')
         pp = sorted(mpp.name for mpp in MyPersonProxy.objects.all())
         self.assertEqual(pp, ['Bazza del Frob', 'Foo McBar', 'homer'])
 
@@ -84,9 +99,9 @@ class ProxyModelTests(TestCase):
         Proxy models are included in the ancestors for a model's DoesNotExist
         and MultipleObjectsReturned
         """
-        Person.objects.create(name="Foo McBar")
-        MyPerson.objects.create(name="Bazza del Frob")
-        LowerStatusPerson.objects.create(status="low", name="homer")
+        Person.objects.create(name='Foo McBar')
+        MyPerson.objects.create(name='Bazza del Frob')
+        LowerStatusPerson.objects.create(status='low', name='homer')
         max_id = Person.objects.aggregate(max_id=models.Max('id'))['max_id']
 
         with self.assertRaises(Person.DoesNotExist):
@@ -113,7 +128,7 @@ class ProxyModelTests(TestCase):
     def test_too_many_concrete_classes(self):
         msg = "Proxy model 'TooManyBases' has more than one non-abstract model base class."
         with self.assertRaisesMessage(TypeError, msg):
-            class TooManyBases(User, Person):
+            class TooManyBases(User,Person):
                 class Meta:
                     proxy = True
 
@@ -133,19 +148,13 @@ class ProxyModelTests(TestCase):
                 proxy = True
 
         errors = NoNewFields.check()
-        expected = [
-            checks.Error(
-                "Proxy model 'NoNewFields' contains model fields.",
-                id='models.E017',
-            )
-        ]
+        expected = [checks.Error("Proxy model 'NoNewFields' contains model fields.", id='models.E017')]
         self.assertEqual(errors, expected)
 
     @override_settings(TEST_SWAPPABLE_MODEL='proxy_models.AlternateModel')
     @isolate_apps('proxy_models')
     def test_swappable(self):
         class SwappableModel(models.Model):
-
             class Meta:
                 swappable = 'TEST_SWAPPABLE_MODEL'
 
@@ -155,14 +164,13 @@ class ProxyModelTests(TestCase):
         # You can't proxy a swapped model
         with self.assertRaises(TypeError):
             class ProxyModel(SwappableModel):
-
                 class Meta:
                     proxy = True
 
     def test_myperson_manager(self):
-        Person.objects.create(name="fred")
-        Person.objects.create(name="wilma")
-        Person.objects.create(name="barney")
+        Person.objects.create(name='fred')
+        Person.objects.create(name='wilma')
+        Person.objects.create(name='barney')
 
         resp = [p.name for p in MyPerson.objects.all()]
         self.assertEqual(resp, ['barney', 'fred'])
@@ -171,9 +179,9 @@ class ProxyModelTests(TestCase):
         self.assertEqual(resp, ['barney', 'fred'])
 
     def test_otherperson_manager(self):
-        Person.objects.create(name="fred")
-        Person.objects.create(name="wilma")
-        Person.objects.create(name="barney")
+        Person.objects.create(name='fred')
+        Person.objects.create(name='wilma')
+        Person.objects.create(name='barney')
 
         resp = [p.name for p in OtherPerson.objects.all()]
         self.assertEqual(resp, ['barney', 'wilma'])
@@ -186,17 +194,18 @@ class ProxyModelTests(TestCase):
 
     def test_permissions_created(self):
         from django.contrib.auth.models import Permission
-        Permission.objects.get(name="May display users information")
+        Permission.objects.get(name='May display users information')
 
     def test_proxy_model_signals(self):
-        """
+        '''
         Test save signals for proxy models
-        """
+        '''
         output = []
 
         def make_handler(model, event):
             def _handler(*args, **kwargs):
                 output.append('%s %s save' % (model, event))
+
             return _handler
 
         h1 = make_handler('MyPerson', 'pre')
@@ -209,11 +218,8 @@ class ProxyModelTests(TestCase):
         signals.pre_save.connect(h3, sender=Person)
         signals.post_save.connect(h4, sender=Person)
 
-        MyPerson.objects.create(name="dino")
-        self.assertEqual(output, [
-            'MyPerson pre save',
-            'MyPerson post save'
-        ])
+        MyPerson.objects.create(name='dino')
+        self.assertEqual(output, ['MyPerson pre save', 'MyPerson post save'])
 
         output = []
 
@@ -223,12 +229,9 @@ class ProxyModelTests(TestCase):
         signals.pre_save.connect(h5, sender=MyPersonProxy)
         signals.post_save.connect(h6, sender=MyPersonProxy)
 
-        MyPersonProxy.objects.create(name="pebbles")
+        MyPersonProxy.objects.create(name='pebbles')
 
-        self.assertEqual(output, [
-            'MyPersonProxy pre save',
-            'MyPersonProxy post save'
-        ])
+        self.assertEqual(output, ['MyPersonProxy pre save', 'MyPersonProxy post save'])
 
         signals.pre_save.disconnect(h1, sender=MyPerson)
         signals.post_save.disconnect(h2, sender=MyPerson)
@@ -262,9 +265,9 @@ class ProxyModelTests(TestCase):
         self.assertEqual(User, UserProxyProxy._meta.concrete_model)
 
     def test_proxy_delete(self):
-        """
+        '''
         Proxy objects can be deleted
-        """
+        '''
         User.objects.create(name='Bruce')
         u2 = UserProxy.objects.create(name='George')
 
@@ -284,10 +287,10 @@ class ProxyModelTests(TestCase):
         self.assertEqual(user.name, 'George')
 
     def test_select_related(self):
-        """
+        '''
         We can still use `select_related()` to include related models in our
         querysets.
-        """
+        '''
         country = Country.objects.create(name='Australia')
         State.objects.create(name='New South Wales', country=country)
 
@@ -316,43 +319,24 @@ class ProxyModelTests(TestCase):
         someone = BaseUser.objects.create(name='Someone')
         Bug.objects.create(summary='fix this', version='1.1beta', assignee=contributor, reporter=someone)
         pcontributor = ProxyTrackerUser.objects.create(name='OtherContributor', status='proxy')
-        Improvement.objects.create(
-            summary='improve that', version='1.1beta',
-            assignee=contributor, reporter=pcontributor,
-            associated_bug=ProxyProxyBug.objects.all()[0],
-        )
-
+        Improvement.objects.create(summary='improve that', version='1.1beta', assignee=contributor, reporter=pcontributor, associated_bug=ProxyProxyBug.objects.all()[
+            0
+        ])
         # Related field filter on proxy
         resp = ProxyBug.objects.get(version__icontains='beta')
         self.assertEqual(repr(resp), '<ProxyBug: ProxyBug:fix this>')
-
         # Select related + filter on proxy
         resp = ProxyBug.objects.select_related().get(version__icontains='beta')
         self.assertEqual(repr(resp), '<ProxyBug: ProxyBug:fix this>')
-
         # Proxy of proxy, select_related + filter
-        resp = ProxyProxyBug.objects.select_related().get(
-            version__icontains='beta'
-        )
+        resp = ProxyProxyBug.objects.select_related().get(version__icontains='beta')
         self.assertEqual(repr(resp), '<ProxyProxyBug: ProxyProxyBug:fix this>')
-
         # Select related + filter on a related proxy field
-        resp = ProxyImprovement.objects.select_related().get(
-            reporter__name__icontains='butor'
-        )
-        self.assertEqual(
-            repr(resp),
-            '<ProxyImprovement: ProxyImprovement:improve that>'
-        )
-
+        resp = ProxyImprovement.objects.select_related().get(reporter__name__icontains='butor')
+        self.assertEqual(repr(resp), '<ProxyImprovement: ProxyImprovement:improve that>')
         # Select related + filter on a related proxy of proxy field
-        resp = ProxyImprovement.objects.select_related().get(
-            associated_bug__summary__icontains='fix'
-        )
-        self.assertEqual(
-            repr(resp),
-            '<ProxyImprovement: ProxyImprovement:improve that>'
-        )
+        resp = ProxyImprovement.objects.select_related().get(associated_bug__summary__icontains='fix')
+        self.assertEqual(repr(resp), '<ProxyImprovement: ProxyImprovement:improve that>')
 
     def test_proxy_load_from_fixture(self):
         management.call_command('loaddata', 'mypeople.json', verbosity=0)
@@ -365,7 +349,6 @@ class ProxyModelTests(TestCase):
 
 @override_settings(ROOT_URLCONF='proxy_models.urls')
 class ProxyModelAdminTests(TestCase):
-
     @classmethod
     def setUpTestData(cls):
         cls.superuser = AuthUser.objects.create(is_superuser=True, is_staff=True)
@@ -373,10 +356,10 @@ class ProxyModelAdminTests(TestCase):
         cls.i1 = Issue.objects.create(summary="Pony's Issue", assignee=cls.tu1)
 
     def test_cascade_delete_proxy_model_admin_warning(self):
-        """
+        '''
         Test if admin gives warning about cascade deleting models referenced
         to concrete model by deleting proxy object.
-        """
+        '''
         tracker_user = TrackerUser.objects.all()[0]
         base_user = BaseUser.objects.all()[0]
         issue = Issue.objects.all()[0]
@@ -388,19 +371,19 @@ class ProxyModelAdminTests(TestCase):
         self.assertIn(issue, collector.edges.get(tracker_user, ()))
 
     def test_delete_str_in_model_admin(self):
-        """
+        '''
         Test if the admin delete page shows the correct string representation
         for a proxy model.
-        """
+        '''
         user = TrackerUser.objects.get(name='Django Pony')
         proxy = ProxyTrackerUser.objects.get(name='Django Pony')
 
-        user_str = 'Tracker user: <a href="%s">%s</a>' % (
-            reverse('admin_proxy:proxy_models_trackeruser_change', args=(user.pk,)), user
-        )
-        proxy_str = 'Proxy tracker user: <a href="%s">%s</a>' % (
-            reverse('admin_proxy:proxy_models_proxytrackeruser_change', args=(proxy.pk,)), proxy
-        )
+        user_str = 'Tracker user: <a href="%s">%s</a>' \
+        % \
+        (reverse('admin_proxy:proxy_models_trackeruser_change', args=(user.pk,)), user)
+        proxy_str = 'Proxy tracker user: <a href="%s">%s</a>' \
+        % \
+        (reverse('admin_proxy:proxy_models_proxytrackeruser_change', args=(proxy.pk,)), proxy)
 
         self.client.force_login(self.superuser)
         response = self.client.get(reverse('admin_proxy:proxy_models_trackeruser_delete', args=(user.pk,)))

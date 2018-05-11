@@ -9,6 +9,4 @@ def inner_view(request):
     return HttpResponse(content)
 
 
-urlpatterns = [
-    url(r'^second_test/$', inner_view, name='inner'),
-]
+urlpatterns = [url(r'^second_test/$', inner_view, name='inner')]

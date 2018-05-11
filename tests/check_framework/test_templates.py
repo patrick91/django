@@ -10,10 +10,8 @@ class CheckTemplateSettingsAppDirsTest(SimpleTestCase):
         {
             'BACKEND': 'django.template.backends.django.DjangoTemplates',
             'APP_DIRS': True,
-            'OPTIONS': {
-                'loaders': ['django.template.loaders.filesystem.Loader'],
-            },
-        },
+            'OPTIONS': {'loaders': ['django.template.loaders.filesystem.Loader']}
+        }
     ]
 
     @property
@@ -23,9 +21,9 @@ class CheckTemplateSettingsAppDirsTest(SimpleTestCase):
 
     @override_settings(TEMPLATES=TEMPLATES_APP_DIRS_AND_LOADERS)
     def test_app_dirs_and_loaders(self):
-        """
+        '''
         Error if template loaders are specified and APP_DIRS is True.
-        """
+        '''
         self.assertEqual(self.func(None), [E001])
 
     def test_app_dirs_removed(self):
@@ -43,18 +41,8 @@ class CheckTemplateSettingsAppDirsTest(SimpleTestCase):
 
 class CheckTemplateStringIfInvalidTest(SimpleTestCase):
     TEMPLATES_STRING_IF_INVALID = [
-        {
-            'BACKEND': 'django.template.backends.django.DjangoTemplates',
-            'OPTIONS': {
-                'string_if_invalid': False,
-            },
-        },
-        {
-            'BACKEND': 'django.template.backends.django.DjangoTemplates',
-            'OPTIONS': {
-                'string_if_invalid': 42,
-            },
-        },
+        {'BACKEND': 'django.template.backends.django.DjangoTemplates', 'OPTIONS': {'string_if_invalid': False}},
+        {'BACKEND': 'django.template.backends.django.DjangoTemplates', 'OPTIONS': {'string_if_invalid': 42}}
     ]
 
     @classmethod

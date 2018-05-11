@@ -20,8 +20,8 @@ class CustomRequestAuthenticationForm(AuthenticationForm):
 
 @never_cache
 def remote_user_auth_view(request):
-    "Dummy view for remote user tests"
-    t = Template("Username is {{ user }}.")
+    'Dummy view for remote user tests'
+    t = Template('Username is {{ user }}.')
     c = RequestContext(request, {})
     return HttpResponse(t.render(c))
 
@@ -29,16 +29,18 @@ def remote_user_auth_view(request):
 def auth_processor_no_attr_access(request):
     render(request, 'context_processors/auth_attrs_no_access.html')
     # *After* rendering, we check whether the session was accessed
-    return render(request,
-                  'context_processors/auth_attrs_test_access.html',
-                  {'session_accessed': request.session.accessed})
+    return \
+        render(request, 'context_processors/auth_attrs_test_access.html', {
+            'session_accessed': request.session.accessed
+        })
 
 
 def auth_processor_attr_access(request):
     render(request, 'context_processors/auth_attrs_access.html')
-    return render(request,
-                  'context_processors/auth_attrs_test_access.html',
-                  {'session_accessed': request.session.accessed})
+    return \
+        render(request, 'context_processors/auth_attrs_test_access.html', {
+            'session_accessed': request.session.accessed
+        })
 
 
 def auth_processor_user(request):
@@ -54,7 +56,7 @@ def auth_processor_perm_in_perms(request):
 
 
 def auth_processor_messages(request):
-    info(request, "Message 1")
+    info(request, 'Message 1')
     return render(request, 'context_processors/auth_attrs_messages.html')
 
 
@@ -79,66 +81,44 @@ def login_and_permission_required_exception(request):
 
 
 uid_token = r'(?P<uidb64>[0-9A-Za-z_\-]+)/(?P<token>[0-9A-Za-z]{1,13}-[0-9A-Za-z]{1,20})'
-
 # special urls for auth test cases
-urlpatterns = auth_urlpatterns + [
+urlpatterns = auth_urlpatterns \
++ \
+[
     url(r'^logout/custom_query/$', views.LogoutView.as_view(redirect_field_name='follow')),
     url(r'^logout/next_page/$', views.LogoutView.as_view(next_page='/somewhere/')),
     url(r'^logout/next_page/named/$', views.LogoutView.as_view(next_page='password_reset')),
     url(r'^logout/allowed_hosts/$', views.LogoutView.as_view(success_url_allowed_hosts={'otherserver'})),
     url(r'^remote_user/$', remote_user_auth_view),
-
-    url(r'^password_reset_from_email/$',
-        views.PasswordResetView.as_view(from_email='staffmember@example.com')),
-    url(r'^password_reset_extra_email_context/$',
-        views.PasswordResetView.as_view(extra_email_context={'greeting': 'Hello!'})),
-    url(r'^password_reset/custom_redirect/$',
-        views.PasswordResetView.as_view(success_url='/custom/')),
-    url(r'^password_reset/custom_redirect/named/$',
-        views.PasswordResetView.as_view(success_url=reverse_lazy('password_reset'))),
-    url(r'^password_reset/html_email_template/$',
-        views.PasswordResetView.as_view(
-            html_email_template_name='registration/html_password_reset_email.html'
-        )),
-    url(r'^reset/custom/{}/$'.format(uid_token),
-        views.PasswordResetConfirmView.as_view(success_url='/custom/')),
-    url(r'^reset/custom/named/{}/$'.format(uid_token),
-        views.PasswordResetConfirmView.as_view(success_url=reverse_lazy('password_reset'))),
-    url(r'^reset/post_reset_login/{}/$'.format(uid_token),
-        views.PasswordResetConfirmView.as_view(post_reset_login=True)),
-    url(
-        r'^reset/post_reset_login_custom_backend/{}/$'.format(uid_token),
-        views.PasswordResetConfirmView.as_view(
-            post_reset_login=True,
-            post_reset_login_backend='django.contrib.auth.backends.AllowAllUsersModelBackend',
-        ),
-    ),
-    url(r'^password_change/custom/$',
-        views.PasswordChangeView.as_view(success_url='/custom/')),
-    url(r'^password_change/custom/named/$',
-        views.PasswordChangeView.as_view(success_url=reverse_lazy('password_reset'))),
+    url(r'^password_reset_from_email/$', views.PasswordResetView.as_view(from_email='staffmember@example.com')),
+    url(r'^password_reset_extra_email_context/$', views.PasswordResetView.as_view(extra_email_context={
+        'greeting': 'Hello!'
+    })),
+    url(r'^password_reset/custom_redirect/$', views.PasswordResetView.as_view(success_url='/custom/')),
+    url(r'^password_reset/custom_redirect/named/$', views.PasswordResetView.as_view(success_url=reverse_lazy('password_reset'))),
+    url(r'^password_reset/html_email_template/$', views.PasswordResetView.as_view(html_email_template_name='registration/html_password_reset_email.html')),
+    url(r'^reset/custom/{}/$'.format(uid_token), views.PasswordResetConfirmView.as_view(success_url='/custom/')),
+    url(r'^reset/custom/named/{}/$'.format(uid_token), views.PasswordResetConfirmView.as_view(success_url=reverse_lazy('password_reset'))),
+    url(r'^reset/post_reset_login/{}/$'.format(uid_token), views.PasswordResetConfirmView.as_view(post_reset_login=True)),
+    url(r'^reset/post_reset_login_custom_backend/{}/$'.format(uid_token), views.PasswordResetConfirmView.as_view(post_reset_login=True, post_reset_login_backend='django.contrib.auth.backends.AllowAllUsersModelBackend')),
+    url(r'^password_change/custom/$', views.PasswordChangeView.as_view(success_url='/custom/')),
+    url(r'^password_change/custom/named/$', views.PasswordChangeView.as_view(success_url=reverse_lazy('password_reset'))),
     url(r'^login_required/$', login_required(views.PasswordResetView.as_view())),
     url(r'^login_required_login_url/$', login_required(views.PasswordResetView.as_view(), login_url='/somewhere/')),
-
     url(r'^auth_processor_no_attr_access/$', auth_processor_no_attr_access),
     url(r'^auth_processor_attr_access/$', auth_processor_attr_access),
     url(r'^auth_processor_user/$', auth_processor_user),
     url(r'^auth_processor_perms/$', auth_processor_perms),
     url(r'^auth_processor_perm_in_perms/$', auth_processor_perm_in_perms),
     url(r'^auth_processor_messages/$', auth_processor_messages),
-    url(r'^custom_request_auth_login/$',
-        views.LoginView.as_view(authentication_form=CustomRequestAuthenticationForm)),
-    url(r'^userpage/(.+)/$', userpage, name="userpage"),
+    url(r'^custom_request_auth_login/$', views.LoginView.as_view(authentication_form=CustomRequestAuthenticationForm)),
+    url(r'^userpage/(.+)/$', userpage, name='userpage'),
     url(r'^login/redirect_authenticated_user_default/$', views.LoginView.as_view()),
-    url(r'^login/redirect_authenticated_user/$',
-        views.LoginView.as_view(redirect_authenticated_user=True)),
-    url(r'^login/allowed_hosts/$',
-        views.LoginView.as_view(success_url_allowed_hosts={'otherserver'})),
-
+    url(r'^login/redirect_authenticated_user/$', views.LoginView.as_view(redirect_authenticated_user=True)),
+    url(r'^login/allowed_hosts/$', views.LoginView.as_view(success_url_allowed_hosts={'otherserver'})),
     path('permission_required_redirect/', permission_required_redirect),
     path('permission_required_exception/', permission_required_exception),
     path('login_and_permission_required_exception/', login_and_permission_required_exception),
-
     # This line is only required to render the password reset with is_admin=True
-    url(r'^admin/', admin.site.urls),
+    url(r'^admin/', admin.site.urls)
 ]

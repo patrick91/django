@@ -1,13 +1,13 @@
 # Copyright (c) 2008-2009 Aryeh Leib Taurog, all rights reserved.
 # Released under the New BSD license.
-"""
+'''
 This module contains a base type which provides list-style mutations
 without specific data storage methods.
 
 See also http://static.aryehleib.com/oldsite/MutableLists.html
 
 Author: Aryeh Leib Taurog.
-"""
+'''
 from functools import total_ordering
 
 
@@ -70,7 +70,7 @@ class ListMixin:
         super().__init__(*args, **kwargs)
 
     def __getitem__(self, index):
-        "Get the item(s) at the specified index/slice."
+        'Get the item(s) at the specified index/slice.'
         if isinstance(index, slice):
             return [self._get_single_external(i) for i in range(*index.indices(len(self)))]
         else:
@@ -78,10 +78,9 @@ class ListMixin:
             return self._get_single_external(index)
 
     def __delitem__(self, index):
-        "Delete the item(s) at the specified index/slice."
+        'Delete the item(s) at the specified index/slice.'
         if not isinstance(index, (int, slice)):
-            raise TypeError("%s is not a legal index" % index)
-
+            raise TypeError('%s is not a legal index' % index)
         # calculate new length and dimensions
         origLen = len(self)
         if isinstance(index, int):
@@ -91,14 +90,12 @@ class ListMixin:
             indexRange = range(*index.indices(origLen))
 
         newLen = origLen - len(indexRange)
-        newItems = (self._get_single_internal(i)
-                    for i in range(origLen)
-                    if i not in indexRange)
+        newItems = (self._get_single_internal(i) for i in range(origLen) if i not in indexRange)
 
         self._rebuild(newLen, newItems)
 
     def __setitem__(self, index, val):
-        "Set the item(s) at the specified index/slice."
+        'Set the item(s) at the specified index/slice.'
         if isinstance(index, slice):
             self._set_slice(index, val)
         else:
@@ -167,7 +164,7 @@ class ListMixin:
     # ### Public list interface Methods ###
     # ## Non-mutating ##
     def count(self, val):
-        "Standard list count method"
+        'Standard list count method'
         count = 0
         for i in self:
             if val == i:
@@ -175,7 +172,7 @@ class ListMixin:
         return count
 
     def index(self, val):
-        "Standard list index method"
+        'Standard list index method'
         for i in range(0, len(self)):
             if self[i] == val:
                 return i
@@ -183,35 +180,35 @@ class ListMixin:
 
     # ## Mutating ##
     def append(self, val):
-        "Standard list append method"
+        'Standard list append method'
         self[len(self):] = [val]
 
     def extend(self, vals):
-        "Standard list extend method"
+        'Standard list extend method'
         self[len(self):] = vals
 
     def insert(self, index, val):
-        "Standard list insert method"
+        'Standard list insert method'
         if not isinstance(index, int):
-            raise TypeError("%s is not a legal index" % index)
+            raise TypeError('%s is not a legal index' % index)
         self[index:index] = [val]
 
     def pop(self, index=-1):
-        "Standard list pop method"
+        'Standard list pop method'
         result = self[index]
         del self[index]
         return result
 
     def remove(self, val):
-        "Standard list remove method"
+        'Standard list remove method'
         del self[self.index(val)]
 
     def reverse(self):
-        "Standard list reverse method"
+        'Standard list reverse method'
         self[:] = self[-1::-1]
 
     def sort(self, cmp=None, key=None, reverse=False):
-        "Standard list sort method"
+        'Standard list sort method'
         if key:
             temp = [(key(v), v) for v in self]
             temp.sort(key=lambda x: x[0], reverse=reverse)
@@ -250,7 +247,7 @@ class ListMixin:
                 raise TypeError('Invalid type encountered in the arguments.')
 
     def _set_slice(self, index, values):
-        "Assign values to a slice of the object"
+        'Assign values to a slice of the object'
         try:
             valueList = list(values)
         except TypeError:
@@ -260,7 +257,6 @@ class ListMixin:
 
         origLen = len(self)
         start, stop, step = index.indices(origLen)
-
         # CAREFUL: index.step and step are not the same!
         # step will never be None
         if index.step is None:
@@ -273,10 +269,11 @@ class ListMixin:
         indexList = range(start, stop, step)
         # extended slice, only allow assigning slice of same size
         if len(valueList) != len(indexList):
-            raise ValueError('attempt to assign sequence of size %d '
-                             'to extended slice of size %d'
-                             % (len(valueList), len(indexList)))
-
+            raise
+            ValueError('attempt to assign sequence of size %d '
+                             'to extended slice of size %d' \
+            % \
+            (len(valueList), len(indexList)))
         # we're not changing the length of the sequence
         newLen = len(self)
         newVals = dict(zip(indexList, valueList))
@@ -295,9 +292,11 @@ class ListMixin:
         indexList = range(start, stop, step)
         # extended slice, only allow assigning slice of same size
         if len(valueList) != len(indexList):
-            raise ValueError('attempt to assign sequence of size %d '
-                             'to extended slice of size %d'
-                             % (len(valueList), len(indexList)))
+            raise
+            ValueError('attempt to assign sequence of size %d '
+                             'to extended slice of size %d' \
+            % \
+            (len(valueList), len(indexList)))
 
         for i, val in zip(indexList, valueList):
             self._set_single(i, val)

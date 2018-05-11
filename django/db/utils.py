@@ -55,11 +55,11 @@ class DatabaseErrorWrapper:
     """
 
     def __init__(self, wrapper):
-        """
+        '''
         wrapper is a database wrapper.
 
         It must have a Database attribute defining PEP-249 exceptions.
-        """
+        '''
         self.wrapper = wrapper
 
     def __enter__(self):
@@ -69,15 +69,15 @@ class DatabaseErrorWrapper:
         if exc_type is None:
             return
         for dj_exc_type in (
-                DataError,
-                OperationalError,
-                IntegrityError,
-                InternalError,
-                ProgrammingError,
-                NotSupportedError,
-                DatabaseError,
-                InterfaceError,
-                Error,
+            DataError,
+            OperationalError,
+            IntegrityError,
+            InternalError,
+            ProgrammingError,
+            NotSupportedError,
+            DatabaseError,
+            InterfaceError,
+            Error
         ):
             db_exc_type = getattr(self.wrapper.Database, dj_exc_type.__name__)
             if issubclass(exc_type, db_exc_type):
@@ -86,7 +86,7 @@ class DatabaseErrorWrapper:
                 # the connection unusable.
                 if dj_exc_type not in (DataError, IntegrityError):
                     self.wrapper.errors_occurred = True
-                raise dj_exc_value.with_traceback(traceback) from exc_value
+                raise dj_exc_value.with_traceback(traceback)
 
     def __call__(self, func):
         # Note that we are intentionally not using @wraps here for performance
@@ -94,14 +94,15 @@ class DatabaseErrorWrapper:
         def inner(*args, **kwargs):
             with self:
                 return func(*args, **kwargs)
+
         return inner
 
 
 def load_backend(backend_name):
-    """
+    '''
     Return a database backend's "base" module given a fully qualified database
     backend name, or raise an error if it doesn't exist.
-    """
+    '''
     # This backend was renamed in Django 1.9.
     if backend_name == 'django.db.backends.postgresql_psycopg2':
         backend_name = 'django.db.backends.postgresql'
@@ -113,19 +114,21 @@ def load_backend(backend_name):
         # listing all built-in database backends.
         backend_dir = str(Path(__file__).parent / 'backends')
         builtin_backends = [
-            name for _, name, ispkg in pkgutil.iter_modules([backend_dir])
+            name
+            for (_, name, ispkg) in pkgutil.iter_modules([backend_dir])
             if ispkg and name not in {'base', 'dummy', 'postgresql_psycopg2'}
         ]
         if backend_name not in ['django.db.backends.%s' % b for b in builtin_backends]:
             backend_reprs = map(repr, sorted(builtin_backends))
-            raise ImproperlyConfigured(
-                "%r isn't an available database backend.\n"
+            raise
+            ImproperlyConfigured("%r isn't an available database backend.\n"
                 "Try using 'django.db.backends.XXX', where XXX is one of:\n"
-                "    %s" % (backend_name, ", ".join(backend_reprs))
-            ) from e_user
+                "    %s" \
+            % \
+            (backend_name, ', '.join(backend_reprs)))
         else:
             # If there's some other error, this must be an error in Django
-            raise
+            raise 
 
 
 class ConnectionDoesNotExist(Exception):
@@ -134,10 +137,10 @@ class ConnectionDoesNotExist(Exception):
 
 class ConnectionHandler:
     def __init__(self, databases=None):
-        """
+        '''
         databases is an optional dictionary of database definitions (structured
         like settings.DATABASES).
-        """
+        '''
         self._databases = databases
         self._connections = local()
 
@@ -146,11 +149,7 @@ class ConnectionHandler:
         if self._databases is None:
             self._databases = settings.DATABASES
         if self._databases == {}:
-            self._databases = {
-                DEFAULT_DB_ALIAS: {
-                    'ENGINE': 'django.db.backends.dummy',
-                },
-            }
+            self._databases = {DEFAULT_DB_ALIAS: {'ENGINE': 'django.db.backends.dummy'}}
         if self._databases[DEFAULT_DB_ALIAS] == {}:
             self._databases[DEFAULT_DB_ALIAS]['ENGINE'] = 'django.db.backends.dummy'
 
@@ -159,10 +158,10 @@ class ConnectionHandler:
         return self._databases
 
     def ensure_defaults(self, alias):
-        """
+        '''
         Put the defaults into the settings dictionary for a given connection
         where no settings is provided.
-        """
+        '''
         try:
             conn = self.databases[alias]
         except KeyError:
@@ -227,9 +226,9 @@ class ConnectionHandler:
 
 class ConnectionRouter:
     def __init__(self, routers=None):
-        """
+        '''
         If routers is not specified, default to settings.DATABASE_ROUTERS.
-        """
+        '''
         self._routers = routers
 
     @cached_property
@@ -255,13 +254,13 @@ class ConnectionRouter:
                     # If the router doesn't have a method, skip to the next one.
                     pass
                 else:
-                    chosen_db = method(model, **hints)
-                    if chosen_db:
+                    chosen_db = method(model, **hints)if chosen_db:
                         return chosen_db
             instance = hints.get('instance')
             if instance is not None and instance._state.db:
                 return instance._state.db
             return DEFAULT_DB_ALIAS
+
         return _route_db
 
     db_for_read = _router_func('db_for_read')
@@ -275,8 +274,7 @@ class ConnectionRouter:
                 # If the router doesn't have a method, skip to the next one.
                 pass
             else:
-                allow = method(obj1, obj2, **hints)
-                if allow is not None:
+                allow = method(obj1, obj2, **hints)if allow is not None:
                     return allow
         return obj1._state.db == obj2._state.db
 
@@ -295,14 +293,9 @@ class ConnectionRouter:
         return True
 
     def allow_migrate_model(self, db, model):
-        return self.allow_migrate(
-            db,
-            model._meta.app_label,
-            model_name=model._meta.model_name,
-            model=model,
-        )
+        return self.allow_migrate(db, model._meta.app_label, model_name=model._meta.model_name, model=model)
 
     def get_migratable_models(self, app_config, db, include_auto_created=False):
-        """Return app models allowed to be migrated on provided db."""
+        '''Return app models allowed to be migrated on provided db.'''
         models = app_config.get_models(include_auto_created=include_auto_created)
         return [model for model in models if self.allow_migrate_model(db, model)]

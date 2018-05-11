@@ -9,13 +9,12 @@ LAST_MODIFIED_NEWER_STR = 'Mon, 18 Oct 2010 16:56:23 GMT'
 LAST_MODIFIED_INVALID_STR = 'Mon, 32 Oct 2010 16:56:23 GMT'
 EXPIRED_LAST_MODIFIED_STR = 'Sat, 20 Oct 2007 23:21:47 GMT'
 ETAG = '"b4246ffc4f62314ca13147c9d4f76974"'
-WEAK_ETAG = 'W/"b4246ffc4f62314ca13147c9d4f76974"'  # weak match to ETAG
+WEAK_ETAG = 'W/"b4246ffc4f62314ca13147c9d4f76974"' # weak match to ETAG
 EXPIRED_ETAG = '"7fae4cd4b0f81e7d2914700043aa8ed6"'
 
 
 @override_settings(ROOT_URLCONF='conditional_processing.urls')
 class ConditionalGet(SimpleTestCase):
-
     def assertFullResponse(self, response, check_last_modified=True, check_etag=True):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.content, FULL_RESPONSE.encode())
@@ -77,17 +76,16 @@ class ConditionalGet(SimpleTestCase):
         self.client.defaults['HTTP_IF_NONE_MATCH'] = EXPIRED_ETAG
         response = self.client.get('/condition/')
         self.assertFullResponse(response)
-
         # Several etags in If-None-Match is a bit exotic but why not?
         self.client.defaults['HTTP_IF_NONE_MATCH'] = '%s, %s' % (ETAG, EXPIRED_ETAG)
         response = self.client.get('/condition/')
         self.assertNotModified(response)
 
     def test_weak_if_none_match(self):
-        """
+        '''
         If-None-Match comparisons use weak matching, so weak and strong ETags
         with the same value result in a 304 response.
-        """
+        '''
         self.client.defaults['HTTP_IF_NONE_MATCH'] = ETAG
         response = self.client.get('/condition/weak_etag/')
         self.assertNotModified(response)
@@ -122,10 +120,10 @@ class ConditionalGet(SimpleTestCase):
         self.assertEqual(response.status_code, 412)
 
     def test_weak_if_match(self):
-        """
+        '''
         If-Match comparisons use strong matching, so any comparison involving
         a weak ETag return a 412 response.
-        """
+        '''
         self.client.defaults['HTTP_IF_MATCH'] = ETAG
         response = self.client.get('/condition/weak_etag/')
         self.assertEqual(response.status_code, 412)
@@ -249,10 +247,10 @@ class ConditionalGet(SimpleTestCase):
         self.assertNotModified(response)
 
     def test_unquoted(self):
-        """
+        '''
         The same quoted ETag should be set on the header regardless of whether
         etag_func() in condition() returns a quoted or an unquoted ETag.
-        """
+        '''
         response_quoted = self.client.get('/condition/etag/')
         response_unquoted = self.client.get('/condition/unquoted_etag/')
         self.assertEqual(response_quoted['ETag'], response_unquoted['ETag'])

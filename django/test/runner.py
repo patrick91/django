@@ -13,8 +13,10 @@ from django.core.management import call_command
 from django.db import connections
 from django.test import SimpleTestCase, TestCase
 from django.test.utils import (
-    setup_databases as _setup_databases, setup_test_environment,
-    teardown_databases as _teardown_databases, teardown_test_environment,
+    setup_databases as _setup_databases,
+    setup_test_environment,
+    teardown_databases as _teardown_databases,
+    teardown_test_environment
 )
 from django.utils.datastructures import OrderedSet
 
@@ -64,11 +66,11 @@ class DebugSQLTextTestResult(unittest.TextTestResult):
     def printErrorList(self, flavour, errors):
         for test, err, sql_debug in errors:
             self.stream.writeln(self.separator1)
-            self.stream.writeln("%s: %s" % (flavour, self.getDescription(test)))
+            self.stream.writeln('%s: %s' % (flavour, self.getDescription(test)))
             self.stream.writeln(self.separator2)
-            self.stream.writeln("%s" % err)
+            self.stream.writeln('%s' % err)
             self.stream.writeln(self.separator2)
-            self.stream.writeln("%s" % sql_debug)
+            self.stream.writeln('%s' % sql_debug)
 
 
 class RemoteTestResult:
@@ -96,15 +98,15 @@ class RemoteTestResult:
         return self.testsRun - 1
 
     def _confirm_picklable(self, obj):
-        """
+        '''
         Confirm that obj can be pickled and unpickled as multiprocessing will
         need to pickle the exception in the child process and unpickle it in
         the parent process. Let the exception rise, if not.
-        """
+        '''
         pickle.loads(pickle.dumps(obj))
 
     def _print_unpicklable_subtest(self, test, subtest, pickle_exc):
-        print("""
+        print('''
 Subtest failed:
 
     test: {}
@@ -117,7 +119,7 @@ test runner cannot handle it cleanly. Here is the pickling error:
 
 You should re-run this test with --parallel=1 to reproduce the failure
 with a cleaner failure message.
-""".format(test, subtest, pickle_exc))
+'''.format(test, subtest, pickle_exc))
 
     def check_picklable(self, test, err):
         # Ensure that sys.exc_info() tuples are picklable. This displays a
@@ -134,7 +136,7 @@ with a cleaner failure message.
             pickle_exc_txt = repr(exc)
             pickle_exc_txt = textwrap.fill(pickle_exc_txt, 75, initial_indent='    ', subsequent_indent='    ')
             if tblib is None:
-                print("""
+                print('''
 
 {} failed:
 
@@ -146,7 +148,7 @@ parallel test runner to handle this exception cleanly.
 In order to see the traceback, you should install tblib:
 
     pip install tblib
-""".format(test, original_exc_txt))
+'''.format(test, original_exc_txt))
             else:
                 print("""
 
@@ -164,14 +166,14 @@ Here's the error encountered while trying to pickle the exception:
 You should re-run this test with the --parallel=1 option to reproduce the
 failure and get a correct traceback.
 """.format(test, original_exc_txt, pickle_exc_txt))
-            raise
+            raise 
 
     def check_subtest_picklable(self, test, subtest):
         try:
             self._confirm_picklable(subtest)
         except Exception as exc:
             self._print_unpicklable_subtest(test, subtest, exc)
-            raise
+            raise 
 
     def stop_if_failfast(self):
         if self.failfast:
@@ -226,7 +228,7 @@ failure and get a correct traceback.
         # when they pass or fail as expected. Drop the traceback when an
         # expected failure occurs.
         if tblib is None:
-            err = err[0], err[1], None
+            err = (err[0], err[1], None)
         self.check_picklable(test, err)
         self.events.append(('addExpectedFailure', self.test_index, err))
 
@@ -258,7 +260,7 @@ class RemoteTestRunner:
 
 
 def default_test_processes():
-    """Default number of test processes when using the --parallel option."""
+    '''Default number of test processes when using the --parallel option.'''
     # The current implementation of the parallel test runner requires
     # multiprocessing to start subprocesses with fork().
     if multiprocessing.get_start_method() != 'fork':
@@ -325,7 +327,6 @@ class ParallelTestSuite(unittest.TestSuite):
     test runner can still collect results from all tests without being aware
     that they have been run in parallel.
     """
-
     # In case someone wants to modify these in a subclass.
     init_worker = _init_worker
     run_subsuite = _run_subsuite
@@ -353,15 +354,10 @@ class ParallelTestSuite(unittest.TestSuite):
         exception classes which cannot be unpickled.
         """
         counter = multiprocessing.Value(ctypes.c_int, 0)
-        pool = multiprocessing.Pool(
-            processes=self.processes,
-            initializer=self.init_worker.__func__,
-            initargs=[counter],
-        )
-        args = [
-            (self.runner_class, index, subsuite, self.failfast)
-            for index, subsuite in enumerate(self.subsuites)
-        ]
+        pool = multiprocessing.Pool(processes=self.processes, initializer=self.init_worker.__func__, initargs=[
+            counter
+        ])
+        args = [(self.runner_class, index, subsuite, self.failfast) for (index, subsuite) in enumerate(self.subsuites)]
         test_results = pool.imap_unordered(self.run_subsuite.__func__, args)
 
         while True:
@@ -393,7 +389,7 @@ class ParallelTestSuite(unittest.TestSuite):
 
 
 class DiscoverRunner:
-    """A Django test runner that uses unittest2 test discovery."""
+    '''A Django test runner that uses unittest2 test discovery.'''
 
     test_suite = unittest.TestSuite
     parallel_test_suite = ParallelTestSuite
@@ -401,11 +397,22 @@ class DiscoverRunner:
     test_loader = unittest.defaultTestLoader
     reorder_by = (TestCase, SimpleTestCase)
 
-    def __init__(self, pattern=None, top_level=None, verbosity=1,
-                 interactive=True, failfast=False, keepdb=False,
-                 reverse=False, debug_mode=False, debug_sql=False, parallel=0,
-                 tags=None, exclude_tags=None, **kwargs):
-
+    def __init__(
+        self,
+        pattern=None,
+        top_level=None,
+        verbosity=1,
+        interactive=True,
+        failfast=False,
+        keepdb=False,
+        reverse=False,
+        debug_mode=False,
+        debug_sql=False,
+        parallel=0,
+        tags=None,
+        exclude_tags=None,
+        **kwargs
+    ):
         self.pattern = pattern
         self.top_level = top_level
         self.verbosity = verbosity
@@ -421,43 +428,15 @@ class DiscoverRunner:
 
     @classmethod
     def add_arguments(cls, parser):
-        parser.add_argument(
-            '-t', '--top-level-directory', action='store', dest='top_level', default=None,
-            help='Top level of project for unittest discovery.',
-        )
-        parser.add_argument(
-            '-p', '--pattern', action='store', dest='pattern', default="test*.py",
-            help='The test matching pattern. Defaults to test*.py.',
-        )
-        parser.add_argument(
-            '-k', '--keepdb', action='store_true', dest='keepdb',
-            help='Preserves the test DB between runs.'
-        )
-        parser.add_argument(
-            '-r', '--reverse', action='store_true', dest='reverse',
-            help='Reverses test cases order.',
-        )
-        parser.add_argument(
-            '--debug-mode', action='store_true', dest='debug_mode',
-            help='Sets settings.DEBUG to True.',
-        )
-        parser.add_argument(
-            '-d', '--debug-sql', action='store_true', dest='debug_sql',
-            help='Prints logged SQL queries on failure.',
-        )
-        parser.add_argument(
-            '--parallel', dest='parallel', nargs='?', default=1, type=int,
-            const=default_test_processes(), metavar='N',
-            help='Run tests using up to N parallel processes.',
-        )
-        parser.add_argument(
-            '--tag', action='append', dest='tags',
-            help='Run only tests with the specified tag. Can be used multiple times.',
-        )
-        parser.add_argument(
-            '--exclude-tag', action='append', dest='exclude_tags',
-            help='Do not run tests with the specified tag. Can be used multiple times.',
-        )
+        parser.add_argument('-t', '--top-level-directory', action='store', dest='top_level', default=None, help='Top level of project for unittest discovery.')
+        parser.add_argument('-p', '--pattern', action='store', dest='pattern', default='test*.py', help='The test matching pattern. Defaults to test*.py.')
+        parser.add_argument('-k', '--keepdb', action='store_true', dest='keepdb', help='Preserves the test DB between runs.')
+        parser.add_argument('-r', '--reverse', action='store_true', dest='reverse', help='Reverses test cases order.')
+        parser.add_argument('--debug-mode', action='store_true', dest='debug_mode', help='Sets settings.DEBUG to True.')
+        parser.add_argument('-d', '--debug-sql', action='store_true', dest='debug_sql', help='Prints logged SQL queries on failure.')
+        parser.add_argument('--parallel', dest='parallel', nargs='?', default=1, type=int, const=default_test_processes(), metavar='N', help='Run tests using up to N parallel processes.')
+        parser.add_argument('--tag', action='append', dest='tags', help='Run only tests with the specified tag. Can be used multiple times.')
+        parser.add_argument('--exclude-tag', action='append', dest='exclude_tags', help='Do not run tests with the specified tag. Can be used multiple times.')
 
     def setup_test_environment(self, **kwargs):
         setup_test_environment(debug=self.debug_mode)
@@ -479,7 +458,6 @@ class DiscoverRunner:
             tests = None
 
             label_as_path = os.path.abspath(label)
-
             # if a module, or "module.ClassName[.method_name]", just run those
             if not os.path.exists(label_as_path):
                 tests = self.test_loader.loadTestsFromName(label)
@@ -509,10 +487,9 @@ class DiscoverRunner:
                     break
                 kwargs['top_level_dir'] = top_level
 
-            if not (tests and tests.countTestCases()) and is_discoverable(label):
+            if not tests and tests.countTestCases() and is_discoverable(label):
                 # Try discovery if path is a package or directory
                 tests = self.test_loader.discover(start_dir=label, **kwargs)
-
                 # Make unittest forget the top-level dir it calculated from this
                 # run, to support running tests from two different top-levels.
                 self.test_loader._top_level_dir = None
@@ -533,12 +510,10 @@ class DiscoverRunner:
 
         if self.parallel > 1:
             parallel_suite = self.parallel_test_suite(suite, self.parallel, self.failfast)
-
             # Since tests are distributed across processes on a per-TestCase
             # basis, there's no need for more processes than TestCases.
             parallel_units = len(parallel_suite.subsuites)
             self.parallel = min(self.parallel, parallel_units)
-
             # If there's only one TestCase, parallelization isn't needed.
             if self.parallel > 1:
                 suite = parallel_suite
@@ -546,20 +521,13 @@ class DiscoverRunner:
         return suite
 
     def setup_databases(self, **kwargs):
-        return _setup_databases(
-            self.verbosity, self.interactive, self.keepdb, self.debug_sql,
-            self.parallel, **kwargs
-        )
+        return _setup_databases(self.verbosity, self.interactive, self.keepdb, self.debug_sql, self.parallel, **kwargs)
 
     def get_resultclass(self):
         return DebugSQLTextTestResult if self.debug_sql else None
 
     def get_test_runner_kwargs(self):
-        return {
-            'failfast': self.failfast,
-            'resultclass': self.get_resultclass(),
-            'verbosity': self.verbosity,
-        }
+        return {'failfast': self.failfast, 'resultclass': self.get_resultclass(), 'verbosity': self.verbosity}
 
     def run_checks(self):
         # Checks are run after database creation since some checks require
@@ -572,13 +540,8 @@ class DiscoverRunner:
         return runner.run(suite)
 
     def teardown_databases(self, old_config, **kwargs):
-        """Destroy all the non-mirror databases."""
-        _teardown_databases(
-            old_config,
-            verbosity=self.verbosity,
-            parallel=self.parallel,
-            keepdb=self.keepdb,
-        )
+        '''Destroy all the non-mirror databases.'''
+        _teardown_databases(old_config, verbosity=self.verbosity, parallel=self.parallel, keepdb=self.keepdb)
 
     def teardown_test_environment(self, **kwargs):
         unittest.removeHandler()
@@ -610,11 +573,11 @@ class DiscoverRunner:
 
 
 def is_discoverable(label):
-    """
+    '''
     Check if a test label points to a python package or file directory.
 
     Relative labels like "." and ".." are seen as directories.
-    """
+    '''
     try:
         mod = import_module(label)
     except (ImportError, TypeError):
@@ -648,7 +611,7 @@ def reorder_suite(suite, classes, reverse=False):
 
 
 def partition_suite_by_type(suite, classes, bins, reverse=False):
-    """
+    '''
     Partition a test suite by test type. Also prevent duplicated tests.
 
     classes is a sequence of types
@@ -657,7 +620,7 @@ def partition_suite_by_type(suite, classes, bins, reverse=False):
 
     Tests of type classes[i] are added to bins[i],
     tests with no match found in classes are place in bins[-1]
-    """
+    '''
     suite_class = type(suite)
     if reverse:
         suite = reversed(tuple(suite))
@@ -674,7 +637,7 @@ def partition_suite_by_type(suite, classes, bins, reverse=False):
 
 
 def partition_suite_by_case(suite):
-    """Partition a test suite by test case, preserving the order of tests."""
+    '''Partition a test suite by test case, preserving the order of tests.'''
     groups = []
     suite_class = type(suite)
     for test_type, test_group in itertools.groupby(suite, type):
@@ -700,7 +663,7 @@ def filter_tests_by_tags(suite, tags, exclude_tags):
             test_fn_tags = set(getattr(test_fn, 'tags', set()))
             all_tags = test_tags.union(test_fn_tags)
             matched_tags = all_tags.intersection(tags)
-            if (matched_tags or not tags) and not all_tags.intersection(exclude_tags):
+            if matched_tags or not tags and not all_tags.intersection(exclude_tags):
                 filtered_suite.addTest(test)
 
     return filtered_suite

@@ -1,8 +1,8 @@
-"""
+'''
 PostgreSQL database backend for Django.
 
 Requires psycopg 2: http://initd.org/projects/psycopg2
-"""
+'''
 
 import threading
 import warnings
@@ -21,7 +21,7 @@ try:
     import psycopg2.extensions
     import psycopg2.extras
 except ImportError as e:
-    raise ImproperlyConfigured("Error loading psycopg2 module: %s" % e)
+    raise ImproperlyConfigured('Error loading psycopg2 module: %s' % e)
 
 
 def psycopg2_version():
@@ -32,29 +32,22 @@ def psycopg2_version():
 PSYCOPG2_VERSION = psycopg2_version()
 
 if PSYCOPG2_VERSION < (2, 5, 4):
-    raise ImproperlyConfigured("psycopg2_version 2.5.4 or newer is required; you have %s" % psycopg2.__version__)
-
-
+    raise ImproperlyConfigured('psycopg2_version 2.5.4 or newer is required; you have %s' % psycopg2.__version__)
 # Some of these import psycopg2, so import them after checking if it's installed.
-from .client import DatabaseClient                          # NOQA isort:skip
-from .creation import DatabaseCreation                      # NOQA isort:skip
-from .features import DatabaseFeatures                      # NOQA isort:skip
-from .introspection import DatabaseIntrospection            # NOQA isort:skip
-from .operations import DatabaseOperations                  # NOQA isort:skip
-from .schema import DatabaseSchemaEditor                    # NOQA isort:skip
-from .utils import utc_tzinfo_factory                       # NOQA isort:skip
+from .client import DatabaseClient # NOQA isort:skip
+from .creation import DatabaseCreation # NOQA isort:skip
+from .features import DatabaseFeatures # NOQA isort:skip
+from .introspection import DatabaseIntrospection # NOQA isort:skip
+from .operations import DatabaseOperations # NOQA isort:skip
+from .schema import DatabaseSchemaEditor # NOQA isort:skip
+from .utils import utc_tzinfo_factory # NOQA isort:skip
 
 psycopg2.extensions.register_adapter(SafeText, psycopg2.extensions.QuotedString)
 psycopg2.extras.register_uuid()
-
 # Register support for inet[] manually so we don't have to handle the Inet()
 # object on load all the time.
 INETARRAY_OID = 1041
-INETARRAY = psycopg2.extensions.new_array_type(
-    (INETARRAY_OID,),
-    'INETARRAY',
-    psycopg2.extensions.UNICODE,
-)
+INETARRAY = psycopg2.extensions.new_array_type((INETARRAY_OID,), 'INETARRAY', psycopg2.extensions.UNICODE)
 psycopg2.extensions.register_type(INETARRAY)
 
 
@@ -90,11 +83,11 @@ class DatabaseWrapper(BaseDatabaseWrapper):
         'SmallIntegerField': 'smallint',
         'TextField': 'text',
         'TimeField': 'time',
-        'UUIDField': 'uuid',
+        'UUIDField': 'uuid'
     }
     data_type_check_constraints = {
         'PositiveIntegerField': '"%(column)s" >= 0',
-        'PositiveSmallIntegerField': '"%(column)s" >= 0',
+        'PositiveSmallIntegerField': '"%(column)s" >= 0'
     }
     operators = {
         'exact': '= %s',
@@ -110,9 +103,8 @@ class DatabaseWrapper(BaseDatabaseWrapper):
         'startswith': 'LIKE %s',
         'endswith': 'LIKE %s',
         'istartswith': 'LIKE UPPER(%s)',
-        'iendswith': 'LIKE UPPER(%s)',
+        'iendswith': 'LIKE UPPER(%s)'
     }
-
     # The patterns below are used to generate SQL pattern lookup clauses when
     # the right-hand side of the lookup isn't a raw string (it might be an expression
     # or the result of a bilateral transformation).
@@ -121,14 +113,14 @@ class DatabaseWrapper(BaseDatabaseWrapper):
     #
     # Note: we use str.format() here for readability as '%' is used as a wildcard for
     # the LIKE operator.
-    pattern_esc = r"REPLACE(REPLACE(REPLACE({}, '\', '\\'), '%%', '\%%'), '_', '\_')"
+    pattern_esc = r"REPLACE(REPLACE(REPLACE({}, '', '\\'), '%%', '\%%'), '_', '\_')"
     pattern_ops = {
         'contains': "LIKE '%%' || {} || '%%'",
         'icontains': "LIKE '%%' || UPPER({}) || '%%'",
         'startswith': "LIKE {} || '%%'",
         'istartswith': "LIKE UPPER({}) || '%%'",
         'endswith': "LIKE '%%' || {}",
-        'iendswith': "LIKE '%%' || UPPER({})",
+        'iendswith': "LIKE '%%' || UPPER({})"
     }
 
     Database = Database
@@ -146,19 +138,16 @@ class DatabaseWrapper(BaseDatabaseWrapper):
         settings_dict = self.settings_dict
         # None may be used to connect to the default 'postgres' db
         if settings_dict['NAME'] == '':
-            raise ImproperlyConfigured(
-                "settings.DATABASES is improperly configured. "
+            raise
+            ImproperlyConfigured("settings.DATABASES is improperly configured. "
                 "Please supply the NAME value.")
         if len(settings_dict['NAME'] or '') > self.ops.max_name_length():
-            raise ImproperlyConfigured(
-                'Database names longer than %d characters are not supported by '
-                'PostgreSQL. Supply a shorter NAME in settings.DATABASES.'
-                % self.ops.max_name_length()
-            )
-        conn_params = {
-            'database': settings_dict['NAME'] or 'postgres',
-            **settings_dict['OPTIONS'],
-        }
+            raise
+            ImproperlyConfigured('Database names longer than %d characters are not supported by '
+                'PostgreSQL. Supply a shorter NAME in settings.DATABASES.' \
+            % \
+            self.ops.max_name_length())
+        conn_params = {'database': settings_dict['NAME'] or 'postgres', : settings_dict['OPTIONS']}
         conn_params.pop('isolation_level', None)
         if settings_dict['USER']:
             conn_params['user'] = settings_dict['USER']
@@ -172,7 +161,6 @@ class DatabaseWrapper(BaseDatabaseWrapper):
 
     def get_new_connection(self, conn_params):
         connection = Database.connect(**conn_params)
-
         # self.isolation_level must be set:
         # - after connecting to the database in order to obtain the database's
         #   default when no value is explicitly specified in options.
@@ -221,30 +209,28 @@ class DatabaseWrapper(BaseDatabaseWrapper):
 
     def chunked_cursor(self):
         self._named_cursor_idx += 1
-        return self._cursor(
-            name='_django_curs_%d_%d' % (
-                # Avoid reusing name in other threads
-                threading.current_thread().ident,
-                self._named_cursor_idx,
-            )
-        )
+        return \
+            self._cursor(name='_django_curs_%d_%d' \
+            % \
+            # Avoid reusing name in other threads
+            (threading.current_thread().ident, self._named_cursor_idx))
 
     def _set_autocommit(self, autocommit):
         with self.wrap_database_errors:
             self.connection.autocommit = autocommit
 
     def check_constraints(self, table_names=None):
-        """
+        '''
         Check constraints by setting them to immediate. Return them to deferred
         afterward.
-        """
+        '''
         self.cursor().execute('SET CONSTRAINTS ALL IMMEDIATE')
         self.cursor().execute('SET CONSTRAINTS ALL DEFERRED')
 
     def is_usable(self):
         try:
             # Use a psycopg cursor directly, bypassing Django's utilities.
-            self.connection.cursor().execute("SELECT 1")
+            self.connection.cursor().execute('SELECT 1')
         except Database.Error:
             return False
         else:
@@ -256,21 +242,18 @@ class DatabaseWrapper(BaseDatabaseWrapper):
         try:
             nodb_connection.ensure_connection()
         except (Database.DatabaseError, WrappedDatabaseError):
-            warnings.warn(
-                "Normally Django will use a connection to the 'postgres' database "
+            warnings.warn("Normally Django will use a connection to the 'postgres' database "
                 "to avoid running initialization queries against the production "
                 "database when it's not needed (for example, when running tests). "
                 "Django was unable to create a connection to the 'postgres' database "
-                "and will use the first PostgreSQL database instead.",
-                RuntimeWarning
-            )
+                "and will use the first PostgreSQL database instead.", RuntimeWarning)
             for connection in connections.all():
                 if connection.vendor == 'postgresql' and connection.settings_dict['NAME'] != 'postgres':
-                    return self.__class__(
-                        {**self.settings_dict, 'NAME': connection.settings_dict['NAME']},
-                        alias=self.alias,
-                        allow_thread_sharing=False,
-                    )
+                    return \
+                        self.__class__({
+                            : self.settings_dict,
+                            'NAME': connection.settings_dict['NAME']
+                        }, alias=self.alias, allow_thread_sharing=False)
         return nodb_connection
 
     @cached_property

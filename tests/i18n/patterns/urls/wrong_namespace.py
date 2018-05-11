@@ -6,6 +6,4 @@ from django.views.generic import TemplateView
 view = TemplateView.as_view(template_name='dummy.html')
 
 app_name = 'account'
-urlpatterns = i18n_patterns(
-    url(_(r'^register/$'), view, name='register'),
-)
+urlpatterns = i18n_patterns(url(_(r'^register/$'), view, name='register'))

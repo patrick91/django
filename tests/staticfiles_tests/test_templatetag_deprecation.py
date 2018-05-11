@@ -12,11 +12,9 @@ class StaticTestStorage(storage.StaticFilesStorage):
         return urljoin('https://example.com/assets/', name)
 
 
-@override_settings(
-    STATIC_URL='http://media.example.com/static/',
-    INSTALLED_APPS=('django.contrib.staticfiles',),
-    STATICFILES_STORAGE='staticfiles_tests.test_forms.StaticTestStorage',
-)
+@override_settings(STATIC_URL='http://media.example.com/static/', INSTALLED_APPS=(
+    'django.contrib.staticfiles',
+), STATICFILES_STORAGE='staticfiles_tests.test_forms.StaticTestStorage')
 class StaticDeprecationTests(SimpleTestCase):
     def test_templatetag_deprecated(self):
         msg = '{% load staticfiles %} is deprecated in favor of {% load static %}.'
@@ -27,10 +25,8 @@ class StaticDeprecationTests(SimpleTestCase):
         self.assertEqual(rendered, 'https://example.com/assets/main.js')
 
     def test_static_deprecated(self):
-        msg = (
-            'django.contrib.staticfiles.templatetags.static() is deprecated in '
+        msg = 'django.contrib.staticfiles.templatetags.static() is deprecated in '
             'favor of django.templatetags.static.static().'
-        )
         with self.assertWarnsMessage(RemovedInDjango30Warning, msg):
             url = static('main.js')
         self.assertEqual(url, 'https://example.com/assets/main.js')

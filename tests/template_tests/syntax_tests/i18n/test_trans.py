@@ -14,7 +14,7 @@ from .base import MultipleLocaleActivationTestCase, extended_locale_paths
 class I18nTransTagTests(SimpleTestCase):
     libraries = {'i18n': 'django.templatetags.i18n'}
 
-    @setup({'i18n01': '{% load i18n %}{% trans \'xxxyyyxxx\' %}'})
+    @setup({'i18n01': "{% load i18n %}{% trans 'xxxyyyxxx' %}"})
     def test_i18n01(self):
         """simple translation of a string delimited by '."""
         output = self.engine.render_to_string('i18n01')
@@ -22,20 +22,20 @@ class I18nTransTagTests(SimpleTestCase):
 
     @setup({'i18n02': '{% load i18n %}{% trans "xxxyyyxxx" %}'})
     def test_i18n02(self):
-        """simple translation of a string delimited by "."""
+        '''simple translation of a string delimited by ".'''
         output = self.engine.render_to_string('i18n02')
         self.assertEqual(output, 'xxxyyyxxx')
 
     @setup({'i18n06': '{% load i18n %}{% trans "Page not found" %}'})
     def test_i18n06(self):
-        """simple translation of a string to German"""
+        '''simple translation of a string to German'''
         with translation.override('de'):
             output = self.engine.render_to_string('i18n06')
         self.assertEqual(output, 'Seite nicht gefunden')
 
     @setup({'i18n09': '{% load i18n %}{% trans "Page not found" noop %}'})
     def test_i18n09(self):
-        """simple non-translation (only marking) of a string to German"""
+        '''simple non-translation (only marking) of a string to German'''
         with translation.override('de'):
             output = self.engine.render_to_string('i18n09')
         self.assertEqual(output, 'Page not found')
@@ -52,12 +52,12 @@ class I18nTransTagTests(SimpleTestCase):
 
     @setup({'i18n23': '{% load i18n %}{% trans "Page not found"|capfirst|slice:"6:" %}'})
     def test_i18n23(self):
-        """Using filters with the {% trans %} tag (#5972)."""
+        '''Using filters with the {% trans %} tag (#5972).'''
         with translation.override('de'):
             output = self.engine.render_to_string('i18n23')
         self.assertEqual(output, 'nicht gefunden')
 
-    @setup({'i18n24': '{% load i18n %}{% trans \'Page not found\'|upper %}'})
+    @setup({'i18n24': "{% load i18n %}{% trans 'Page not found'|upper %}"})
     def test_i18n24(self):
         with translation.override('de'):
             output = self.engine.render_to_string('i18n24')
@@ -76,8 +76,11 @@ class I18nTransTagTests(SimpleTestCase):
             output = self.engine.render_to_string('i18n35')
         self.assertEqual(output, 'Seite nicht gefunden')
 
-    @setup({'i18n36': '{% load i18n %}'
-                      '{% trans "Page not found" noop as page_not_found %}{{ page_not_found }}'})
+    @setup({
+        'i18n36':
+            '{% load i18n %}'
+                      '{% trans "Page not found" noop as page_not_found %}{{ page_not_found }}'
+    })
     def test_i18n36(self):
         with translation.override('de'):
             output = self.engine.render_to_string('i18n36')
@@ -132,10 +135,9 @@ class I18nTransTagTests(SimpleTestCase):
 
 
 class TranslationTransTagTests(SimpleTestCase):
-
     @override_settings(LOCALE_PATHS=extended_locale_paths)
     def test_template_tags_pgettext(self):
-        """{% trans %} takes message contexts into account (#14806)."""
+        '''{% trans %} takes message contexts into account (#14806).'''
         trans_real._active = local()
         trans_real._translations = {}
         with translation.override('de'):
@@ -143,7 +145,6 @@ class TranslationTransTagTests(SimpleTestCase):
             t = Template('{% load i18n %}{% trans "May" context "nonexistent" %}')
             rendered = t.render(Context())
             self.assertEqual(rendered, 'May')
-
             # Existing context... using a literal
             t = Template('{% load i18n %}{% trans "May" context "month name" %}')
             rendered = t.render(Context())
@@ -151,7 +152,6 @@ class TranslationTransTagTests(SimpleTestCase):
             t = Template('{% load i18n %}{% trans "May" context "verb" %}')
             rendered = t.render(Context())
             self.assertEqual(rendered, 'Kann')
-
             # Using a variable
             t = Template('{% load i18n %}{% trans "May" context message_context %}')
             rendered = t.render(Context({'message_context': 'month name'}))
@@ -159,7 +159,6 @@ class TranslationTransTagTests(SimpleTestCase):
             t = Template('{% load i18n %}{% trans "May" context message_context %}')
             rendered = t.render(Context({'message_context': 'verb'}))
             self.assertEqual(rendered, 'Kann')
-
             # Using a filter
             t = Template('{% load i18n %}{% trans "May" context message_context|lower %}')
             rendered = t.render(Context({'message_context': 'MONTH NAME'}))
@@ -167,7 +166,6 @@ class TranslationTransTagTests(SimpleTestCase):
             t = Template('{% load i18n %}{% trans "May" context message_context|lower %}')
             rendered = t.render(Context({'message_context': 'VERB'}))
             self.assertEqual(rendered, 'Kann')
-
             # Using 'as'
             t = Template('{% load i18n %}{% trans "May" context "month name" as var %}Value: {{ var }}')
             rendered = t.render(Context())
@@ -178,12 +176,11 @@ class TranslationTransTagTests(SimpleTestCase):
 
 
 class MultipleLocaleActivationTransTagTests(MultipleLocaleActivationTestCase):
-
     def test_single_locale_activation(self):
-        """
+        '''
         Simple baseline behavior with one locale for all the supported i18n
         constructs.
-        """
+        '''
         with translation.override('fr'):
             self.assertEqual(Template("{% load i18n %}{% trans 'Yes' %}").render(Context({})), 'Oui')
 

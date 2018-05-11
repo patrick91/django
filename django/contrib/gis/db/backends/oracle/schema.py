@@ -4,7 +4,7 @@ from django.db.backends.utils import strip_quotes, truncate_name
 
 
 class OracleGISSchemaEditor(DatabaseSchemaEditor):
-    sql_add_geometry_metadata = ("""
+    sql_add_geometry_metadata = '''
         INSERT INTO USER_SDO_GEOM_METADATA
             ("TABLE_NAME", "COLUMN_NAME", "DIMINFO", "SRID")
         VALUES (
@@ -15,14 +15,12 @@ class OracleGISSchemaEditor(DatabaseSchemaEditor):
                 MDSYS.SDO_DIM_ELEMENT('LAT', %(dim1)s, %(dim3)s, %(tolerance)s)
             ),
             %(srid)s
-        )""")
+        )'''
     sql_add_spatial_index = 'CREATE INDEX %(index)s ON %(table)s(%(column)s) INDEXTYPE IS MDSYS.SPATIAL_INDEX'
     sql_drop_spatial_index = 'DROP INDEX %(index)s'
     sql_clear_geometry_table_metadata = 'DELETE FROM USER_SDO_GEOM_METADATA WHERE TABLE_NAME = %(table)s'
-    sql_clear_geometry_field_metadata = (
-        'DELETE FROM USER_SDO_GEOM_METADATA WHERE TABLE_NAME = %(table)s '
+    sql_clear_geometry_field_metadata = 'DELETE FROM USER_SDO_GEOM_METADATA WHERE TABLE_NAME = %(table)s '
         'AND COLUMN_NAME = %(column)s'
-    )
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -35,26 +33,26 @@ class OracleGISSchemaEditor(DatabaseSchemaEditor):
         column_sql = super().column_sql(model, field, include_default)
         if isinstance(field, GeometryField):
             db_table = model._meta.db_table
-            self.geometry_sql.append(
-                self.sql_add_geometry_metadata % {
-                    'table': self.geo_quote_name(db_table),
-                    'column': self.geo_quote_name(field.column),
-                    'dim0': field._extent[0],
-                    'dim1': field._extent[1],
-                    'dim2': field._extent[2],
-                    'dim3': field._extent[3],
-                    'tolerance': field._tolerance,
-                    'srid': field.srid,
-                }
-            )
+            self.geometry_sql.append(self.sql_add_geometry_metadata \
+            % \
+            {
+                'table': self.geo_quote_name(db_table),
+                'column': self.geo_quote_name(field.column),
+                'dim0': field._extent[0],
+                'dim1': field._extent[1],
+                'dim2': field._extent[2],
+                'dim3': field._extent[3],
+                'tolerance': field._tolerance,
+                'srid': field.srid
+            })
             if field.spatial_index:
-                self.geometry_sql.append(
-                    self.sql_add_spatial_index % {
-                        'index': self.quote_name(self._create_spatial_index_name(model, field)),
-                        'table': self.quote_name(db_table),
-                        'column': self.quote_name(field.column),
-                    }
-                )
+                self.geometry_sql.append(self.sql_add_spatial_index \
+                % \
+                {
+                    'index': self.quote_name(self._create_spatial_index_name(model, field)),
+                    'table': self.quote_name(db_table),
+                    'column': self.quote_name(field.column)
+                })
         return column_sql
 
     def create_model(self, model):
@@ -63,9 +61,7 @@ class OracleGISSchemaEditor(DatabaseSchemaEditor):
 
     def delete_model(self, model):
         super().delete_model(model)
-        self.execute(self.sql_clear_geometry_table_metadata % {
-            'table': self.geo_quote_name(model._meta.db_table),
-        })
+        self.execute(self.sql_clear_geometry_table_metadata % {'table': self.geo_quote_name(model._meta.db_table)})
 
     def add_field(self, model, field):
         super().add_field(model, field)
@@ -73,14 +69,13 @@ class OracleGISSchemaEditor(DatabaseSchemaEditor):
 
     def remove_field(self, model, field):
         if isinstance(field, GeometryField):
-            self.execute(self.sql_clear_geometry_field_metadata % {
-                'table': self.geo_quote_name(model._meta.db_table),
-                'column': self.geo_quote_name(field.column),
-            })
+            self.execute(self.sql_clear_geometry_field_metadata \
+            % \
+            {'table': self.geo_quote_name(model._meta.db_table), 'column': self.geo_quote_name(field.column)})
             if field.spatial_index:
-                self.execute(self.sql_drop_spatial_index % {
-                    'index': self.quote_name(self._create_spatial_index_name(model, field)),
-                })
+                self.execute(self.sql_drop_spatial_index \
+                % \
+                {'index': self.quote_name(self._create_spatial_index_name(model, field))})
         super().remove_field(model, field)
 
     def run_geometry_sql(self):

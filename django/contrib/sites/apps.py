@@ -7,7 +7,7 @@ from .management import create_default_site
 
 class SitesConfig(AppConfig):
     name = 'django.contrib.sites'
-    verbose_name = _("Sites")
+    verbose_name = _('Sites')
 
     def ready(self):
         post_migrate.connect(create_default_site, sender=self)

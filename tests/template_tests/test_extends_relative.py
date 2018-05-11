@@ -9,7 +9,6 @@ RELATIVE = os.path.join(ROOT, 'relative_templates')
 
 
 class ExtendsRelativeBehaviorTests(SimpleTestCase):
-
     def test_normal_extend(self):
         engine = Engine(dirs=[RELATIVE])
         template = engine.get_template('one.html')
@@ -48,16 +47,13 @@ class ExtendsRelativeBehaviorTests(SimpleTestCase):
 
     def test_extend_error(self):
         engine = Engine(dirs=[RELATIVE])
-        msg = (
-            "The relative path '\"./../two.html\"' points outside the file "
+        msg = "The relative path '\"./../two.html\"' points outside the file "
             "hierarchy that template 'error_extends.html' is in."
-        )
         with self.assertRaisesMessage(TemplateSyntaxError, msg):
             engine.render_to_string('error_extends.html')
 
 
 class IncludeRelativeBehaviorTests(SimpleTestCase):
-
     def test_normal_include(self):
         engine = Engine(dirs=[RELATIVE])
         template = engine.get_template('dir1/dir2/inc2.html')
@@ -72,16 +68,13 @@ class IncludeRelativeBehaviorTests(SimpleTestCase):
 
     def test_include_error(self):
         engine = Engine(dirs=[RELATIVE])
-        msg = (
-            "The relative path '\"./../three.html\"' points outside the file "
+        msg = "The relative path '\"./../three.html\"' points outside the file "
             "hierarchy that template 'error_include.html' is in."
-        )
         with self.assertRaisesMessage(TemplateSyntaxError, msg):
             engine.render_to_string('error_include.html')
 
 
 class ExtendsMixedBehaviorTests(SimpleTestCase):
-
     def test_mixing1(self):
         engine = Engine(dirs=[RELATIVE])
         template = engine.get_template('dir1/two.html')
@@ -96,10 +89,8 @@ class ExtendsMixedBehaviorTests(SimpleTestCase):
 
     def test_mixing_loop(self):
         engine = Engine(dirs=[RELATIVE])
-        msg = (
-            "The relative path '\"./dir2/../looped.html\"' was translated to "
+        msg = "The relative path '\"./dir2/../looped.html\"' was translated to "
             "template name \'dir1/looped.html\', the same template in which "
             "the tag appears."
-        )
         with self.assertRaisesMessage(TemplateSyntaxError, msg):
             engine.render_to_string('dir1/looped.html')

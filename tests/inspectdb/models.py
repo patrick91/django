@@ -38,7 +38,7 @@ class SpecialName(models.Model):
     non_ascii = models.IntegerField(db_column='tamaño')
 
     class Meta:
-        db_table = "inspectdb_special.table name"
+        db_table = 'inspectdb_special.table name'
 
 
 class ColumnTypes(models.Model):
@@ -52,11 +52,11 @@ class ColumnTypes(models.Model):
     date_time_field = models.DateTimeField()
     decimal_field = models.DecimalField(max_digits=6, decimal_places=1)
     email_field = models.EmailField()
-    file_field = models.FileField(upload_to="unused")
+    file_field = models.FileField(upload_to='unused')
     file_path_field = models.FilePathField()
     float_field = models.FloatField()
     int_field = models.IntegerField()
-    gen_ip_address_field = models.GenericIPAddressField(protocol="ipv4")
+    gen_ip_address_field = models.GenericIPAddressField(protocol='ipv4')
     pos_int_field = models.PositiveIntegerField()
     pos_small_int_field = models.PositiveSmallIntegerField()
     slug_field = models.SlugField()
@@ -75,8 +75,4 @@ class UniqueTogether(models.Model):
     non_unique_0 = models.IntegerField(db_column='non_unique__column')
 
     class Meta:
-        unique_together = [
-            ('field1', 'field2'),
-            ('from_field', 'field1'),
-            ('non_unique', 'non_unique_0'),
-        ]
+        unique_together = [('field1', 'field2'), ('from_field', 'field1'), ('non_unique', 'non_unique_0')]

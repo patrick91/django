@@ -22,9 +22,7 @@ class Router:
 site = admin.AdminSite(name='test_adminsite')
 site.register(Book)
 
-urlpatterns = [
-    url(r'^admin/', site.urls),
-]
+urlpatterns = [url(r'^admin/', site.urls)]
 
 
 @override_settings(ROOT_URLCONF=__name__, DATABASE_ROUTERS=['%s.Router' % __name__])
@@ -37,9 +35,9 @@ class MultiDatabaseTests(TestCase):
         cls.test_book_ids = {}
         for db in connections:
             Router.target_db = db
-            cls.superusers[db] = User.objects.create_superuser(
-                username='admin', password='something', email='test@test.org',
-            )
+            cls.superusers[
+                db
+            ] = User.objects.create_superuser(username='admin', password='something', email='test@test.org')
             b = Book(name='Test Book')
             b.save(using=db)
             cls.test_book_ids[db] = b.id
@@ -50,10 +48,7 @@ class MultiDatabaseTests(TestCase):
             with self.subTest(db=db):
                 Router.target_db = db
                 self.client.force_login(self.superusers[db])
-                self.client.post(
-                    reverse('test_adminsite:admin_views_book_add'),
-                    {'name': 'Foobar: 5th edition'},
-                )
+                self.client.post(reverse('test_adminsite:admin_views_book_add'), {'name': 'Foobar: 5th edition'})
                 mock.atomic.assert_called_with(using=db)
 
     @mock.patch('django.contrib.admin.options.transaction')
@@ -62,10 +57,9 @@ class MultiDatabaseTests(TestCase):
             with self.subTest(db=db):
                 Router.target_db = db
                 self.client.force_login(self.superusers[db])
-                self.client.post(
-                    reverse('test_adminsite:admin_views_book_change', args=[self.test_book_ids[db]]),
-                    {'name': 'Test Book 2: Test more'},
-                )
+                self.client.post(reverse('test_adminsite:admin_views_book_change', args=[self.test_book_ids[db]]), {
+                    'name': 'Test Book 2: Test more'
+                })
                 mock.atomic.assert_called_with(using=db)
 
     @mock.patch('django.contrib.admin.options.transaction')
@@ -74,8 +68,7 @@ class MultiDatabaseTests(TestCase):
             with self.subTest(db=db):
                 Router.target_db = db
                 self.client.force_login(self.superusers[db])
-                self.client.post(
-                    reverse('test_adminsite:admin_views_book_delete', args=[self.test_book_ids[db]]),
-                    {'post': 'yes'},
-                )
+                self.client.post(reverse('test_adminsite:admin_views_book_delete', args=[self.test_book_ids[db]]), {
+                    'post': 'yes'
+                })
                 mock.atomic.assert_called_with(using=db)

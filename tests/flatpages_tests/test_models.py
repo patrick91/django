@@ -4,7 +4,6 @@ from django.test.utils import override_script_prefix
 
 
 class FlatpageModelTests(SimpleTestCase):
-
     def setUp(self):
         self.page = FlatPage(title='Café!', url='/café/')
 

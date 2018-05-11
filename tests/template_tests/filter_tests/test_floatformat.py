@@ -8,20 +8,18 @@ from ..utils import setup
 
 
 class FloatformatTests(SimpleTestCase):
-
     @setup({'floatformat01': '{% autoescape off %}{{ a|floatformat }} {{ b|floatformat }}{% endautoescape %}'})
     def test_floatformat01(self):
-        output = self.engine.render_to_string('floatformat01', {"a": "1.42", "b": mark_safe("1.42")})
-        self.assertEqual(output, "1.4 1.4")
+        output = self.engine.render_to_string('floatformat01', {'a': '1.42', 'b': mark_safe('1.42')})
+        self.assertEqual(output, '1.4 1.4')
 
     @setup({'floatformat02': '{{ a|floatformat }} {{ b|floatformat }}'})
     def test_floatformat02(self):
-        output = self.engine.render_to_string('floatformat02', {"a": "1.42", "b": mark_safe("1.42")})
-        self.assertEqual(output, "1.4 1.4")
+        output = self.engine.render_to_string('floatformat02', {'a': '1.42', 'b': mark_safe('1.42')})
+        self.assertEqual(output, '1.4 1.4')
 
 
 class FunctionTests(SimpleTestCase):
-
     def test_inputs(self):
         self.assertEqual(floatformat(7.7), '7.7')
         self.assertEqual(floatformat(7.0), '7')
@@ -80,9 +78,9 @@ class FunctionTests(SimpleTestCase):
         self.assertEqual(floatformat(FloatWrapper(11.000001), -2), '11.00')
 
     def test_low_decimal_precision(self):
-        """
+        '''
         #15789
-        """
+        '''
         with localcontext() as ctx:
             ctx.prec = 2
             self.assertEqual(floatformat(1.2345, 2), '1.23')

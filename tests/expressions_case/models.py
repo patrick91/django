@@ -38,7 +38,7 @@ class CaseTestModel(models.Model):
     fk = models.ForeignKey('self', models.CASCADE, null=True)
 
     def __str__(self):
-        return "%i, %s" % (self.integer, self.string)
+        return '%i, %s' % (self.integer, self.string)
 
 
 class O2OCaseTestModel(models.Model):
@@ -46,7 +46,7 @@ class O2OCaseTestModel(models.Model):
     integer = models.IntegerField()
 
     def __str__(self):
-        return "%i, %s" % (self.id, self.o2o)
+        return '%i, %s' % (self.id, self.o2o)
 
 
 class FKCaseTestModel(models.Model):
@@ -54,25 +54,17 @@ class FKCaseTestModel(models.Model):
     integer = models.IntegerField()
 
     def __str__(self):
-        return "%i, %s" % (self.id, self.fk)
+        return '%i, %s' % (self.id, self.fk)
 
 
 class Client(models.Model):
     REGULAR = 'R'
     GOLD = 'G'
     PLATINUM = 'P'
-    ACCOUNT_TYPE_CHOICES = (
-        (REGULAR, 'Regular'),
-        (GOLD, 'Gold'),
-        (PLATINUM, 'Platinum'),
-    )
+    ACCOUNT_TYPE_CHOICES = ((REGULAR, 'Regular'), (GOLD, 'Gold'), (PLATINUM, 'Platinum'))
     name = models.CharField(max_length=50)
     registered_on = models.DateField()
-    account_type = models.CharField(
-        max_length=1,
-        choices=ACCOUNT_TYPE_CHOICES,
-        default=REGULAR,
-    )
+    account_type = models.CharField(max_length=1, choices=ACCOUNT_TYPE_CHOICES, default=REGULAR)
 
     def __str__(self):
         return self.name

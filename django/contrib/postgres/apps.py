@@ -22,7 +22,7 @@ class PostgresConfig(AppConfig):
                     3906: 'django.contrib.postgres.fields.FloatRangeField',
                     3910: 'django.contrib.postgres.fields.DateTimeRangeField',
                     3912: 'django.contrib.postgres.fields.DateRangeField',
-                    3926: 'django.contrib.postgres.fields.BigIntegerRangeField',
+                    3926: 'django.contrib.postgres.fields.BigIntegerRangeField'
                 })
                 if conn.connection is not None:
                     register_type_handlers(conn)

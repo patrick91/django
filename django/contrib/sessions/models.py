@@ -1,6 +1,4 @@
-from django.contrib.sessions.base_session import (
-    AbstractBaseSession, BaseSessionManager,
-)
+from django.contrib.sessions.base_session import AbstractBaseSession, BaseSessionManager
 
 
 class SessionManager(BaseSessionManager):
@@ -8,7 +6,7 @@ class SessionManager(BaseSessionManager):
 
 
 class Session(AbstractBaseSession):
-    """
+    '''
     Django provides full support for anonymous sessions. The session
     framework lets you store and retrieve arbitrary data on a
     per-site-visitor basis. It stores data on the server side and
@@ -23,7 +21,7 @@ class Session(AbstractBaseSession):
     For complete documentation on using Sessions in your code, consult
     the sessions documentation that is shipped with Django (also available
     on the Django Web site).
-    """
+    '''
     objects = SessionManager()
 
     @classmethod

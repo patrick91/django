@@ -11,7 +11,7 @@ TIME_STRINGS = {
     'week': ngettext_lazy('%d week', '%d weeks'),
     'day': ngettext_lazy('%d day', '%d days'),
     'hour': ngettext_lazy('%d hour', '%d hours'),
-    'minute': ngettext_lazy('%d minute', '%d minutes'),
+    'minute': ngettext_lazy('%d minute', '%d minutes')
 }
 
 TIMESINCE_CHUNKS = (
@@ -20,12 +20,12 @@ TIMESINCE_CHUNKS = (
     (60 * 60 * 24 * 7, 'week'),
     (60 * 60 * 24, 'day'),
     (60 * 60, 'hour'),
-    (60, 'minute'),
+    (60, 'minute')
 )
 
 
 def timesince(d, now=None, reversed=False, time_strings=None):
-    """
+    '''
     Take two datetime objects and return the time between d and now as a nicely
     formatted string, e.g. "10 minutes". If d occurs after now, return
     "0 minutes".
@@ -40,10 +40,9 @@ def timesince(d, now=None, reversed=False, time_strings=None):
 
     Adapted from
     http://web.archive.org/web/20060617175230/http://blog.natbat.co.uk/archive/2003/Jun/14/time_since
-    """
+    '''
     if time_strings is None:
         time_strings = TIME_STRINGS
-
     # Convert datetime.date to datetime.datetime for comparison.
     if not isinstance(d, datetime.datetime):
         d = datetime.datetime(d.year, d.month, d.day)
@@ -55,7 +54,6 @@ def timesince(d, now=None, reversed=False, time_strings=None):
     if reversed:
         d, now = now, d
     delta = now - d
-
     # Deal with leapyears by subtracing the number of leapdays
     leapdays = calendar.leapdays(d.year, now.year)
     if leapdays != 0:
@@ -64,7 +62,6 @@ def timesince(d, now=None, reversed=False, time_strings=None):
         elif calendar.isleap(now.year):
             leapdays += 1
     delta -= datetime.timedelta(leapdays)
-
     # ignore microseconds
     since = delta.days * 24 * 60 * 60 + delta.seconds
     if since <= 0:
@@ -78,14 +75,14 @@ def timesince(d, now=None, reversed=False, time_strings=None):
     if i + 1 < len(TIMESINCE_CHUNKS):
         # Now get the second item
         seconds2, name2 = TIMESINCE_CHUNKS[i + 1]
-        count2 = (since - (seconds * count)) // seconds2
+        count2 = since - seconds * count // seconds2
         if count2 != 0:
             result += gettext(', ') + avoid_wrapping(time_strings[name2] % count2)
     return result
 
 
 def timeuntil(d, now=None, time_strings=None):
-    """
+    '''
     Like timesince, but return a string measuring the time until the given time.
-    """
+    '''
     return timesince(d, now, reversed=True, time_strings=time_strings)

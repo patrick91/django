@@ -5,4 +5,4 @@ class Thing(models.Model):
     num = models.IntegerField()
 
     def __str__(self):
-        return "Thing %d" % self.num
+        return 'Thing %d' % self.num

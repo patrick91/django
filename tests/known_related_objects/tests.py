@@ -4,7 +4,6 @@ from .models import Organiser, Pool, PoolStyle, Tournament
 
 
 class ExistingRelatedInstancesTests(TestCase):
-
     @classmethod
     def setUpTestData(cls):
         cls.t1 = Tournament.objects.create(name='Tourney 1')
@@ -25,7 +24,7 @@ class ExistingRelatedInstancesTests(TestCase):
 
     def test_foreign_key_prefetch_related(self):
         with self.assertNumQueries(2):
-            tournament = (Tournament.objects.prefetch_related('pool_set').get(pk=self.t1.pk))
+            tournament = Tournament.objects.prefetch_related('pool_set').get(pk=self.t1.pk)
             pool = tournament.pool_set.all()[0]
             self.assertIs(tournament, pool.tournament)
 

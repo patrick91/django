@@ -9,7 +9,8 @@ from functools import total_ordering, wraps
 # CPython) is a type and its instances don't bind.
 def curry(_curried_func, *args, **kwargs):
     def _curried(*moreargs, **morekwargs):
-        return _curried_func(*args, *moreargs, **{**kwargs, **morekwargs})
+        return _curried_func(*args, *moreargs, **{: kwargs, : morekwargs})
+
     return _curried
 
 
@@ -21,17 +22,18 @@ class cached_property:
     Optional ``name`` argument allows you to make cached properties of other
     methods. (e.g.  url = cached_property(get_absolute_url, name='url') )
     """
+
     def __init__(self, func, name=None):
         self.func = func
         self.__doc__ = getattr(func, '__doc__')
         self.name = name or func.__name__
 
     def __get__(self, instance, cls=None):
-        """
+        '''
         Call the function and put the return value in instance.__dict__ so that
         subsequent attribute access on the instance returns the cached value
         instead of calling cached_property.__get__().
-        """
+        '''
         if instance is None:
             return self
         res = instance.__dict__[self.name] = self.func(instance)
@@ -47,20 +49,20 @@ class Promise:
 
 
 def lazy(func, *resultclasses):
-    """
+    '''
     Turn any callable into a lazy evaluated callable. result classes or types
     is required -- at least one is needed so that the automatic forcing of
     the lazy evaluation code is triggered. Results are not memoized; the
     function is evaluated on every access.
-    """
+    '''
 
     @total_ordering
     class __proxy__(Promise):
-        """
+        '''
         Encapsulate a function call and act as a proxy for methods that are
         called on the result of that function. The function is not evaluated
         until one of the methods on the result is called.
-        """
+        '''
         __prepared = False
 
         def __init__(self, args, kw):
@@ -71,10 +73,7 @@ def lazy(func, *resultclasses):
             self.__prepared = True
 
         def __reduce__(self):
-            return (
-                _lazy_proxy_unpickle,
-                (func, self.__args, self.__kw) + resultclasses
-            )
+            return _lazy_proxy_unpickle, (func, self.__args, self.__kw) + resultclasses
 
         def __repr__(self):
             return repr(self.__cast())
@@ -92,8 +91,8 @@ def lazy(func, *resultclasses):
                         setattr(cls, method_name, meth)
             cls._delegate_bytes = bytes in resultclasses
             cls._delegate_text = str in resultclasses
-            assert not (cls._delegate_bytes and cls._delegate_text), (
-                "Cannot call lazy() with both bytes and text return types.")
+            assert not cls._delegate_bytes and cls._delegate_text, \
+                'Cannot call lazy() with both bytes and text return types.'
             if cls._delegate_text:
                 cls.__str__ = cls.__text_cast
             elif cls._delegate_bytes:
@@ -107,6 +106,7 @@ def lazy(func, *resultclasses):
                 # applies the given magic method of the result type.
                 res = func(*self.__args, **self.__kw)
                 return getattr(res, method_name)(*args, **kw)
+
             return __wrapper__
 
         def __text_cast(self):
@@ -169,21 +169,21 @@ def _lazy_proxy_unpickle(func, args, kwargs, *resultclasses):
 
 
 def lazystr(text):
-    """
+    '''
     Shortcut for the common case of a lazy callable that returns str.
-    """
+    '''
     return lazy(str, str)(text)
 
 
 def keep_lazy(*resultclasses):
-    """
+    '''
     A decorator that allows a function to be called with one or more lazy
     arguments. If none of the args are lazy, the function is evaluated
     immediately, otherwise a __proxy__ is returned that will evaluate the
     function when needed.
-    """
+    '''
     if not resultclasses:
-        raise TypeError("You must pass at least one argument to keep_lazy().")
+        raise TypeError('You must pass at least one argument to keep_lazy().')
 
     def decorator(func):
         lazy_func = lazy(func, *resultclasses)
@@ -193,14 +193,16 @@ def keep_lazy(*resultclasses):
             if any(isinstance(arg, Promise) for arg in itertools.chain(args, kwargs.values())):
                 return lazy_func(*args, **kwargs)
             return func(*args, **kwargs)
+
         return wrapper
+
     return decorator
 
 
 def keep_lazy_text(func):
-    """
+    '''
     A decorator for functions that accept lazy arguments and return text.
-    """
+    '''
     return keep_lazy(str)(func)
 
 
@@ -212,6 +214,7 @@ def new_method_proxy(func):
         if self._wrapped is empty:
             self._setup()
         return func(self._wrapped, *args)
+
     return inner
 
 
@@ -223,7 +226,6 @@ class LazyObject:
     By subclassing, you have the opportunity to intercept and alter the
     instantiation. If you don't need to do that, use SimpleLazyObject.
     """
-
     # Avoid infinite recursion when tracing __init__ (#19456).
     _wrapped = None
 
@@ -235,25 +237,23 @@ class LazyObject:
     __getattr__ = new_method_proxy(getattr)
 
     def __setattr__(self, name, value):
-        if name == "_wrapped":
+        if name == '_wrapped':
             # Assign to __dict__ to avoid infinite __setattr__ loops.
-            self.__dict__["_wrapped"] = value
-        else:
-            if self._wrapped is empty:
-                self._setup()
-            setattr(self._wrapped, name, value)
+            self.__dict__['_wrapped'] = value
+        elif self._wrapped is empty:
+            self._setup()setattr(self._wrapped, name, value)
 
     def __delattr__(self, name):
-        if name == "_wrapped":
+        if name == '_wrapped':
             raise TypeError("can't delete _wrapped.")
         if self._wrapped is empty:
             self._setup()
         delattr(self._wrapped, name)
 
     def _setup(self):
-        """
+        '''
         Must be implemented by subclasses to initialize the wrapped object.
-        """
+        '''
         raise NotImplementedError('subclasses of LazyObject must provide a _setup() method')
 
     # Because we have messed with __class__ below, we confuse pickle as to what
@@ -273,7 +273,7 @@ class LazyObject:
     def __reduce__(self):
         if self._wrapped is empty:
             self._setup()
-        return (unpickle_lazyobject, (self._wrapped,))
+        return unpickle_lazyobject, (self._wrapped,)
 
     def __copy__(self):
         if self._wrapped is empty:
@@ -296,17 +296,14 @@ class LazyObject:
     __bytes__ = new_method_proxy(bytes)
     __str__ = new_method_proxy(str)
     __bool__ = new_method_proxy(bool)
-
     # Introspection support
     __dir__ = new_method_proxy(dir)
-
     # Need to pretend to be the wrapped class, for the sake of objects that
     # care about this (especially in equality tests)
-    __class__ = property(new_method_proxy(operator.attrgetter("__class__")))
+    __class__ = property(new_method_proxy(operator.attrgetter('__class__')))
     __eq__ = new_method_proxy(operator.eq)
     __ne__ = new_method_proxy(operator.ne)
     __hash__ = new_method_proxy(hash)
-
     # List/Tuple/Dictionary methods support
     __getitem__ = new_method_proxy(operator.getitem)
     __setitem__ = new_method_proxy(operator.setitem)
@@ -317,29 +314,30 @@ class LazyObject:
 
 
 def unpickle_lazyobject(wrapped):
-    """
+    '''
     Used to unpickle lazy objects. Just return its argument, which will be the
     wrapped object.
-    """
+    '''
     return wrapped
 
 
 class SimpleLazyObject(LazyObject):
-    """
+    '''
     A lazy object initialized from any function.
 
     Designed for compound objects of unknown type. For builtins or objects of
     known type, use django.utils.functional.lazy.
-    """
+    '''
+
     def __init__(self, func):
-        """
+        '''
         Pass in a callable that returns the object to be wrapped.
 
         If copies are made of the resulting SimpleLazyObject, which can happen
         in various circumstances within Django, then you must ensure that the
         callable can be safely run more than once and will return the same
         value.
-        """
+        '''
         self.__dict__['_setupfunc'] = func
         super().__init__()
 
@@ -375,13 +373,13 @@ class SimpleLazyObject(LazyObject):
 
 
 def partition(predicate, values):
-    """
+    '''
     Split the values into two sets, based on the return value of the function
     (True/False). e.g.:
 
         >>> partition(lambda x: x > 3, range(5))
         [0, 1, 2, 3], [4]
-    """
+    '''
     results = ([], [])
     for item in values:
         results[predicate(item)].append(item)

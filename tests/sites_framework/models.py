@@ -28,4 +28,4 @@ class CustomArticle(AbstractArticle):
     places_this_article_should_appear = models.ForeignKey(Site, models.CASCADE)
 
     objects = models.Manager()
-    on_site = CurrentSiteManager("places_this_article_should_appear")
+    on_site = CurrentSiteManager('places_this_article_should_appear')

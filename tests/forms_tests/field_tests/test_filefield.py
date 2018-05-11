@@ -6,7 +6,6 @@ from django.test import SimpleTestCase
 
 
 class FileFieldTest(SimpleTestCase):
-
     def test_filefield_1(self):
         f = FileField()
         with self.assertRaisesMessage(ValidationError, "'This field is required.'"):
@@ -32,14 +31,8 @@ class FileFieldTest(SimpleTestCase):
         with self.assertRaisesMessage(ValidationError, "'The submitted file is empty.'"):
             f.clean(SimpleUploadedFile('name', b''))
         self.assertEqual(SimpleUploadedFile, type(f.clean(SimpleUploadedFile('name', b'Some File Content'))))
-        self.assertIsInstance(
-            f.clean(SimpleUploadedFile('我隻氣墊船裝滿晒鱔.txt', 'मेरी मँडराने वाली नाव सर्पमीनों से भरी ह'.encode())),
-            SimpleUploadedFile
-        )
-        self.assertIsInstance(
-            f.clean(SimpleUploadedFile('name', b'Some File Content'), 'files/test4.pdf'),
-            SimpleUploadedFile
-        )
+        self.assertIsInstance(f.clean(SimpleUploadedFile('我隻氣墊船裝滿晒鱔.txt', 'मेरी मँडराने वाली नाव सर्पमीनों से भरी ह'.encode())), SimpleUploadedFile)
+        self.assertIsInstance(f.clean(SimpleUploadedFile('name', b'Some File Content'), 'files/test4.pdf'), SimpleUploadedFile)
 
     def test_filefield_2(self):
         f = FileField(max_length=5)
@@ -54,22 +47,18 @@ class FileFieldTest(SimpleTestCase):
         self.assertIsInstance(f.clean(SimpleUploadedFile('name', b'')), SimpleUploadedFile)
 
     def test_filefield_changed(self):
-        """
+        '''
         The value of data will more than likely come from request.FILES. The
         value of initial data will likely be a filename stored in the database.
         Since its value is of no use to a FileField it is ignored.
-        """
+        '''
         f = FileField()
-
         # No file was uploaded and no initial data.
         self.assertFalse(f.has_changed('', None))
-
         # A file was uploaded and no initial data.
         self.assertTrue(f.has_changed('', {'filename': 'resume.txt', 'content': 'My resume'}))
-
         # A file was not uploaded, but there is initial data
         self.assertFalse(f.has_changed('resume.txt', None))
-
         # A file was uploaded and there is initial data (file identity is not dealt
         # with here)
         self.assertTrue(f.has_changed('resume.txt', {'filename': 'resume.txt', 'content': 'My resume'}))

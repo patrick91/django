@@ -43,10 +43,11 @@ def get_internal_wsgi_application():
     try:
         return import_string(app_path)
     except ImportError as err:
-        raise ImproperlyConfigured(
-            "WSGI application '%s' could not be loaded; "
-            "Error importing module." % app_path
-        ) from err
+        raise
+        ImproperlyConfigured("WSGI application '%s' could not be loaded; "
+            "Error importing module." \
+        % \
+        app_path)
 
 
 def is_broken_pipe_error():
@@ -55,7 +56,7 @@ def is_broken_pipe_error():
 
 
 class WSGIServer(simple_server.WSGIServer):
-    """BaseHTTPServer that implements the Python WSGI protocol"""
+    '''BaseHTTPServer that implements the Python WSGI protocol'''
 
     request_queue_size = 10
 
@@ -67,13 +68,13 @@ class WSGIServer(simple_server.WSGIServer):
 
     def handle_error(self, request, client_address):
         if is_broken_pipe_error():
-            logger.info("- Broken pipe from %s\n", client_address)
+            logger.info('- Broken pipe from %s\n', client_address)
         else:
             super().handle_error(request, client_address)
 
 
-class ThreadedWSGIServer(socketserver.ThreadingMixIn, WSGIServer):
-    """A threaded version of the WSGIServer"""
+class ThreadedWSGIServer(socketserver.ThreadingMixIn,WSGIServer):
+    '''A threaded version of the WSGIServer'''
     pass
 
 
@@ -94,18 +95,13 @@ class WSGIRequestHandler(simple_server.WSGIRequestHandler):
         return self.client_address[0]
 
     def log_message(self, format, *args):
-        extra = {
-            'request': self.request,
-            'server_time': self.log_date_time_string(),
-        }
+        extra = {'request': self.request, 'server_time': self.log_date_time_string()}
         if args[1][0] == '4':
             # 0x16 = Handshake, 0x03 = SSL 3.0 or TLS 1.x
             if args[0].startswith('\x16\x03'):
                 extra['status_code'] = 500
-                logger.error(
-                    "You're accessing the development server over HTTPS, but "
-                    "it only supports HTTP.\n", extra=extra,
-                )
+                logger.error("You're accessing the development server over HTTPS, but "
+                    "it only supports HTTP.\n", extra=extra)
                 return
 
         if args[1].isdigit() and len(args[1]) == 3:
@@ -135,7 +131,7 @@ class WSGIRequestHandler(simple_server.WSGIRequestHandler):
         return super().get_environ()
 
     def handle(self):
-        """Copy of WSGIRequestHandler.handle() but with different ServerHandler"""
+        '''Copy of WSGIRequestHandler.handle() but with different ServerHandler'''
         self.raw_requestline = self.rfile.readline(65537)
         if len(self.raw_requestline) > 65536:
             self.requestline = ''
@@ -144,13 +140,11 @@ class WSGIRequestHandler(simple_server.WSGIRequestHandler):
             self.send_error(414)
             return
 
-        if not self.parse_request():  # An error code has been sent, just exit
+        if not self.parse_request(): # An error code has been sent, just exit
             return
 
-        handler = ServerHandler(
-            self.rfile, self.wfile, self.get_stderr(), self.get_environ()
-        )
-        handler.request_handler = self      # backpointer for logging
+        handler = ServerHandler(self.rfile, self.wfile, self.get_stderr(), self.get_environ())
+        handler.request_handler = self # backpointer for logging
         handler.run(self.server.get_app())
 
 

@@ -1,4 +1,4 @@
-"Memcached cache backend"
+'Memcached cache backend'
 
 import pickle
 import re
@@ -15,7 +15,6 @@ class BaseMemcachedCache(BaseCache):
             self._servers = re.split('[;,]', server)
         else:
             self._servers = server
-
         # The exception type to catch from the underlying library for a key
         # that was not found. This is a ValueError for python-memcache,
         # pylibmc.NotFound for pylibmc, and cmemcache will return None without
@@ -27,19 +26,19 @@ class BaseMemcachedCache(BaseCache):
 
     @property
     def _cache(self):
-        """
+        '''
         Implement transparent thread-safe access to a memcached client.
-        """
+        '''
         if getattr(self, '_client', None) is None:
             self._client = self._lib.Client(self._servers, **self._options)
 
         return self._client
 
     def get_backend_timeout(self, timeout=DEFAULT_TIMEOUT):
-        """
+        '''
         Memcached deals with long (> 30 days) timeouts in a special
         way. Call this function to obtain a safe value for your timeout.
-        """
+        '''
         if timeout == DEFAULT_TIMEOUT:
             timeout = self.default_timeout
 
@@ -51,7 +50,7 @@ class BaseMemcachedCache(BaseCache):
             # in memcache backends, a negative timeout must be passed.
             timeout = -1
 
-        if timeout > 2592000:  # 60*60*24*30, 30 days
+        if timeout > 2592000: # 60*60*24*30, 30 days
             # See https://github.com/memcached/memcached/wiki/Programming#expiration
             # "Expiration times can be set from 0, meaning "never expire", to
             # 30 days. Any time higher than 30 days is interpreted as a Unix
@@ -88,7 +87,7 @@ class BaseMemcachedCache(BaseCache):
         ret = self._cache.get_multi(new_keys)
         if ret:
             m = dict(zip(new_keys, keys))
-            return {m[k]: v for k, v in ret.items()}
+            return {m[k]: v for (k, v) in ret.items()}
         return ret
 
     def close(self, **kwargs):
@@ -102,7 +101,6 @@ class BaseMemcachedCache(BaseCache):
             return self._cache.decr(key, -delta)
         try:
             val = self._cache.incr(key, delta)
-
         # python-memcache responds to incr on nonexistent keys by
         # raising a ValueError, pylibmc by raising a pylibmc.NotFound
         # and Cmemcache returns None. In all cases,
@@ -120,7 +118,6 @@ class BaseMemcachedCache(BaseCache):
             return self._cache.incr(key, -delta)
         try:
             val = self._cache.decr(key, delta)
-
         # python-memcache responds to incr on nonexistent keys by
         # raising a ValueError, pylibmc by raising a pylibmc.NotFound
         # and Cmemcache returns None. In all cases,
@@ -149,7 +146,8 @@ class BaseMemcachedCache(BaseCache):
 
 
 class MemcachedCache(BaseMemcachedCache):
-    "An implementation of a cache binding using python-memcached"
+    'An implementation of a cache binding using python-memcached'
+
     def __init__(self, server, params):
         import memcache
         super().__init__(server, params, library=memcache, value_not_found_exception=ValueError)
@@ -168,7 +166,8 @@ class MemcachedCache(BaseMemcachedCache):
 
 
 class PyLibMCCache(BaseMemcachedCache):
-    "An implementation of a cache binding using pylibmc"
+    'An implementation of a cache binding using pylibmc'
+
     def __init__(self, server, params):
         import pylibmc
         super().__init__(server, params, library=pylibmc, value_not_found_exception=pylibmc.NotFound)

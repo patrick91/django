@@ -34,17 +34,17 @@ class WidthRatioTagTests(SimpleTestCase):
 
     @setup({'widthratio06': '{% widthratio a b 100 %}'})
     def test_widthratio06(self):
-        """
+        '''
         62.5 should round to 62
-        """
+        '''
         output = self.engine.render_to_string('widthratio06', {'a': 50, 'b': 80})
         self.assertEqual(output, '62')
 
     @setup({'widthratio07': '{% widthratio a b 100 %}'})
     def test_widthratio07(self):
-        """
+        '''
         71.4 should round to 71
-        """
+        '''
         output = self.engine.render_to_string('widthratio07', {'a': 50, 'b': 70})
         self.assertEqual(output, '71')
 
@@ -66,9 +66,9 @@ class WidthRatioTagTests(SimpleTestCase):
 
     @setup({'widthratio11': '{% widthratio a b c %}'})
     def test_widthratio11(self):
-        """
+        '''
         #10043: widthratio should allow max_width to be a variable
-        """
+        '''
         output = self.engine.render_to_string('widthratio11', {'a': 50, 'c': 100, 'b': 100})
         self.assertEqual(output, '50')
 
@@ -106,9 +106,9 @@ class WidthRatioTagTests(SimpleTestCase):
 
     @setup({'widthratio15': '{% load custom %}{% widthratio a|noop:"x y" b 0 %}'})
     def test_widthratio15(self):
-        """
+        '''
         Test whitespace in filter argument
-        """
+        '''
         output = self.engine.render_to_string('widthratio15', {'a': 50, 'b': 100})
         self.assertEqual(output, '0')
 

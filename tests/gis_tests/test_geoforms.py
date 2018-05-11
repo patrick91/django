@@ -9,9 +9,8 @@ from django.utils.html import escape
 
 
 class GeometryFieldTest(SimpleTestCase):
-
     def test_init(self):
-        "Testing GeometryField initialization with defaults."
+        'Testing GeometryField initialization with defaults.'
         fld = forms.GeometryField()
         for bad_default in ('blah', 3, 'FoO', None, 0):
             with self.subTest(bad_default=bad_default):
@@ -19,7 +18,7 @@ class GeometryFieldTest(SimpleTestCase):
                     fld.clean(bad_default)
 
     def test_srid(self):
-        "Testing GeometryField with a SRID set."
+        'Testing GeometryField with a SRID set.'
         # Input that doesn't specify the SRID is assumed to be in the SRID
         # of the input field.
         fld = forms.GeometryField(srid=4326)
@@ -39,9 +38,8 @@ class GeometryFieldTest(SimpleTestCase):
         "Testing GeometryField's handling of null (None) geometries."
         # Form fields, by default, are required (`required=True`)
         fld = forms.GeometryField()
-        with self.assertRaisesMessage(forms.ValidationError, "No geometry value provided."):
+        with self.assertRaisesMessage(forms.ValidationError, 'No geometry value provided.'):
             fld.clean(None)
-
         # This will clean None as a geometry (See #10660).
         fld = forms.GeometryField(required=False)
         self.assertIsNone(fld.clean(None))
@@ -59,19 +57,16 @@ class GeometryFieldTest(SimpleTestCase):
         pnt_fld = forms.GeometryField(geom_type='POINT')
         self.assertEqual(GEOSGeometry('POINT(5 23)', srid=pnt_fld.widget.map_srid), pnt_fld.clean('POINT(5 23)'))
         # a WKT for any other geom_type will be properly transformed by `to_python`
-        self.assertEqual(
-            GEOSGeometry('LINESTRING(0 0, 1 1)', srid=pnt_fld.widget.map_srid),
-            pnt_fld.to_python('LINESTRING(0 0, 1 1)')
-        )
+        self.assertEqual(GEOSGeometry('LINESTRING(0 0, 1 1)', srid=pnt_fld.widget.map_srid), pnt_fld.to_python('LINESTRING(0 0, 1 1)'))
         # but rejected by `clean`
         with self.assertRaises(forms.ValidationError):
             pnt_fld.clean('LINESTRING(0 0, 1 1)')
 
     def test_to_python(self):
-        """
+        '''
         Testing to_python returns a correct GEOSGeometry object or
         a ValidationError
-        """
+        '''
         fld = forms.GeometryField()
         # to_python returns the same GEOSGeometry for a WKT
         for wkt in ('POINT(5 23)', 'MULTIPOLYGON(((0 0, 0 1, 1 1, 1 0, 0 0)))', 'LINESTRING(0 0, 1 1)'):
@@ -104,24 +99,27 @@ class GeometryFieldTest(SimpleTestCase):
         self.assertFalse(form.has_changed())
 
     def test_field_string_value(self):
-        """
+        '''
         Initialization of a geometry field with a valid/empty/invalid string.
         Only the invalid string should trigger an error log entry.
-        """
+        '''
+
         class PointForm(forms.Form):
             pt1 = forms.PointField(srid=4326)
             pt2 = forms.PointField(srid=4326)
             pt3 = forms.PointField(srid=4326)
 
         form = PointForm({
-            'pt1': 'SRID=4326;POINT(7.3 44)',  # valid
-            'pt2': '',  # empty
-            'pt3': 'PNT(0)',  # invalid
+            'pt1':
+                'SRID=4326;POINT(7.3 44)', # valid
+            'pt2':
+                '', # empty
+            'pt3':
+                'PNT(0)' # invalid
         })
 
         with self.assertLogs('django.contrib.gis', 'ERROR') as logger_calls:
             output = str(form)
-
         # The first point can't use assertInHTML() due to non-deterministic
         # ordering of the rendered dictionary.
         pt1_serialized = re.search(r'<textarea [^>]*>({[^<]+})<', output).groups()[0]
@@ -129,40 +127,36 @@ class GeometryFieldTest(SimpleTestCase):
         pt1_expected = GEOSGeometry(form.data['pt1']).transform(3857, clone=True)
         self.assertJSONEqual(pt1_json, pt1_expected.json)
 
-        self.assertInHTML(
-            '<textarea id="id_pt2" class="vSerializedField required" cols="150"'
-            ' rows="10" name="pt2"></textarea>',
-            output
-        )
-        self.assertInHTML(
-            '<textarea id="id_pt3" class="vSerializedField required" cols="150"'
-            ' rows="10" name="pt3"></textarea>',
-            output
-        )
+        self.assertInHTML('<textarea id="id_pt2" class="vSerializedField required" cols="150"'
+            ' rows="10" name="pt2"></textarea>', output)
+        self.assertInHTML('<textarea id="id_pt3" class="vSerializedField required" cols="150"'
+            ' rows="10" name="pt3"></textarea>', output)
         # Only the invalid PNT(0) triggers an error log entry.
         # Deserialization is called in form clean and in widget rendering.
         self.assertEqual(len(logger_calls.records), 2)
-        self.assertEqual(
-            logger_calls.records[0].getMessage(),
-            "Error creating geometry from value 'PNT(0)' (String input "
-            "unrecognized as WKT EWKT, and HEXEWKB.)"
-        )
+        self.assertEqual(logger_calls.records[
+            0
+        ].getMessage(), "Error creating geometry from value 'PNT(0)' (String input "
+            "unrecognized as WKT EWKT, and HEXEWKB.)")
 
 
 class SpecializedFieldTest(SimpleTestCase):
     def setUp(self):
         self.geometries = {
-            'point': GEOSGeometry("SRID=4326;POINT(9.052734375 42.451171875)"),
-            'multipoint': GEOSGeometry("SRID=4326;MULTIPOINT("
+            'point': GEOSGeometry('SRID=4326;POINT(9.052734375 42.451171875)'),
+            'multipoint':
+                GEOSGeometry("SRID=4326;MULTIPOINT("
                                        "(13.18634033203125 14.504356384277344),"
                                        "(13.207969665527 14.490966796875),"
                                        "(13.177070617675 14.454917907714))"),
-            'linestring': GEOSGeometry("SRID=4326;LINESTRING("
+            'linestring':
+                GEOSGeometry("SRID=4326;LINESTRING("
                                        "-8.26171875 -0.52734375,"
                                        "-7.734375 4.21875,"
                                        "6.85546875 3.779296875,"
                                        "5.44921875 -3.515625)"),
-            'multilinestring': GEOSGeometry("SRID=4326;MULTILINESTRING("
+            'multilinestring':
+                GEOSGeometry("SRID=4326;MULTILINESTRING("
                                             "(-16.435546875 -2.98828125,"
                                             "-17.2265625 2.98828125,"
                                             "-0.703125 3.515625,"
@@ -171,14 +165,16 @@ class SpecializedFieldTest(SimpleTestCase):
                                             "8.525390625 -8.7890625,"
                                             "12.392578125 -0.87890625,"
                                             "10.01953125 7.646484375))"),
-            'polygon': GEOSGeometry("SRID=4326;POLYGON("
+            'polygon':
+                GEOSGeometry("SRID=4326;POLYGON("
                                     "(-1.669921875 6.240234375,"
                                     "-3.8671875 -0.615234375,"
                                     "5.9765625 -3.955078125,"
                                     "18.193359375 3.955078125,"
                                     "9.84375 9.4921875,"
                                     "-1.669921875 6.240234375))"),
-            'multipolygon': GEOSGeometry("SRID=4326;MULTIPOLYGON("
+            'multipolygon':
+                GEOSGeometry("SRID=4326;MULTIPOLYGON("
                                          "((-17.578125 13.095703125,"
                                          "-17.2265625 10.8984375,"
                                          "-13.974609375 10.1953125,"
@@ -191,7 +187,8 @@ class SpecializedFieldTest(SimpleTestCase):
                                          "-5.09765625 4.21875,"
                                          "-6.064453125 6.240234375,"
                                          "-8.525390625 5.537109375)))"),
-            'geometrycollection': GEOSGeometry("SRID=4326;GEOMETRYCOLLECTION("
+            'geometrycollection':
+                GEOSGeometry("SRID=4326;GEOMETRYCOLLECTION("
                                                "POINT(5.625 -0.263671875),"
                                                "POINT(6.767578125 -3.603515625),"
                                                "POINT(8.525390625 0.087890625),"
@@ -200,14 +197,14 @@ class SpecializedFieldTest(SimpleTestCase):
                                                "6.273193359375 -1.175537109375,"
                                                "5.77880859375 -1.812744140625,"
                                                "7.27294921875 -2.230224609375,"
-                                               "7.657470703125 -1.25244140625))"),
+                                               "7.657470703125 -1.25244140625))")
         }
 
     def assertMapWidget(self, form_instance):
-        """
+        '''
         Make sure the MapWidget js is passed in the form media and a MapWidget
         is actually created
-        """
+        '''
         self.assertTrue(form_instance.is_valid())
         rendered = form_instance.as_p()
         self.assertIn('new MapWidget(options);', rendered)
@@ -215,7 +212,7 @@ class SpecializedFieldTest(SimpleTestCase):
         self.assertIn('gis/js/OLMapWidget.js', str(form_instance.media))
 
     def assertTextarea(self, geom, rendered):
-        """Makes sure the wkt and a textarea are in the content"""
+        '''Makes sure the wkt and a textarea are in the content'''
 
         self.assertIn('<textarea ', rendered)
         self.assertIn('required', rendered)
@@ -238,7 +235,7 @@ class SpecializedFieldTest(SimpleTestCase):
         self.assertFalse(invalid.is_valid())
         self.assertIn('Invalid geometry value', str(invalid.errors))
 
-        for invalid in [geo for key, geo in self.geometries.items() if key != 'point']:
+        for invalid in [geo for (key, geo) in self.geometries.items() if key != 'point']:
             self.assertFalse(PointForm(data={'p': invalid.wkt}).is_valid())
 
     def test_multipointfield(self):
@@ -251,7 +248,7 @@ class SpecializedFieldTest(SimpleTestCase):
         self.assertMapWidget(form)
         self.assertFalse(PointForm().is_valid())
 
-        for invalid in [geo for key, geo in self.geometries.items() if key != 'multipoint']:
+        for invalid in [geo for (key, geo) in self.geometries.items() if key != 'multipoint']:
             self.assertFalse(PointForm(data={'p': invalid.wkt}).is_valid())
 
     def test_linestringfield(self):
@@ -264,7 +261,7 @@ class SpecializedFieldTest(SimpleTestCase):
         self.assertMapWidget(form)
         self.assertFalse(LineStringForm().is_valid())
 
-        for invalid in [geo for key, geo in self.geometries.items() if key != 'linestring']:
+        for invalid in [geo for (key, geo) in self.geometries.items() if key != 'linestring']:
             self.assertFalse(LineStringForm(data={'p': invalid.wkt}).is_valid())
 
     def test_multilinestringfield(self):
@@ -277,7 +274,7 @@ class SpecializedFieldTest(SimpleTestCase):
         self.assertMapWidget(form)
         self.assertFalse(LineStringForm().is_valid())
 
-        for invalid in [geo for key, geo in self.geometries.items() if key != 'multilinestring']:
+        for invalid in [geo for (key, geo) in self.geometries.items() if key != 'multilinestring']:
             self.assertFalse(LineStringForm(data={'p': invalid.wkt}).is_valid())
 
     def test_polygonfield(self):
@@ -290,7 +287,7 @@ class SpecializedFieldTest(SimpleTestCase):
         self.assertMapWidget(form)
         self.assertFalse(PolygonForm().is_valid())
 
-        for invalid in [geo for key, geo in self.geometries.items() if key != 'polygon']:
+        for invalid in [geo for (key, geo) in self.geometries.items() if key != 'polygon']:
             self.assertFalse(PolygonForm(data={'p': invalid.wkt}).is_valid())
 
     def test_multipolygonfield(self):
@@ -303,7 +300,7 @@ class SpecializedFieldTest(SimpleTestCase):
         self.assertMapWidget(form)
         self.assertFalse(PolygonForm().is_valid())
 
-        for invalid in [geo for key, geo in self.geometries.items() if key != 'multipolygon']:
+        for invalid in [geo for (key, geo) in self.geometries.items() if key != 'multipolygon']:
             self.assertFalse(PolygonForm(data={'p': invalid.wkt}).is_valid())
 
     def test_geometrycollectionfield(self):
@@ -316,15 +313,13 @@ class SpecializedFieldTest(SimpleTestCase):
         self.assertMapWidget(form)
         self.assertFalse(GeometryForm().is_valid())
 
-        for invalid in [geo for key, geo in self.geometries.items() if key != 'geometrycollection']:
+        for invalid in [geo for (key, geo) in self.geometries.items() if key != 'geometrycollection']:
             self.assertFalse(GeometryForm(data={'g': invalid.wkt}).is_valid())
 
 
 class OSMWidgetTest(SimpleTestCase):
     def setUp(self):
-        self.geometries = {
-            'point': GEOSGeometry("SRID=4326;POINT(9.052734375 42.451171875)"),
-        }
+        self.geometries = {'point': GEOSGeometry('SRID=4326;POINT(9.052734375 42.451171875)')}
 
     def test_osm_widget(self):
         class PointForm(forms.Form):
@@ -334,7 +329,7 @@ class OSMWidgetTest(SimpleTestCase):
         form = PointForm(data={'p': geom})
         rendered = form.as_p()
 
-        self.assertIn("ol.source.OSM()", rendered)
+        self.assertIn('ol.source.OSM()', rendered)
         self.assertIn("id: 'id_p',", rendered)
 
     def test_default_lat_lon(self):
@@ -343,13 +338,11 @@ class OSMWidgetTest(SimpleTestCase):
         self.assertEqual(forms.OSMWidget.default_zoom, 12)
 
         class PointForm(forms.Form):
-            p = forms.PointField(
-                widget=forms.OSMWidget(attrs={
-                    'default_lon': 20,
-                    'default_lat': 30,
-                    'default_zoom': 17,
-                }),
-            )
+            p = forms.PointField(widget=forms.OSMWidget(attrs={
+                'default_lon': 20,
+                'default_lat': 30,
+                'default_zoom': 17
+            }))
 
         form = PointForm()
         rendered = form.as_p()
@@ -360,32 +353,31 @@ class OSMWidgetTest(SimpleTestCase):
 
 
 class GeometryWidgetTests(SimpleTestCase):
-
     def test_get_context_attrs(self):
-        """The Widget.get_context() attrs argument overrides self.attrs."""
+        '''The Widget.get_context() attrs argument overrides self.attrs.'''
         widget = BaseGeometryWidget(attrs={'geom_type': 'POINT'})
         context = widget.get_context('point', None, attrs={'geom_type': 'POINT2'})
         self.assertEqual(context['geom_type'], 'POINT2')
 
     def test_subwidgets(self):
         widget = forms.BaseGeometryWidget()
-        self.assertEqual(
-            list(widget.subwidgets('name', 'value')),
-            [{
+        self.assertEqual(list(widget.subwidgets('name', 'value')), [
+            {
                 'is_hidden': False,
-                'attrs': {
-                    'map_srid': 4326,
-                    'map_width': 600,
-                    'geom_type': 'GEOMETRY',
-                    'map_height': 400,
-                    'display_raw': False,
-                },
+                'attrs':
+                    {
+                        'map_srid': 4326,
+                        'map_width': 600,
+                        'geom_type': 'GEOMETRY',
+                        'map_height': 400,
+                        'display_raw': False
+                    },
                 'name': 'name',
                 'template_name': '',
                 'value': 'value',
-                'required': False,
-            }]
-        )
+                'required': False
+            }
+        ])
 
     def test_custom_serialization_widget(self):
         class CustomGeometryWidget(forms.BaseGeometryWidget):
@@ -402,7 +394,7 @@ class GeometryWidgetTests(SimpleTestCase):
         class PointForm(forms.Form):
             p = forms.PointField(widget=CustomGeometryWidget)
 
-        point = GEOSGeometry("SRID=4326;POINT(9.052734375 42.451171875)")
+        point = GEOSGeometry('SRID=4326;POINT(9.052734375 42.451171875)')
         form = PointForm(data={'p': point})
         self.assertIn(escape(point.json), form.as_p())
 

@@ -5,7 +5,6 @@ from .base import WidgetTest
 
 
 class WidgetTests(WidgetTest):
-
     def test_format_value(self):
         widget = Widget()
         self.assertIsNone(widget.format_value(None))

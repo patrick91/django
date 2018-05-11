@@ -9,6 +9,7 @@ class PrefetchRelatedObjectsTests(TestCase):
     Since prefetch_related_objects() is just the inner part of
     prefetch_related(), only do basic tests to ensure its API hasn't changed.
     """
+
     @classmethod
     def setUpTestData(cls):
         cls.book1 = Book.objects.create(title='Poems')
@@ -70,24 +71,18 @@ class PrefetchRelatedObjectsTests(TestCase):
             [list(book.first_time_authors.all()) for book in books]
 
     def test_m2m_then_m2m(self):
-        """A m2m can be followed through another m2m."""
+        '''A m2m can be followed through another m2m.'''
         authors = list(Author.objects.all())
         with self.assertNumQueries(2):
             prefetch_related_objects(authors, 'books__read_by')
 
         with self.assertNumQueries(0):
-            self.assertEqual(
-                [
-                    [[str(r) for r in b.read_by.all()] for b in a.books.all()]
-                    for a in authors
-                ],
-                [
-                    [['Amy'], ['Belinda']],  # Charlotte - Poems, Jane Eyre
-                    [['Amy']],               # Anne - Poems
-                    [['Amy'], []],           # Emily - Poems, Wuthering Heights
-                    [['Amy', 'Belinda']],    # Jane - Sense and Sense
-                ]
-            )
+            self.assertEqual([[[str(r) for r in b.read_by.all()] for b in a.books.all()] for a in authors], [
+                [['Amy'], ['Belinda']], # Charlotte - Poems, Jane Eyre
+                [['Amy']], # Anne - Poems
+                [['Amy'], []], # Emily - Poems, Wuthering Heights
+                [['Amy', 'Belinda']] # Jane - Sense and Sense
+            ])
 
     def test_prefetch_object(self):
         book1 = Book.objects.get(id=self.book1.id)
@@ -108,10 +103,10 @@ class PrefetchRelatedObjectsTests(TestCase):
     def test_prefetch_queryset(self):
         book1 = Book.objects.get(id=self.book1.id)
         with self.assertNumQueries(1):
-            prefetch_related_objects(
-                [book1],
-                Prefetch('authors', queryset=Author.objects.filter(id__in=[self.author1.id, self.author2.id]))
-            )
+            prefetch_related_objects([book1], Prefetch('authors', queryset=Author.objects.filter(id__in=[
+                self.author1.id,
+                self.author2.id
+            ])))
 
         with self.assertNumQueries(0):
             self.assertCountEqual(book1.authors.all(), [self.author1, self.author2])

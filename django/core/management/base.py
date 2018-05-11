@@ -1,7 +1,7 @@
-"""
+'''
 Base classes for writing management commands (named commands which can
 be executed through ``django-admin`` or ``manage.py``).
-"""
+'''
 import os
 import sys
 from argparse import ArgumentParser
@@ -15,7 +15,7 @@ from django.db import DEFAULT_DB_ALIAS, connections
 
 
 class CommandError(Exception):
-    """
+    '''
     Exception class indicating a problem while executing a management
     command.
 
@@ -25,23 +25,24 @@ class CommandError(Exception):
     result, raising this exception (with a sensible description of the
     error) is the preferred way to indicate that something has gone
     wrong in the execution of a command.
-    """
+    '''
     pass
 
 
 class SystemCheckError(CommandError):
-    """
+    '''
     The system check framework detected unrecoverable errors.
-    """
+    '''
     pass
 
 
 class CommandParser(ArgumentParser):
-    """
+    '''
     Customized ArgumentParser class to improve some error messages and prevent
     SystemExit in several occasions, as SystemExit is unacceptable when a
     command is called programmatically.
-    """
+    '''
+
     def __init__(self, **kwargs):
         self.missing_args_message = kwargs.pop('missing_args_message', None)
         self.called_from_command_line = kwargs.pop('called_from_command_line', None)
@@ -49,8 +50,7 @@ class CommandParser(ArgumentParser):
 
     def parse_args(self, args=None, namespace=None):
         # Catch missing argument for a better error message
-        if (self.missing_args_message and
-                not (args or any(not arg.startswith('-') for arg in args))):
+        if self.missing_args_message and not args or any(not arg.startswith('-') for arg in args):
             self.error(self.missing_args_message)
         return super().parse_args(args, namespace)
 
@@ -58,15 +58,15 @@ class CommandParser(ArgumentParser):
         if self.called_from_command_line:
             super().error(message)
         else:
-            raise CommandError("Error: %s" % message)
+            raise CommandError('Error: %s' % message)
 
 
 def handle_default_options(options):
-    """
+    '''
     Include any default options that all commands should accept here
     so that ManagementUtility can handle them before searching for
     user commands.
-    """
+    '''
     if options.settings:
         os.environ['DJANGO_SETTINGS_MODULE'] = options.settings
     if options.pythonpath:
@@ -74,9 +74,10 @@ def handle_default_options(options):
 
 
 class OutputWrapper(TextIOBase):
-    """
+    '''
     Wrapper around stdout/stderr
-    """
+    '''
+
     @property
     def style_func(self):
         return self._style_func
@@ -190,10 +191,9 @@ class BaseCommand:
     """
     # Metadata about this command.
     help = ''
-
     # Configuration shortcuts that alter various logic.
     _called_from_command_line = False
-    output_transaction = False  # Whether to wrap the output in a "BEGIN; COMMIT;"
+    output_transaction = False # Whether to wrap the output in a "BEGIN; COMMIT;"
     leave_locale_alone = False
     requires_migrations_checks = False
     requires_system_checks = True
@@ -213,74 +213,61 @@ class BaseCommand:
             self.stderr.style_func = self.style.ERROR
 
     def get_version(self):
-        """
+        '''
         Return the Django version, which should be correct for all built-in
         Django commands. User-supplied commands can override this method to
         return their own version.
-        """
+        '''
         return django.get_version()
 
     def create_parser(self, prog_name, subcommand):
-        """
+        '''
         Create and return the ``ArgumentParser`` which will be used to
         parse the arguments to this command.
-        """
-        parser = CommandParser(
-            prog='%s %s' % (os.path.basename(prog_name), subcommand),
-            description=self.help or None,
-            missing_args_message=getattr(self, 'missing_args_message', None),
-            called_from_command_line=getattr(self, '_called_from_command_line', None),
-        )
+        '''
+        parser = CommandParser(prog='%s %s' % (os.path.basename(prog_name), subcommand), description=self.help \
+        or \
+        None, missing_args_message=getattr(self, 'missing_args_message', None), called_from_command_line=getattr(self, '_called_from_command_line', None))
         # Add command-specific arguments first so that they appear in the
         # --help output before arguments common to all commands.
         self.add_arguments(parser)
         parser.add_argument('--version', action='version', version=self.get_version())
-        parser.add_argument(
-            '-v', '--verbosity', action='store', dest='verbosity', default=1,
-            type=int, choices=[0, 1, 2, 3],
-            help='Verbosity level; 0=minimal output, 1=normal output, 2=verbose output, 3=very verbose output',
-        )
-        parser.add_argument(
-            '--settings',
-            help=(
-                'The Python path to a settings module, e.g. '
+        parser.add_argument('-v', '--verbosity', action='store', dest='verbosity', default=1, type=int, choices=[
+            0,
+            1,
+            2,
+            3
+        ], help='Verbosity level; 0=minimal output, 1=normal output, 2=verbose output, 3=very verbose output')
+        parser.add_argument('--settings', help='The Python path to a settings module, e.g. '
                 '"myproject.settings.main". If this isn\'t provided, the '
-                'DJANGO_SETTINGS_MODULE environment variable will be used.'
-            ),
-        )
-        parser.add_argument(
-            '--pythonpath',
-            help='A directory to add to the Python path, e.g. "/home/djangoprojects/myproject".',
-        )
+                'DJANGO_SETTINGS_MODULE environment variable will be used.')
+        parser.add_argument('--pythonpath', help='A directory to add to the Python path, e.g. "/home/djangoprojects/myproject".')
         parser.add_argument('--traceback', action='store_true', help='Raise on CommandError exceptions')
-        parser.add_argument(
-            '--no-color', action='store_true', dest='no_color',
-            help="Don't colorize the command output.",
-        )
+        parser.add_argument('--no-color', action='store_true', dest='no_color', help="Don't colorize the command output.")
         return parser
 
     def add_arguments(self, parser):
-        """
+        '''
         Entry point for subclassed commands to add custom arguments.
-        """
+        '''
         pass
 
     def print_help(self, prog_name, subcommand):
-        """
+        '''
         Print the help message for this command, derived from
         ``self.usage()``.
-        """
+        '''
         parser = self.create_parser(prog_name, subcommand)
         parser.print_help()
 
     def run_from_argv(self, argv):
-        """
+        '''
         Set up any environment changes requested (e.g., Python path
         and Django settings), then run this command. If the
         command raises a ``CommandError``, intercept it and print it sensibly
         to stderr. If the ``--traceback`` option is present or the raised
         ``Exception`` is not ``CommandError``, raise it.
-        """
+        '''
         self._called_from_command_line = True
         parser = self.create_parser(argv[0], argv[1])
 
@@ -294,7 +281,6 @@ class BaseCommand:
         except Exception as e:
             if options.traceback or not isinstance(e, CommandError):
                 raise
-
             # SystemCheckError takes care of its own formatting.
             if isinstance(e, SystemCheckError):
                 self.stderr.write(str(e), lambda x: x)
@@ -310,11 +296,11 @@ class BaseCommand:
                 pass
 
     def execute(self, *args, **options):
-        """
+        '''
         Try to execute this command, performing system checks if needed (as
         controlled by the ``requires_system_checks`` attribute, except if
         force-skipped).
-        """
+        '''
         if options['no_color']:
             self.style = no_style()
             self.stderr.style_func = None
@@ -341,12 +327,15 @@ class BaseCommand:
             if output:
                 if self.output_transaction:
                     connection = connections[options.get('database', DEFAULT_DB_ALIAS)]
-                    output = '%s\n%s\n%s' % (
+                    output = '%s\n%s\n%s' \
+                    % \
+                    (
                         self.style.SQL_KEYWORD(connection.ops.start_transaction_sql()),
                         output,
-                        self.style.SQL_KEYWORD(connection.ops.end_transaction_sql()),
+                        self.style.SQL_KEYWORD(connection.ops.end_transaction_sql())
                     )
                 self.stdout.write(output)
+
         finally:
             if saved_locale is not None:
                 translation.activate(saved_locale)
@@ -355,22 +344,24 @@ class BaseCommand:
     def _run_checks(self, **kwargs):
         return checks.run_checks(**kwargs)
 
-    def check(self, app_configs=None, tags=None, display_num_errors=False,
-              include_deployment_checks=False, fail_level=checks.ERROR):
+    def check(
+        self,
+        app_configs=None,
+        tags=None,
+        display_num_errors=False,
+        include_deployment_checks=False,
+        fail_level=checks.ERROR
+    ):
         """
         Use the system check framework to validate entire Django project.
         Raise CommandError for any serious message (error or critical errors).
         If there are only light messages (like warnings), print them to stderr
         and don't raise an exception.
         """
-        all_issues = self._run_checks(
-            app_configs=app_configs,
-            tags=tags,
-            include_deployment_checks=include_deployment_checks,
-        )
+        all_issues = self._run_checks(app_configs=app_configs, tags=tags, include_deployment_checks=include_deployment_checks)
 
-        header, body, footer = "", "", ""
-        visible_issue_count = 0  # excludes silenced warnings
+        header, body, footer = '', '', ''
+        visible_issue_count = 0 # excludes silenced warnings
 
         if all_issues:
             debugs = [e for e in all_issues if e.level < checks.INFO and not e.is_silenced()]
@@ -383,35 +374,35 @@ class BaseCommand:
                 (errors, 'ERRORS'),
                 (warnings, 'WARNINGS'),
                 (infos, 'INFOS'),
-                (debugs, 'DEBUGS'),
+                (debugs, 'DEBUGS')
             ]
 
             for issues, group_name in sorted_issues:
                 if issues:
                     visible_issue_count += len(issues)
                     formatted = (
-                        self.style.ERROR(str(e))
-                        if e.is_serious()
-                        else self.style.WARNING(str(e))
-                        for e in issues)
-                    formatted = "\n".join(sorted(formatted))
+                        self.style.ERROR(str(e)) if e.is_serious() else self.style.WARNING(str(e)) for e in issues
+                    )
+                    formatted = '\n'.join(sorted(formatted))
                     body += '\n%s:\n%s\n' % (group_name, formatted)
 
         if visible_issue_count:
-            header = "System check identified some issues:\n"
+            header = 'System check identified some issues:\n'
 
         if display_num_errors:
             if visible_issue_count:
                 footer += '\n'
-            footer += "System check identified %s (%s silenced)." % (
-                "no issues" if visible_issue_count == 0 else
-                "1 issue" if visible_issue_count == 1 else
-                "%s issues" % visible_issue_count,
-                len(all_issues) - visible_issue_count,
+            footer += 'System check identified %s (%s silenced).' \
+            % \
+            (
+                'no issues' if visible_issue_count == 0 else '1 issue' if visible_issue_count == 1 else '%s issues' \
+                % \
+                visible_issue_count,
+                len(all_issues) - visible_issue_count
             )
 
         if any(e.is_serious(fail_level) and not e.is_silenced() for e in all_issues):
-            msg = self.style.ERROR("SystemCheckError: %s" % header) + body + footer
+            msg = self.style.ERROR('SystemCheckError: %s' % header) + body + footer
             raise SystemCheckError(msg)
         else:
             msg = header + body + footer
@@ -436,36 +427,31 @@ class BaseCommand:
 
         plan = executor.migration_plan(executor.loader.graph.leaf_nodes())
         if plan:
-            apps_waiting_migration = sorted({migration.app_label for migration, backwards in plan})
-            self.stdout.write(
-                self.style.NOTICE(
-                    "\nYou have %(unpplied_migration_count)s unapplied migration(s). "
+            apps_waiting_migration = sorted({migration.app_label for (migration, backwards) in plan})
+            self.stdout.write(self.style.NOTICE("\nYou have %(unpplied_migration_count)s unapplied migration(s). "
                     "Your project may not work properly until you apply the "
-                    "migrations for app(s): %(apps_waiting_migration)s." % {
-                        "unpplied_migration_count": len(plan),
-                        "apps_waiting_migration": ", ".join(apps_waiting_migration),
-                    }
-                )
-            )
+                    "migrations for app(s): %(apps_waiting_migration)s." \
+            % \
+            {'unpplied_migration_count': len(plan), 'apps_waiting_migration': ', '.join(apps_waiting_migration)}))
             self.stdout.write(self.style.NOTICE("Run 'python manage.py migrate' to apply them.\n"))
 
     def handle(self, *args, **options):
-        """
+        '''
         The actual logic of the command. Subclasses must implement
         this method.
-        """
+        '''
         raise NotImplementedError('subclasses of BaseCommand must provide a handle() method')
 
 
 class AppCommand(BaseCommand):
-    """
+    '''
     A management command which takes one or more installed application labels
     as arguments, and does something with each of them.
 
     Rather than implementing ``handle()``, subclasses must implement
     ``handle_app_config()``, which will be called once for each application.
-    """
-    missing_args_message = "Enter at least one application label."
+    '''
+    missing_args_message = 'Enter at least one application label.'
 
     def add_arguments(self, parser):
         parser.add_argument('args', metavar='app_label', nargs='+', help='One or more application label.')
@@ -475,7 +461,7 @@ class AppCommand(BaseCommand):
         try:
             app_configs = [apps.get_app_config(app_label) for app_label in app_labels]
         except (LookupError, ImportError) as e:
-            raise CommandError("%s. Are you sure your INSTALLED_APPS setting is correct?" % e)
+            raise CommandError('%s. Are you sure your INSTALLED_APPS setting is correct?' % e)
         output = []
         for app_config in app_configs:
             app_output = self.handle_app_config(app_config, **options)
@@ -488,13 +474,12 @@ class AppCommand(BaseCommand):
         Perform the command's actions for app_config, an AppConfig instance
         corresponding to an application label given on the command line.
         """
-        raise NotImplementedError(
-            "Subclasses of AppCommand must provide"
+        raise NotImplementedError("Subclasses of AppCommand must provide"
             "a handle_app_config() method.")
 
 
 class LabelCommand(BaseCommand):
-    """
+    '''
     A management command which takes one or more arbitrary arguments
     (labels) on the command line, and does something with each of
     them.
@@ -504,9 +489,9 @@ class LabelCommand(BaseCommand):
 
     If the arguments should be names of installed applications, use
     ``AppCommand`` instead.
-    """
+    '''
     label = 'label'
-    missing_args_message = "Enter at least one %s." % label
+    missing_args_message = 'Enter at least one %s.' % label
 
     def add_arguments(self, parser):
         parser.add_argument('args', metavar=self.label, nargs='+')
