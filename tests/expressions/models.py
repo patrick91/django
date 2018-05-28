@@ -1,6 +1,6 @@
-"""
+'''
 Tests for F() query expression syntax.
-"""
+'''
 import uuid
 
 from django.db import models
@@ -19,17 +19,8 @@ class Company(models.Model):
     name = models.CharField(max_length=100)
     num_employees = models.PositiveIntegerField()
     num_chairs = models.PositiveIntegerField()
-    ceo = models.ForeignKey(
-        Employee,
-        models.CASCADE,
-        related_name='company_ceo_set',
-    )
-    point_of_contact = models.ForeignKey(
-        Employee,
-        models.SET_NULL,
-        related_name='company_point_of_contact_set',
-        null=True,
-    )
+    ceo = models.ForeignKey(Employee, models.CASCADE, related_name='company_ceo_set')
+    point_of_contact = models.ForeignKey(Employee, models.SET_NULL, related_name='company_point_of_contact_set', null=True)
 
     def __str__(self):
         return self.name
@@ -64,14 +55,14 @@ class Result(models.Model):
     result_time = models.DateTimeField()
 
     def __str__(self):
-        return "Result at %s" % self.result_time
+        return 'Result at %s' % self.result_time
 
 
 class Time(models.Model):
     time = models.TimeField(null=True)
 
     def __str__(self):
-        return "%s" % self.time
+        return '%s' % self.time
 
 
 class SimulationRun(models.Model):
@@ -80,7 +71,7 @@ class SimulationRun(models.Model):
     midpoint = models.TimeField()
 
     def __str__(self):
-        return "%s (%s to %s)" % (self.midpoint, self.start, self.end)
+        return '%s (%s to %s)' % (self.midpoint, self.start, self.end)
 
 
 class UUIDPK(models.Model):
@@ -92,4 +83,4 @@ class UUID(models.Model):
     uuid_fk = models.ForeignKey(UUIDPK, models.CASCADE, null=True)
 
     def __str__(self):
-        return "%s" % self.uuid
+        return '%s' % self.uuid

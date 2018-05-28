@@ -1,3 +1,3 @@
 def view(request):
-    """Stub view"""
+    '''Stub view'''
     pass

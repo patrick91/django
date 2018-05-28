@@ -1,34 +1,34 @@
-"""
+'''
 Helpers to manipulate deferred DDL statements that might need to be adjusted or
 discarded within when executing a migration.
-"""
+'''
 
 
 class Reference:
-    """Base class that defines the reference interface."""
+    '''Base class that defines the reference interface.'''
 
     def references_table(self, table):
-        """
+        '''
         Return whether or not this instance references the specified table.
-        """
+        '''
         return False
 
     def references_column(self, table, column):
-        """
+        '''
         Return whether or not this instance references the specified column.
-        """
+        '''
         return False
 
     def rename_table_references(self, old_table, new_table):
-        """
+        '''
         Rename all references to the old_name to the new_table.
-        """
+        '''
         pass
 
     def rename_column_references(self, table, old_column, new_column):
-        """
+        '''
         Rename all references to the old_column to the new_column.
-        """
+        '''
         pass
 
     def __repr__(self):
@@ -39,7 +39,7 @@ class Reference:
 
 
 class Table(Reference):
-    """Hold a reference to a table."""
+    '''Hold a reference to a table.'''
 
     def __init__(self, table, quote_name):
         self.table = table
@@ -57,7 +57,7 @@ class Table(Reference):
 
 
 class TableColumns(Table):
-    """Base class for references to multiple columns of a table."""
+    '''Base class for references to multiple columns of a table.'''
 
     def __init__(self, table, columns):
         self.table = table
@@ -74,7 +74,7 @@ class TableColumns(Table):
 
 
 class Columns(TableColumns):
-    """Hold a reference to one or many columns."""
+    '''Hold a reference to one or many columns.'''
 
     def __init__(self, table, columns, quote_name, col_suffixes=()):
         self.quote_name = quote_name
@@ -88,11 +88,11 @@ class Columns(TableColumns):
             except IndexError:
                 return self.quote_name(column)
 
-        return ', '.join(col_str(column, idx) for idx, column in enumerate(self.columns))
+        return ', '.join(col_str(column, idx) for (idx, column) in enumerate(self.columns))
 
 
 class IndexName(TableColumns):
-    """Hold a reference to an index name."""
+    '''Hold a reference to an index name.'''
 
     def __init__(self, table, columns, suffix, create_index_name):
         self.suffix = suffix
@@ -104,22 +104,19 @@ class IndexName(TableColumns):
 
 
 class ForeignKeyName(TableColumns):
-    """Hold a reference to a foreign key name."""
+    '''Hold a reference to a foreign key name.'''
 
     def __init__(self, from_table, from_columns, to_table, to_columns, suffix_template, create_fk_name):
         self.to_reference = TableColumns(to_table, to_columns)
         self.suffix_template = suffix_template
         self.create_fk_name = create_fk_name
-        super().__init__(from_table, from_columns,)
+        super().__init__(from_table, from_columns)
 
     def references_table(self, table):
         return super().references_table(table) or self.to_reference.references_table(table)
 
     def references_column(self, table, column):
-        return (
-            super().references_column(table, column) or
-            self.to_reference.references_column(table, column)
-        )
+        return super().references_column(table, column) or self.to_reference.references_column(table, column)
 
     def rename_table_references(self, old_table, new_table):
         super().rename_table_references(old_table, new_table)
@@ -130,10 +127,9 @@ class ForeignKeyName(TableColumns):
         self.to_reference.rename_column_references(table, old_column, new_column)
 
     def __str__(self):
-        suffix = self.suffix_template % {
-            'to_table': self.to_reference.table,
-            'to_column': self.to_reference.columns[0],
-        }
+        suffix = self.suffix_template \
+        % \
+        {'to_table': self.to_reference.table, 'to_column': self.to_reference.columns[0]}
         return self.create_fk_name(self.table, self.columns, suffix)
 
 
@@ -145,21 +141,20 @@ class Statement(Reference):
     that might have to be adjusted if they're referencing a table or column
     that is removed
     """
+
     def __init__(self, template, **parts):
         self.template = template
         self.parts = parts
 
     def references_table(self, table):
-        return any(
-            hasattr(part, 'references_table') and part.references_table(table)
-            for part in self.parts.values()
-        )
+        return any(hasattr(part, 'references_table') and part.references_table(table) for part in self.parts.values())
 
     def references_column(self, table, column):
-        return any(
-            hasattr(part, 'references_column') and part.references_column(table, column)
-            for part in self.parts.values()
-        )
+        return \
+            any(
+                hasattr(part, 'references_column') and part.references_column(table, column)
+                for part in self.parts.values()
+            )
 
     def rename_table_references(self, old_table, new_table):
         for part in self.parts.values():

@@ -1,4 +1,4 @@
-"""
+'''
 Specifying ordering
 
 Specify default ordering for a model using the ``ordering`` attribute, which
@@ -11,7 +11,7 @@ The special-case field name ``"?"`` specifies random order.
 
 The ordering attribute is not required. If you leave it off, ordering will be
 undefined -- not random, just undefined.
-"""
+'''
 
 from django.db import models
 

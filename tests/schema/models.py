@@ -58,6 +58,7 @@ class Book(models.Model):
     author = models.ForeignKey(Author, models.CASCADE)
     title = models.CharField(max_length=100, db_index=True)
     pub_date = models.DateTimeField()
+
     # tags = models.ManyToManyField("Tag", related_name="books")
 
     class Meta:
@@ -74,10 +75,7 @@ class BookWeak(models.Model):
 
 
 class BookWithLongName(models.Model):
-    author_foreign_key_with_really_long_field_name = models.ForeignKey(
-        AuthorWithEvenLongerName,
-        models.CASCADE,
-    )
+    author_foreign_key_with_really_long_field_name = models.ForeignKey(AuthorWithEvenLongerName, models.CASCADE)
 
     class Meta:
         apps = new_apps
@@ -90,7 +88,7 @@ class BookWithO2O(models.Model):
 
     class Meta:
         apps = new_apps
-        db_table = "schema_book"
+        db_table = 'schema_book'
 
 
 class BookWithSlug(models.Model):
@@ -101,7 +99,7 @@ class BookWithSlug(models.Model):
 
     class Meta:
         apps = new_apps
-        db_table = "schema_book"
+        db_table = 'schema_book'
 
 
 class BookWithoutAuthor(models.Model):
@@ -110,7 +108,7 @@ class BookWithoutAuthor(models.Model):
 
     class Meta:
         apps = new_apps
-        db_table = "schema_book"
+        db_table = 'schema_book'
 
 
 class BookForeignObj(models.Model):
@@ -127,7 +125,7 @@ class IntegerPK(models.Model):
 
     class Meta:
         apps = new_apps
-        db_table = "INTEGERPK"  # uppercase to ensure proper quoting
+        db_table = 'INTEGERPK' # uppercase to ensure proper quoting
 
 
 class Note(models.Model):
@@ -142,7 +140,7 @@ class NoteRename(models.Model):
 
     class Meta:
         apps = new_apps
-        db_table = "schema_note"
+        db_table = 'schema_note'
 
 
 class Tag(models.Model):
@@ -159,7 +157,7 @@ class TagIndexed(models.Model):
 
     class Meta:
         apps = new_apps
-        index_together = [["slug", "title"]]
+        index_together = [['slug', 'title']]
 
 
 class TagM2MTest(models.Model):
@@ -176,7 +174,7 @@ class TagUniqueRename(models.Model):
 
     class Meta:
         apps = new_apps
-        db_table = "schema_tag"
+        db_table = 'schema_tag'
 
 
 # Based on tests/reserved_names/models.py
@@ -196,7 +194,7 @@ class UniqueTest(models.Model):
 
     class Meta:
         apps = new_apps
-        unique_together = ["year", "slug"]
+        unique_together = ['year', 'slug']
 
 
 class Node(models.Model):

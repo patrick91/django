@@ -10,7 +10,6 @@ from .models import Tag
 
 @skipUnlessDBFeature('supports_explaining_query_execution')
 class ExplainTests(TestCase):
-
     def test_basic(self):
         querysets = [
             Tag.objects.filter(name='test'),
@@ -19,7 +18,7 @@ class ExplainTests(TestCase):
             Tag.objects.filter(name='test').annotate(Count('children')),
             Tag.objects.filter(name='test').values_list('name'),
             Tag.objects.order_by().union(Tag.objects.order_by().filter(name='test')),
-            Tag.objects.all().select_for_update().filter(name='test'),
+            Tag.objects.all().select_for_update().filter(name='test')
         ]
         supported_formats = connection.features.supported_explain_formats
         all_formats = (None,) + tuple(supported_formats) + tuple(f.lower() for f in supported_formats)
@@ -54,7 +53,7 @@ class ExplainTests(TestCase):
             {'COSTS': False, 'BUFFERS': True, 'ANALYZE': True},
             {'costs': False, 'buffers': True, 'analyze': True},
             {'verbose': True, 'timing': True, 'analyze': True},
-            {'verbose': False, 'timing': False, 'analyze': True},
+            {'verbose': False, 'timing': False, 'analyze': True}
         ]
         if connection.pg_version >= 100000:
             test_options.append({'summary': True})
@@ -92,7 +91,6 @@ class ExplainTests(TestCase):
 
 @skipIfDBFeature('supports_explaining_query_execution')
 class ExplainUnsupportedTests(TestCase):
-
     def test_message(self):
         msg = 'This backend does not support explaining query execution.'
         with self.assertRaisesMessage(NotSupportedError, msg):

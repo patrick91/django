@@ -5,7 +5,6 @@ from ..utils import setup
 
 
 class UrlencodeTests(SimpleTestCase):
-
     @setup({'urlencode01': '{{ url|urlencode }}'})
     def test_urlencode01(self):
         output = self.engine.render_to_string('urlencode01', {'url': '/test&"/me?/'})
@@ -18,7 +17,6 @@ class UrlencodeTests(SimpleTestCase):
 
 
 class FunctionTests(SimpleTestCase):
-
     def test_urlencode(self):
         self.assertEqual(urlencode('fran\xe7ois & jill'), 'fran%C3%A7ois%20%26%20jill')
 

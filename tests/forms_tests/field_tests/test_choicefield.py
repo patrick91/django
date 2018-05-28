@@ -4,8 +4,7 @@ from django.test import SimpleTestCase
 from . import FormFieldAssertionsMixin
 
 
-class ChoiceFieldTest(FormFieldAssertionsMixin, SimpleTestCase):
-
+class ChoiceFieldTest(FormFieldAssertionsMixin,SimpleTestCase):
     def test_choicefield_1(self):
         f = ChoiceField(choices=[('1', 'One'), ('2', 'Two')])
         with self.assertRaisesMessage(ValidationError, "'This field is required.'"):
@@ -36,12 +35,11 @@ class ChoiceFieldTest(FormFieldAssertionsMixin, SimpleTestCase):
             f.clean('John')
 
     def test_choicefield_4(self):
-        f = ChoiceField(
-            choices=[
-                ('Numbers', (('1', 'One'), ('2', 'Two'))),
-                ('Letters', (('3', 'A'), ('4', 'B'))), ('5', 'Other'),
-            ]
-        )
+        f = ChoiceField(choices=[
+            ('Numbers', (('1', 'One'), ('2', 'Two'))),
+            ('Letters', (('3', 'A'), ('4', 'B'))),
+            ('5', 'Other')
+        ])
         self.assertEqual('1', f.clean(1))
         self.assertEqual('1', f.clean('1'))
         self.assertEqual('3', f.clean(3))
@@ -59,6 +57,7 @@ class ChoiceFieldTest(FormFieldAssertionsMixin, SimpleTestCase):
     def test_choicefield_callable(self):
         def choices():
             return [('J', 'John'), ('P', 'Paul')]
+
         f = ChoiceField(choices=choices)
         self.assertEqual('J', f.clean('J'))
 
@@ -81,8 +80,5 @@ class ChoiceFieldTest(FormFieldAssertionsMixin, SimpleTestCase):
 
     def test_choicefield_disabled(self):
         f = ChoiceField(choices=[('J', 'John'), ('P', 'Paul')], disabled=True)
-        self.assertWidgetRendersTo(
-            f,
-            '<select id="id_f" name="f" disabled><option value="J">John</option>'
-            '<option value="P">Paul</option></select>'
-        )
+        self.assertWidgetRendersTo(f, '<select id="id_f" name="f" disabled><option value="J">John</option>'
+            '<option value="P">Paul</option></select>')

@@ -5,10 +5,10 @@ from django.test import TestCase, TransactionTestCase, override_settings
 
 
 class TestSerializedRollbackInhibitsPostMigrate(TransactionTestCase):
-    """
+    '''
     TransactionTestCase._fixture_teardown() inhibits the post_migrate signal
     for test classes with serialized_rollback=True.
-    """
+    '''
     available_apps = ['test_utils']
     serialized_rollback = True
 
@@ -24,14 +24,10 @@ class TestSerializedRollbackInhibitsPostMigrate(TransactionTestCase):
     def test(self, call_command):
         # with a mocked call_command(), this doesn't have any effect.
         self._fixture_teardown()
-        call_command.assert_called_with(
-            'flush', interactive=False, allow_cascade=False,
-            reset_sequences=False, inhibit_post_migrate=True,
-            database='default', verbosity=0,
-        )
+        call_command.assert_called_with('flush', interactive=False, allow_cascade=False, reset_sequences=False, inhibit_post_migrate=True, database='default', verbosity=0)
 
 
-@override_settings(DEBUG=True)  # Enable query logging for test_queries_cleared
+@override_settings(DEBUG=True) # Enable query logging for test_queries_cleared
 class TransactionTestCaseMultiDbTests(TestCase):
     available_apps = []
     multi_db = True

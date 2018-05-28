@@ -1,10 +1,9 @@
-"""A custom backend for testing."""
+'''A custom backend for testing.'''
 
 from django.core.mail.backends.base import BaseEmailBackend
 
 
 class EmailBackend(BaseEmailBackend):
-
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.test_outbox = []

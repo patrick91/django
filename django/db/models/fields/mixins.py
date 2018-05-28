@@ -23,11 +23,9 @@ class FieldCacheMixin:
                 except KeyError:
                     pass
                 else:
-                    value = self.get_cached_value(ancestor)
-                    # Cache the ancestor value locally to speed up future
+                    value = self.get_cached_value(ancestor)# Cache the ancestor value locally to speed up future
                     # lookups.
-                    self.set_cached_value(instance, value)
-                    return value
+                    self.set_cached_value(instance, value)return value
             if default is NOT_PROVIDED:
                 raise
             return default

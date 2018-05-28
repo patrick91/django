@@ -3,7 +3,7 @@ from django.db import models
 
 class Event(models.Model):
     # Oracle can have problems with a column named "date"
-    date = models.DateField(db_column="event_date")
+    date = models.DateField(db_column='event_date')
 
 
 class Parent(models.Model):
@@ -86,10 +86,10 @@ class SwallowOneToOne(models.Model):
 
 
 class UnorderedObject(models.Model):
-    """
+    '''
     Model without any defined `Meta.ordering`.
     Refs #17198.
-    """
+    '''
     bool = models.BooleanField(default=True)
 
 
@@ -99,10 +99,10 @@ class OrderedObjectManager(models.Manager):
 
 
 class OrderedObject(models.Model):
-    """
+    '''
     Model with Manager that defines a default order.
     Refs #17198.
-    """
+    '''
     name = models.CharField(max_length=255)
     bool = models.BooleanField(default=True)
     number = models.IntegerField(default=0, db_column='number_val')

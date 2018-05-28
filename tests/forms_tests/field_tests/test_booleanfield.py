@@ -5,7 +5,6 @@ from django.test import SimpleTestCase
 
 
 class BooleanFieldTest(SimpleTestCase):
-
     def test_booleanfield_clean_1(self):
         f = BooleanField()
         with self.assertRaisesMessage(ValidationError, "'This field is required.'"):

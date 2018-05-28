@@ -15,10 +15,7 @@ from django.utils.duration import duration_microseconds
 
 class DatabaseOperations(BaseDatabaseOperations):
     cast_char_field_without_max_length = 'text'
-    cast_data_types = {
-        'DateField': 'TEXT',
-        'DateTimeField': 'TEXT',
-    }
+    cast_data_types = {'DateField': 'TEXT', 'DateTimeField': 'TEXT'}
     explain_prefix = 'EXPLAIN QUERY PLAN'
 
     def bulk_batch_size(self, fields, objs):
@@ -49,11 +46,10 @@ class DatabaseOperations(BaseDatabaseOperations):
                     pass
                 else:
                     if isinstance(output_field, bad_fields):
-                        raise utils.NotSupportedError(
-                            'You cannot use Sum, Avg, StdDev, and Variance '
+                        raise
+                        utils.NotSupportedError('You cannot use Sum, Avg, StdDev, and Variance '
                             'aggregations on date/time fields in sqlite3 '
-                            'since date/time is saved as text.'
-                        )
+                            'since date/time is saved as text.')
 
     def date_extract_sql(self, lookup_type, field_name):
         """
@@ -67,7 +63,7 @@ class DatabaseOperations(BaseDatabaseOperations):
         return str(duration_microseconds(timedelta))
 
     def format_for_duration_arithmetic(self, sql):
-        """Do nothing since formatting is handled in the custom function."""
+        '''Do nothing since formatting is handled in the custom function.'''
         return sql
 
     def date_trunc_sql(self, lookup_type, field_name):
@@ -80,30 +76,28 @@ class DatabaseOperations(BaseDatabaseOperations):
         return "'%s'" % tzname if settings.USE_TZ else 'NULL'
 
     def datetime_cast_date_sql(self, field_name, tzname):
-        return "django_datetime_cast_date(%s, %s)" % (
-            field_name, self._convert_tzname_to_sql(tzname),
-        )
+        return 'django_datetime_cast_date(%s, %s)' % (field_name, self._convert_tzname_to_sql(tzname))
 
     def datetime_cast_time_sql(self, field_name, tzname):
-        return "django_datetime_cast_time(%s, %s)" % (
-            field_name, self._convert_tzname_to_sql(tzname),
-        )
+        return 'django_datetime_cast_time(%s, %s)' % (field_name, self._convert_tzname_to_sql(tzname))
 
     def datetime_extract_sql(self, lookup_type, field_name, tzname):
-        return "django_datetime_extract('%s', %s, %s)" % (
-            lookup_type.lower(), field_name, self._convert_tzname_to_sql(tzname),
-        )
+        return \
+            "django_datetime_extract('%s', %s, %s)" \
+            % \
+            (lookup_type.lower(), field_name, self._convert_tzname_to_sql(tzname))
 
     def datetime_trunc_sql(self, lookup_type, field_name, tzname):
-        return "django_datetime_trunc('%s', %s, %s)" % (
-            lookup_type.lower(), field_name, self._convert_tzname_to_sql(tzname),
-        )
+        return \
+            "django_datetime_trunc('%s', %s, %s)" \
+            % \
+            (lookup_type.lower(), field_name, self._convert_tzname_to_sql(tzname))
 
     def time_extract_sql(self, lookup_type, field_name):
         return "django_time_extract('%s', %s)" % (lookup_type.lower(), field_name)
 
     def pk_default_value(self):
-        return "NULL"
+        return 'NULL'
 
     def _quote_params_for_last_executed_query(self, params):
         """
@@ -129,6 +123,7 @@ class DatabaseOperations(BaseDatabaseOperations):
         # Native sqlite3 cursors cannot be used as context managers.
         try:
             return cursor.execute(sql, params).fetchone()
+
         finally:
             cursor.close()
 
@@ -145,25 +140,26 @@ class DatabaseOperations(BaseDatabaseOperations):
                 values = self._quote_params_for_last_executed_query(values)
                 params = dict(zip(params, values))
             return sql % params
-        # For consistency with SQLiteCursorWrapper.execute(), just return sql
-        # when there are no parameters. See #13648 and #17158.
         else:
+            # For consistency with SQLiteCursorWrapper.execute(), just return sql
+            # when there are no parameters. See #13648 and #17158.
             return sql
 
     def quote_name(self, name):
         if name.startswith('"') and name.endswith('"'):
-            return name  # Quoting once is enough.
+            return name # Quoting once is enough.
         return '"%s"' % name
 
     def no_limit_value(self):
         return -1
 
     def sql_flush(self, style, tables, sequences, allow_cascade=False):
-        sql = ['%s %s %s;' % (
-            style.SQL_KEYWORD('DELETE'),
-            style.SQL_KEYWORD('FROM'),
-            style.SQL_FIELD(self.quote_name(table))
-        ) for table in tables]
+        sql = [
+            '%s %s %s;' \
+            % \
+            (style.SQL_KEYWORD('DELETE'), style.SQL_KEYWORD('FROM'), style.SQL_FIELD(self.quote_name(table)))
+            for table in tables
+        ]
         # Note: No requirement for reset of auto-incremented indices (cf. other
         # sql_flush() implementations). Just return SQL at this point
         return sql
@@ -177,31 +173,27 @@ class DatabaseOperations(BaseDatabaseOperations):
     def adapt_datetimefield_value(self, value):
         if value is None:
             return None
-
         # Expression values are adapted by the database.
         if hasattr(value, 'resolve_expression'):
             return value
-
         # SQLite doesn't support tz-aware datetimes
         if timezone.is_aware(value):
             if settings.USE_TZ:
                 value = timezone.make_naive(value, self.connection.timezone)
             else:
-                raise ValueError("SQLite backend does not support timezone-aware datetimes when USE_TZ is False.")
+                raise ValueError('SQLite backend does not support timezone-aware datetimes when USE_TZ is False.')
 
         return str(value)
 
     def adapt_timefield_value(self, value):
         if value is None:
             return None
-
         # Expression values are adapted by the database.
         if hasattr(value, 'resolve_expression'):
             return value
-
         # SQLite doesn't support tz-aware datetimes
         if timezone.is_aware(value):
-            raise ValueError("SQLite backend does not support timezone-aware times.")
+            raise ValueError('SQLite backend does not support timezone-aware times.')
 
         return str(value)
 
@@ -267,10 +259,7 @@ class DatabaseOperations(BaseDatabaseOperations):
         return bool(value) if value in (1, 0) else value
 
     def bulk_insert_sql(self, fields, placeholder_rows):
-        return " UNION ALL ".join(
-            "SELECT %s" % ", ".join(row)
-            for row in placeholder_rows
-        )
+        return ' UNION ALL '.join('SELECT %s' % ', '.join(row) for row in placeholder_rows)
 
     def combine_expression(self, connector, sub_expressions):
         # SQLite doesn't have a power function, so we fake it with a
@@ -285,15 +274,15 @@ class DatabaseOperations(BaseDatabaseOperations):
         fn_params = ["'%s'" % connector] + sub_expressions
         if len(fn_params) > 3:
             raise ValueError('Too many params for timedelta operations.')
-        return "django_format_dtdelta(%s)" % ', '.join(fn_params)
+        return 'django_format_dtdelta(%s)' % ', '.join(fn_params)
 
     def integer_field_range(self, internal_type):
         # SQLite doesn't enforce any integer constraints
-        return (None, None)
+        return None, None
 
     def subtract_temporals(self, internal_type, lhs, rhs):
         lhs_sql, lhs_params = lhs
         rhs_sql, rhs_params = rhs
         if internal_type == 'TimeField':
-            return "django_time_diff(%s, %s)" % (lhs_sql, rhs_sql), lhs_params + rhs_params
-        return "django_timestamp_diff(%s, %s)" % (lhs_sql, rhs_sql), lhs_params + rhs_params
+            return 'django_time_diff(%s, %s)' % (lhs_sql, rhs_sql), lhs_params + rhs_params
+        return 'django_timestamp_diff(%s, %s)' % (lhs_sql, rhs_sql), lhs_params + rhs_params

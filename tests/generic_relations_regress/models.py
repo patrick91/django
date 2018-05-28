@@ -1,13 +1,23 @@
-from django.contrib.contenttypes.fields import (
-    GenericForeignKey, GenericRelation,
-)
+from django.contrib.contenttypes.fields import GenericForeignKey, GenericRelation
 from django.contrib.contenttypes.models import ContentType
 from django.db import models
 from django.db.models.deletion import ProtectedError
 
-__all__ = ('Link', 'Place', 'Restaurant', 'Person', 'Address',
-           'CharLink', 'TextLink', 'OddRelation1', 'OddRelation2',
-           'Contact', 'Organization', 'Note', 'Company')
+__all__ = (
+    'Link',
+    'Place',
+    'Restaurant',
+    'Person',
+    'Address',
+    'CharLink',
+    'TextLink',
+    'OddRelation1',
+    'OddRelation2',
+    'Contact',
+    'Organization',
+    'Note',
+    'Company'
+)
 
 
 class Link(models.Model):
@@ -16,7 +26,7 @@ class Link(models.Model):
     content_object = GenericForeignKey()
 
     def __str__(self):
-        return "Link to %s id=%s" % (self.content_type, self.object_id)
+        return 'Link to %s id=%s' % (self.content_type, self.object_id)
 
 
 class LinkProxy(Link):
@@ -30,17 +40,17 @@ class Place(models.Model):
     link_proxy = GenericRelation(LinkProxy)
 
     def __str__(self):
-        return "Place: %s" % self.name
+        return 'Place: %s' % self.name
 
 
 class Restaurant(Place):
     def __str__(self):
-        return "Restaurant: %s" % self.name
+        return 'Restaurant: %s' % self.name
 
 
 class Cafe(Restaurant):
     def __str__(self):
-        return "Cafe: %s" % self.name
+        return 'Cafe: %s' % self.name
 
 
 class Address(models.Model):
@@ -109,7 +119,7 @@ class Company(models.Model):
     links = GenericRelation(Link)
 
     def __str__(self):
-        return "Company: %s" % self.name
+        return 'Company: %s' % self.name
 
 
 # For testing #13085 fix, we also use Note model defined above
@@ -122,7 +132,7 @@ class Team(models.Model):
     members = models.ManyToManyField(Developer)
 
     def __str__(self):
-        return "%s team" % self.name
+        return '%s team' % self.name
 
     def __len__(self):
         return self.members.count()
@@ -214,7 +224,7 @@ class Related(models.Model):
 
 
 def prevent_deletes(sender, instance, **kwargs):
-    raise ProtectedError("Not allowed to delete.", [instance])
+    raise ProtectedError('Not allowed to delete.', [instance])
 
 
 models.signals.pre_delete.connect(prevent_deletes, sender=Node)

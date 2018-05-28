@@ -29,7 +29,7 @@ class Reporter(models.Model):
         unique_together = ('first_name', 'last_name')
 
     def __str__(self):
-        return "%s %s" % (self.first_name, self.last_name)
+        return '%s %s' % (self.first_name, self.last_name)
 
 
 class Article(models.Model):
@@ -45,10 +45,7 @@ class Article(models.Model):
 
     class Meta:
         ordering = ('headline',)
-        index_together = [
-            ["headline", "pub_date"],
-            ['headline', 'response_to', 'pub_date', 'reporter'],
-        ]
+        index_together = [['headline', 'pub_date'], ['headline', 'response_to', 'pub_date', 'reporter']]
 
 
 class ArticleReporter(models.Model):

@@ -7,12 +7,11 @@ from .base import MultipleLocaleActivationTestCase
 
 
 class MultipleLocaleActivationTests(MultipleLocaleActivationTestCase):
-
     def test_single_locale_activation(self):
-        """
+        '''
         Simple baseline behavior with one locale for all the supported i18n
         constructs.
-        """
+        '''
         with translation.override('fr'):
             self.assertEqual(Template("{{ _('Yes') }}").render(Context({})), 'Oui')
 
@@ -78,12 +77,11 @@ class MultipleLocaleActivationTests(MultipleLocaleActivationTestCase):
 
 
 class I18nStringLiteralTests(SimpleTestCase):
-    """translation of constant strings"""
+    '''translation of constant strings'''
     libraries = {'i18n': 'django.templatetags.i18n'}
 
     @setup({'i18n13': '{{ _("Password") }}'})
     def test_i18n13(self):
-
         with translation.override('de'):
             output = self.engine.render_to_string('i18n13')
         self.assertEqual(output, 'Passwort')

@@ -7,7 +7,6 @@ from .client import DatabaseClient
 
 
 class DatabaseCreation(BaseDatabaseCreation):
-
     def sql_table_creation_suffix(self):
         suffix = []
         test_settings = self.connection.settings_dict['TEST']
@@ -27,7 +26,9 @@ class DatabaseCreation(BaseDatabaseCreation):
                     SET @_tmp_sql_notes := @@sql_notes, sql_notes = 0;
                     CREATE DATABASE IF NOT EXISTS %(dbname)s %(suffix)s;
                     SET sql_notes = @_tmp_sql_notes;
-                ''' % parameters)
+                ''' \
+                % \
+                parameters)
             else:
                 super()._execute_create_test_db(cursor, parameters, keepdb)
         except Exception as e:
@@ -43,7 +44,7 @@ class DatabaseCreation(BaseDatabaseCreation):
         target_database_name = self.get_test_db_clone_settings(suffix)['NAME']
         test_db_params = {
             'dbname': self.connection.ops.quote_name(target_database_name),
-            'suffix': self.sql_table_creation_suffix(),
+            'suffix': self.sql_table_creation_suffix()
         }
         with self._nodb_connection.cursor() as cursor:
             try:
@@ -51,13 +52,13 @@ class DatabaseCreation(BaseDatabaseCreation):
             except Exception:
                 try:
                     if verbosity >= 1:
-                        print("Destroying old test database for alias %s..." % (
-                            self._get_database_display_str(verbosity, target_database_name),
-                        ))
+                        print('Destroying old test database for alias %s...' \
+                        % \
+                        (self._get_database_display_str(verbosity, target_database_name),))
                     cursor.execute('DROP DATABASE %(dbname)s' % test_db_params)
                     self._execute_create_test_db(cursor, test_db_params, keepdb)
                 except Exception as e:
-                    sys.stderr.write("Got an error recreating the test database: %s\n" % e)
+                    sys.stderr.write('Got an error recreating the test database: %s\n' % e)
                     sys.exit(2)
 
         dump_cmd = DatabaseClient.settings_to_cmd_args(self.connection.settings_dict)
@@ -68,5 +69,5 @@ class DatabaseCreation(BaseDatabaseCreation):
 
         dump_proc = subprocess.Popen(dump_cmd, stdout=subprocess.PIPE)
         load_proc = subprocess.Popen(load_cmd, stdin=dump_proc.stdout, stdout=subprocess.PIPE)
-        dump_proc.stdout.close()    # allow dump_proc to receive a SIGPIPE if load_proc exits.
+        dump_proc.stdout.close() # allow dump_proc to receive a SIGPIPE if load_proc exits.
         load_proc.communicate()

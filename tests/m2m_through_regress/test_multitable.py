@@ -1,8 +1,6 @@
 from django.test import TestCase
 
-from .models import (
-    CompetingTeam, Event, Group, IndividualCompetitor, Membership, Person,
-)
+from .models import CompetingTeam, Event, Group, IndividualCompetitor, Membership, Person
 
 
 class MultiTableTests(TestCase):

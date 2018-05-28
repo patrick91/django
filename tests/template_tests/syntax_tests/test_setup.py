@@ -4,7 +4,6 @@ from ..utils import setup
 
 
 class SetupTests(SimpleTestCase):
-
     def test_setup(self):
         """
         Let's just make sure setup runs cases in the right order.
@@ -13,10 +12,7 @@ class SetupTests(SimpleTestCase):
 
         @setup({})
         def method(self):
-            cases.append([
-                self.engine.string_if_invalid,
-                self.engine.debug,
-            ])
+            cases.append([self.engine.string_if_invalid, self.engine.debug])
 
         method(self)
 

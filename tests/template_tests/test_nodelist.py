@@ -5,7 +5,6 @@ from django.template.base import TextNode, VariableNode
 
 
 class NodelistTest(TestCase):
-
     @classmethod
     def setUpClass(cls):
         cls.engine = Engine()
@@ -33,12 +32,11 @@ class NodelistTest(TestCase):
 
 
 class TextNodeTest(TestCase):
-
     def test_textnode_repr(self):
         engine = Engine()
         for temptext, reprtext in [
-            ("Hello, world!", "<TextNode: 'Hello, world!'>"),
-            ("One\ntwo.", "<TextNode: 'One\\ntwo.'>"),
+            ('Hello, world!', "<TextNode: 'Hello, world!'>"),
+            ('One\ntwo.', "<TextNode: 'One\\ntwo.'>")
         ]:
             template = engine.from_string(temptext)
             texts = template.nodelist.get_nodes_by_type(TextNode)
@@ -46,10 +44,11 @@ class TextNodeTest(TestCase):
 
 
 class ErrorIndexTest(TestCase):
-    """
+    '''
     Checks whether index of error is calculated correctly in
     template debugger in for loops. Refs ticket #5831
-    """
+    '''
+
     def test_correct_exception_index(self):
         tests = [
             ('{% load bad_tag %}{% for i in range %}{% badsimpletag %}{% endfor %}', (38, 56)),
@@ -68,12 +67,9 @@ class ErrorIndexTest(TestCase):
                 '{% badsimpletag %}{% endfor %}{% endfor %}',
                 (38, 57)
             ),
-            ('{% load bad_tag %}{% for j in five %}{% badsimpletag %}{% endfor %}', (18, 37)),
+            ('{% load bad_tag %}{% for j in five %}{% badsimpletag %}{% endfor %}', (18, 37))
         ]
-        context = Context({
-            'range': range(5),
-            'five': 5,
-        })
+        context = Context({'range': range(5), 'five': 5})
         engine = Engine(debug=True, libraries={'bad_tag': 'template_tests.templatetags.bad_tag'})
         for source, expected_error_source_index in tests:
             template = engine.from_string(source)

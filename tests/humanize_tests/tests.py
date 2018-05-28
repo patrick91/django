@@ -28,62 +28,125 @@ class MockDateTime(datetime.datetime):
 
 @modify_settings(INSTALLED_APPS={'append': 'django.contrib.humanize'})
 class HumanizeTests(SimpleTestCase):
-
     def humanize_tester(self, test_list, result_list, method, normalize_result_func=escape):
         for test_content, result in zip(test_list, result_list):
             t = Template('{%% load humanize %%}{{ test_content|%s }}' % method)
             rendered = t.render(Context(locals())).strip()
-            self.assertEqual(rendered, normalize_result_func(result),
-                             msg="%s test failed, produced '%s', should've produced '%s'" % (method, rendered, result))
+            self.assertEqual(rendered, normalize_result_func(result), msg="%s test failed, produced '%s', should've produced '%s'" \
+            % \
+            (method, rendered, result))
 
     def test_ordinal(self):
-        test_list = ('1', '2', '3', '4', '11', '12',
-                     '13', '101', '102', '103', '111',
-                     'something else', None)
-        result_list = ('1st', '2nd', '3rd', '4th', '11th',
-                       '12th', '13th', '101st', '102nd', '103rd',
-                       '111th', 'something else', None)
+        test_list = ('1', '2', '3', '4', '11', '12', '13', '101', '102', '103', '111', 'something else', None)
+        result_list = (
+            '1st',
+            '2nd',
+            '3rd',
+            '4th',
+            '11th',
+            '12th',
+            '13th',
+            '101st',
+            '102nd',
+            '103rd',
+            '111th',
+            'something else',
+            None
+        )
 
         with translation.override('en'):
             self.humanize_tester(test_list, result_list, 'ordinal')
 
     def test_i18n_html_ordinal(self):
-        """Allow html in output on i18n strings"""
-        test_list = ('1', '2', '3', '4', '11', '12',
-                     '13', '101', '102', '103', '111',
-                     'something else', None)
-        result_list = ('1<sup>er</sup>', '2<sup>e</sup>', '3<sup>e</sup>', '4<sup>e</sup>',
-                       '11<sup>e</sup>', '12<sup>e</sup>', '13<sup>e</sup>', '101<sup>er</sup>',
-                       '102<sup>e</sup>', '103<sup>e</sup>', '111<sup>e</sup>', 'something else',
-                       'None')
+        '''Allow html in output on i18n strings'''
+        test_list = ('1', '2', '3', '4', '11', '12', '13', '101', '102', '103', '111', 'something else', None)
+        result_list = (
+            '1<sup>er</sup>',
+            '2<sup>e</sup>',
+            '3<sup>e</sup>',
+            '4<sup>e</sup>',
+            '11<sup>e</sup>',
+            '12<sup>e</sup>',
+            '13<sup>e</sup>',
+            '101<sup>er</sup>',
+            '102<sup>e</sup>',
+            '103<sup>e</sup>',
+            '111<sup>e</sup>',
+            'something else',
+            'None'
+        )
 
         with translation.override('fr-fr'):
             self.humanize_tester(test_list, result_list, 'ordinal', lambda x: x)
 
     def test_intcomma(self):
         test_list = (
-            100, 1000, 10123, 10311, 1000000, 1234567.25, '100', '1000',
-            '10123', '10311', '1000000', '1234567.1234567',
-            Decimal('1234567.1234567'), None,
+            100,
+            1000,
+            10123,
+            10311,
+            1000000,
+            1234567.25,
+            '100',
+            '1000',
+            '10123',
+            '10311',
+            '1000000',
+            '1234567.1234567',
+            Decimal('1234567.1234567'),
+            None
         )
         result_list = (
-            '100', '1,000', '10,123', '10,311', '1,000,000', '1,234,567.25',
-            '100', '1,000', '10,123', '10,311', '1,000,000', '1,234,567.1234567',
-            '1,234,567.1234567', None,
+            '100',
+            '1,000',
+            '10,123',
+            '10,311',
+            '1,000,000',
+            '1,234,567.25',
+            '100',
+            '1,000',
+            '10,123',
+            '10,311',
+            '1,000,000',
+            '1,234,567.1234567',
+            '1,234,567.1234567',
+            None
         )
         with translation.override('en'):
             self.humanize_tester(test_list, result_list, 'intcomma')
 
     def test_l10n_intcomma(self):
         test_list = (
-            100, 1000, 10123, 10311, 1000000, 1234567.25, '100', '1000',
-            '10123', '10311', '1000000', '1234567.1234567',
-            Decimal('1234567.1234567'), None,
+            100,
+            1000,
+            10123,
+            10311,
+            1000000,
+            1234567.25,
+            '100',
+            '1000',
+            '10123',
+            '10311',
+            '1000000',
+            '1234567.1234567',
+            Decimal('1234567.1234567'),
+            None
         )
         result_list = (
-            '100', '1,000', '10,123', '10,311', '1,000,000', '1,234,567.25',
-            '100', '1,000', '10,123', '10,311', '1,000,000', '1,234,567.1234567',
-            '1,234,567.1234567', None,
+            '100',
+            '1,000',
+            '10,123',
+            '10,311',
+            '1,000,000',
+            '1,234,567.25',
+            '100',
+            '1,000',
+            '10,123',
+            '10,311',
+            '1,000,000',
+            '1,234,567.1234567',
+            '1,234,567.1234567',
+            None
         )
         with self.settings(USE_L10N=True, USE_THOUSAND_SEPARATOR=False):
             with translation.override('en'):
@@ -96,35 +159,64 @@ class HumanizeTests(SimpleTestCase):
 
     def test_intword(self):
         test_list = (
-            '100', '1000000', '1200000', '1290000', '1000000000', '2000000000',
-            '6000000000000', '1300000000000000', '3500000000000000000000',
-            '8100000000000000000000000000000000', None,
+            '100',
+            '1000000',
+            '1200000',
+            '1290000',
+            '1000000000',
+            '2000000000',
+            '6000000000000',
+            '1300000000000000',
+            '3500000000000000000000',
+            '8100000000000000000000000000000000',
+            None
         )
         result_list = (
-            '100', '1.0 million', '1.2 million', '1.3 million', '1.0 billion',
-            '2.0 billion', '6.0 trillion', '1.3 quadrillion', '3.5 sextillion',
-            '8.1 decillion', None,
+            '100',
+            '1.0 million',
+            '1.2 million',
+            '1.3 million',
+            '1.0 billion',
+            '2.0 billion',
+            '6.0 trillion',
+            '1.3 quadrillion',
+            '3.5 sextillion',
+            '8.1 decillion',
+            None
         )
         with translation.override('en'):
             self.humanize_tester(test_list, result_list, 'intword')
 
     def test_i18n_intcomma(self):
-        test_list = (100, 1000, 10123, 10311, 1000000, 1234567.25,
-                     '100', '1000', '10123', '10311', '1000000', None)
-        result_list = ('100', '1.000', '10.123', '10.311', '1.000.000', '1.234.567,25',
-                       '100', '1.000', '10.123', '10.311', '1.000.000', None)
+        test_list = (100, 1000, 10123, 10311, 1000000, 1234567.25, '100', '1000', '10123', '10311', '1000000', None)
+        result_list = (
+            '100',
+            '1.000',
+            '10.123',
+            '10.311',
+            '1.000.000',
+            '1.234.567,25',
+            '100',
+            '1.000',
+            '10.123',
+            '10.311',
+            '1.000.000',
+            None
+        )
         with self.settings(USE_L10N=True, USE_THOUSAND_SEPARATOR=True):
             with translation.override('de'):
                 self.humanize_tester(test_list, result_list, 'intcomma')
 
     def test_i18n_intword(self):
-        test_list = (
-            '100', '1000000', '1200000', '1290000', '1000000000', '2000000000',
-            '6000000000000',
-        )
+        test_list = ('100', '1000000', '1200000', '1290000', '1000000000', '2000000000', '6000000000000')
         result_list = (
-            '100', '1,0 Million', '1,2 Millionen', '1,3 Millionen',
-            '1,0 Milliarde', '2,0 Milliarden', '6,0 Billionen',
+            '100',
+            '1,0 Million',
+            '1,2 Millionen',
+            '1,3 Millionen',
+            '1,0 Milliarde',
+            '2,0 Milliarden',
+            '6,0 Billionen'
         )
         with self.settings(USE_L10N=True, USE_THOUSAND_SEPARATOR=True):
             with translation.override('de'):
@@ -146,22 +238,19 @@ class HumanizeTests(SimpleTestCase):
 
         test_list = (today, yesterday, tomorrow, someday, notdate, None)
         someday_result = defaultfilters.date(someday)
-        result_list = (_('today'), _('yesterday'), _('tomorrow'),
-                       someday_result, "I'm not a date value", None)
+        result_list = (_('today'), _('yesterday'), _('tomorrow'), someday_result, "I'm not a date value", None)
         self.humanize_tester(test_list, result_list, 'naturalday')
 
     def test_naturalday_tz(self):
         today = datetime.date.today()
         tz_one = get_fixed_timezone(-720)
         tz_two = get_fixed_timezone(720)
-
         # Can be today or yesterday
         date_one = datetime.datetime(today.year, today.month, today.day, tzinfo=tz_one)
         naturalday_one = humanize.naturalday(date_one)
         # Can be today or tomorrow
         date_two = datetime.datetime(today.year, today.month, today.day, tzinfo=tz_two)
         naturalday_two = humanize.naturalday(date_two)
-
         # As 24h of difference they will never be the same
         self.assertNotEqual(naturalday_one, naturalday_two)
 
@@ -172,9 +261,10 @@ class HumanizeTests(SimpleTestCase):
 
         orig_humanize_datetime, humanize.datetime = humanize.datetime, MockDateTime
         try:
-            with override_settings(TIME_ZONE="America/Chicago", USE_TZ=True):
+            with override_settings(TIME_ZONE='America/Chicago', USE_TZ=True):
                 with translation.override('en'):
                     self.humanize_tester([dt], ['yesterday'], 'naturalday')
+
         finally:
             humanize.datetime = orig_humanize_datetime
 
@@ -182,6 +272,7 @@ class HumanizeTests(SimpleTestCase):
         class naive(datetime.tzinfo):
             def utcoffset(self, dt):
                 return None
+
         test_list = [
             now,
             now - datetime.timedelta(seconds=1),
@@ -202,7 +293,7 @@ class HumanizeTests(SimpleTestCase):
             now + datetime.timedelta(days=2, hours=6),
             now + datetime.timedelta(days=500),
             now.replace(tzinfo=naive()),
-            now.replace(tzinfo=utc),
+            now.replace(tzinfo=utc)
         ]
         result_list = [
             'now',
@@ -224,7 +315,7 @@ class HumanizeTests(SimpleTestCase):
             '2\xa0days, 6\xa0hours from now',
             '1\xa0year, 4\xa0months from now',
             'now',
-            'now',
+            'now'
         ]
         # Because of the DST change, 2 days and 6 hours after the chosen
         # date in naive arithmetic is only 2 days and 5 hours after in
@@ -238,15 +329,15 @@ class HumanizeTests(SimpleTestCase):
             with translation.override('en'):
                 self.humanize_tester(test_list, result_list, 'naturaltime')
                 with override_settings(USE_TZ=True):
-                    self.humanize_tester(
-                        test_list, result_list_with_tz_support, 'naturaltime')
+                    self.humanize_tester(test_list, result_list_with_tz_support, 'naturaltime')
+
         finally:
             humanize.datetime = orig_humanize_datetime
 
     def test_naturaltime_as_documented(self):
-        """
+        '''
         #23340 -- Verify the documented behavior of humanize.naturaltime.
-        """
+        '''
         time_format = '%d %b %Y %H:%M:%S'
         documented_now = datetime.datetime.strptime('17 Feb 2007 16:30:00', time_format)
 
@@ -269,7 +360,7 @@ class HumanizeTests(SimpleTestCase):
             ('17 Feb 2007 17:30:29', 'an hour from now'),
             ('17 Feb 2007 18:31:29', '2 hours from now'),
             ('18 Feb 2007 16:31:29', '1 day from now'),
-            ('26 Feb 2007 18:31:29', '1 week, 2 days from now'),
+            ('26 Feb 2007 18:31:29', '1 week, 2 days from now')
         )
 
         class DocumentedMockDateTime(datetime.datetime):
@@ -287,18 +378,19 @@ class HumanizeTests(SimpleTestCase):
                 test_time = datetime.datetime.strptime(test_time_string, time_format)
                 natural_time = humanize.naturaltime(test_time).replace('\xa0', ' ')
                 self.assertEqual(expected_natural_time, natural_time)
+
         finally:
             humanize.datetime = orig_humanize_datetime
 
     def test_dative_inflection_for_timedelta(self):
-        """Translation may differ depending on the string it is inserted in."""
+        '''Translation may differ depending on the string it is inserted in.'''
         test_list = [
             now - datetime.timedelta(days=1),
             now - datetime.timedelta(days=2),
             now - datetime.timedelta(days=30),
             now - datetime.timedelta(days=60),
             now - datetime.timedelta(days=500),
-            now - datetime.timedelta(days=865),
+            now - datetime.timedelta(days=865)
         ]
         result_list = [
             'vor 1\xa0Tag',
@@ -306,12 +398,13 @@ class HumanizeTests(SimpleTestCase):
             'vor 1\xa0Monat',
             'vor 2\xa0Monaten',
             'vor 1\xa0Jahr, 4\xa0Monaten',
-            'vor 2\xa0Jahren, 4\xa0Monaten',
+            'vor 2\xa0Jahren, 4\xa0Monaten'
         ]
 
         orig_humanize_datetime, humanize.datetime = humanize.datetime, MockDateTime
         try:
             with translation.override('de'), self.settings(USE_L10N=True):
                 self.humanize_tester(test_list, result_list, 'naturaltime')
+
         finally:
             humanize.datetime = orig_humanize_datetime

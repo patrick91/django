@@ -3,9 +3,9 @@ from django.utils.translation import gettext as _
 
 
 def feed(request, url, feed_dict=None):
-    """Provided for backwards compatibility."""
+    '''Provided for backwards compatibility.'''
     if not feed_dict:
-        raise Http404(_("No feeds are registered."))
+        raise Http404(_('No feeds are registered.'))
 
     slug = url.partition('/')[0]
     try:
@@ -15,6 +15,6 @@ def feed(request, url, feed_dict=None):
 
     instance = f()
     instance.feed_url = getattr(f, 'feed_url', None) or request.path
-    instance.title_template = f.title_template or ('feeds/%s_title.html' % slug)
-    instance.description_template = f.description_template or ('feeds/%s_description.html' % slug)
+    instance.title_template = f.title_template or 'feeds/%s_title.html' % slug
+    instance.description_template = f.description_template or 'feeds/%s_description.html' % slug
     return instance(request)

@@ -2,7 +2,7 @@ from django.core.management.base import BaseCommand
 
 
 class Command(BaseCommand):
-    help = "Test No-args commands"
+    help = 'Test No-args commands'
     requires_system_checks = False
 
     def handle(self, **options):

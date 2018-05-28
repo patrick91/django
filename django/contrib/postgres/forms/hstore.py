@@ -8,13 +8,13 @@ __all__ = ['HStoreField']
 
 
 class HStoreField(forms.CharField):
-    """
+    '''
     A field for HStore data which accepts dictionary JSON input.
-    """
+    '''
     widget = forms.Textarea
     default_error_messages = {
         'invalid_json': _('Could not load JSON data.'),
-        'invalid_format': _('Input must be a JSON dictionary.'),
+        'invalid_format': _('Input must be a JSON dictionary.')
     }
 
     def prepare_value(self, value):
@@ -29,17 +29,10 @@ class HStoreField(forms.CharField):
             try:
                 value = json.loads(value)
             except json.JSONDecodeError:
-                raise ValidationError(
-                    self.error_messages['invalid_json'],
-                    code='invalid_json',
-                )
+                raise ValidationError(self.error_messages['invalid_json'], code='invalid_json')
 
         if not isinstance(value, dict):
-            raise ValidationError(
-                self.error_messages['invalid_format'],
-                code='invalid_format',
-            )
-
+            raise ValidationError(self.error_messages['invalid_format'], code='invalid_format')
         # Cast everything to strings for ease.
         for key, val in value.items():
             if val is not None:
@@ -48,9 +41,9 @@ class HStoreField(forms.CharField):
         return value
 
     def has_changed(self, initial, data):
-        """
+        '''
         Return True if data differs from initial.
-        """
+        '''
         # For purposes of seeing whether something has changed, None is
         # the same as an empty dict, if the data or initial value we get
         # is None, replace it w/ {}.

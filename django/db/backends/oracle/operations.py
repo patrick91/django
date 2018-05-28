@@ -20,10 +20,9 @@ class DatabaseOperations(BaseDatabaseOperations):
         'IntegerField': (-99999999999, 99999999999),
         'BigIntegerField': (-9999999999999999999, 9999999999999999999),
         'PositiveSmallIntegerField': (0, 99999999999),
-        'PositiveIntegerField': (0, 99999999999),
+        'PositiveIntegerField': (0, 99999999999)
     }
-    set_operators = {**BaseDatabaseOperations.set_operators, 'difference': 'MINUS'}
-
+    set_operators = {: BaseDatabaseOperations.set_operators, 'difference': 'MINUS'}
     # TODO: colorize this SQL code with style.SQL_KEYWORD(), etc.
     _sequence_reset_sql = """
 DECLARE
@@ -48,12 +47,9 @@ BEGIN
     END LOOP;
 END;
 /"""
-
     # Oracle doesn't support string without precision; use the max string size.
     cast_char_field_without_max_length = 'NVARCHAR2(2000)'
-    cast_data_types = {
-        'TextField': cast_char_field_without_max_length,
-    }
+    cast_data_types = {'TextField': cast_char_field_without_max_length}
 
     def cache_key_culling_sql(self):
         return 'SELECT cache_key FROM %s ORDER BY cache_key OFFSET %%s ROWS FETCH FIRST 1 ROWS ONLY'
@@ -69,7 +65,7 @@ END;
             return "TO_CHAR(%s, 'Q')" % field_name
         else:
             # https://docs.oracle.com/database/121/SQLRF/functions067.htm#SQLRF00639
-            return "EXTRACT(%s FROM %s)" % (lookup_type.upper(), field_name)
+            return 'EXTRACT(%s FROM %s)' % (lookup_type.upper(), field_name)
 
     def date_trunc_sql(self, lookup_type, field_name):
         # https://docs.oracle.com/database/121/SQLRF/functions271.htm#SQLRF52058
@@ -80,7 +76,7 @@ END;
         elif lookup_type == 'week':
             return "TRUNC(%s, 'IW')" % field_name
         else:
-            return "TRUNC(%s)" % field_name
+            return 'TRUNC(%s)' % field_name
 
     # Oracle crashes with "ORA-03113: end-of-file on communication channel"
     # if the time zone name is passed in parameter. Use interpolation instead.
@@ -92,7 +88,7 @@ END;
         if not settings.USE_TZ:
             return field_name
         if not self._tzname_re.match(tzname):
-            raise ValueError("Invalid time zone name: %s" % tzname)
+            raise ValueError('Invalid time zone name: %s' % tzname)
         # Convert from UTC to local time, returning TIMESTAMP WITH TIME ZONE
         # and cast it back to TIMESTAMP to strip the TIME ZONE details.
         return "CAST((FROM_TZ(%s, '0:00') AT TIME ZONE '%s') AS TIMESTAMP)" % (field_name, tzname)
@@ -120,13 +116,13 @@ END;
         elif lookup_type == 'week':
             sql = "TRUNC(%s, 'IW')" % field_name
         elif lookup_type == 'day':
-            sql = "TRUNC(%s)" % field_name
+            sql = 'TRUNC(%s)' % field_name
         elif lookup_type == 'hour':
             sql = "TRUNC(%s, 'HH24')" % field_name
         elif lookup_type == 'minute':
             sql = "TRUNC(%s, 'MI')" % field_name
         else:
-            sql = "CAST(%s AS DATE)" % field_name  # Cast to DATE removes sub-second precision.
+            sql = 'CAST(%s AS DATE)' % field_name # Cast to DATE removes sub-second precision.
         return sql
 
     def time_trunc_sql(self, lookup_type, field_name):
@@ -138,7 +134,7 @@ END;
         elif lookup_type == 'minute':
             sql = "TRUNC(%s, 'MI')" % field_name
         elif lookup_type == 'second':
-            sql = "CAST(%s AS DATE)" % field_name  # Cast to DATE removes sub-second precision.
+            sql = 'CAST(%s AS DATE)' % field_name # Cast to DATE removes sub-second precision.
         return sql
 
     def get_db_converters(self, expression):
@@ -163,11 +159,7 @@ END;
         # string, undo this to adhere to the Django convention of using
         # the empty string instead of null.
         if expression.field.empty_strings_allowed:
-            converters.append(
-                self.convert_empty_bytes
-                if internal_type == 'BinaryField' else
-                self.convert_empty_string
-            )
+            converters.append(self.convert_empty_bytes if internal_type == 'BinaryField' else self.convert_empty_string)
         return converters
 
     def convert_textfield_value(self, value, expression, connection):
@@ -218,34 +210,33 @@ END;
         return b'' if value is None else value
 
     def deferrable_sql(self):
-        return " DEFERRABLE INITIALLY DEFERRED"
+        return ' DEFERRABLE INITIALLY DEFERRED'
 
     def fetch_returned_insert_id(self, cursor):
         try:
             return int(cursor._insert_id_var.getvalue())
         except (IndexError, TypeError):
             # cx_Oracle < 6.3 returns None, >= 6.3 raises IndexError.
-            raise DatabaseError(
-                'The database did not return a new row id. Probably "ORA-1403: '
+            raise
+            DatabaseError('The database did not return a new row id. Probably "ORA-1403: '
                 'no data found" was raised internally but was hidden by the '
-                'Oracle OCI library (see https://code.djangoproject.com/ticket/28859).'
-            )
+                'Oracle OCI library (see https://code.djangoproject.com/ticket/28859).')
 
     def field_cast_sql(self, db_type, internal_type):
         if db_type and db_type.endswith('LOB'):
-            return "DBMS_LOB.SUBSTR(%s)"
+            return 'DBMS_LOB.SUBSTR(%s)'
         else:
-            return "%s"
+            return '%s'
 
     def no_limit_value(self):
         return None
 
     def limit_offset_sql(self, low_mark, high_mark):
         fetch, offset = self._get_limit_offset_params(low_mark, high_mark)
-        return '%s%s' % (
-            (' OFFSET %d ROWS' % offset) if offset else '',
-            (' FETCH FIRST %d ROWS ONLY' % fetch) if fetch else '',
-        )
+        return \
+            '%s%s' \
+            % \
+            (' OFFSET %d ROWS' % offset if offset else '', ' FETCH FIRST %d ROWS ONLY' % fetch if fetch else '')
 
     def last_executed_query(self, cursor, sql, params):
         # https://cx-oracle.readthedocs.io/en/latest/cursor.html#Cursor.statement
@@ -262,8 +253,8 @@ END;
 
     def lookup_cast(self, lookup_type, internal_type=None):
         if lookup_type in ('iexact', 'icontains', 'istartswith', 'iendswith'):
-            return "UPPER(%s)"
-        return "%s"
+            return 'UPPER(%s)'
+        return '%s'
 
     def max_in_list_size(self):
         return 1000
@@ -272,7 +263,7 @@ END;
         return 30
 
     def pk_default_value(self):
-        return "NULL"
+        return 'NULL'
 
     def prep_for_iexact_query(self, x):
         return x
@@ -296,7 +287,7 @@ END;
         return name.upper()
 
     def random_function_sql(self):
-        return "DBMS_RANDOM.RANDOM"
+        return 'DBMS_RANDOM.RANDOM'
 
     def regex_lookup(self, lookup_type):
         if lookup_type == 'regex':
@@ -306,13 +297,13 @@ END;
         return 'REGEXP_LIKE(%%s, %%s, %s)' % match_option
 
     def return_insert_id(self):
-        return "RETURNING %s INTO %%s", (InsertIdVar(),)
+        return 'RETURNING %s INTO %%s', (InsertIdVar(),)
 
     def savepoint_create_sql(self, sid):
-        return "SAVEPOINT " + self.quote_name(sid)
+        return 'SAVEPOINT ' + self.quote_name(sid)
 
     def savepoint_rollback_sql(self, sid):
-        return "ROLLBACK TO SAVEPOINT " + self.quote_name(sid)
+        return 'ROLLBACK TO SAVEPOINT ' + self.quote_name(sid)
 
     def _foreign_key_constraints(self, table_name, recursive=False):
         with self.connection.cursor() as cursor:
@@ -334,7 +325,10 @@ END;
                         user_tables.table_name, rcons.constraint_name
                     HAVING user_tables.table_name != UPPER(%s)
                     ORDER BY MAX(level) DESC
-                """, (table_name, table_name))
+                """, (
+                    table_name,
+                    table_name
+                ))
             else:
                 cursor.execute("""
                     SELECT
@@ -344,7 +338,9 @@ END;
                     WHERE
                         cons.constraint_type = 'R'
                         AND cons.table_name = UPPER(%s)
-                """, (table_name,))
+                """, (
+                    table_name,
+                ))
             return cursor.fetchall()
 
     def sql_flush(self, style, tables, sequences, allow_cascade=False):
@@ -362,7 +358,9 @@ END;
                         truncated_tables.add(foreign_table)
                     constraints.add((foreign_table, constraint))
             sql = [
-                "%s %s %s %s %s %s %s %s;" % (
+                '%s %s %s %s %s %s %s %s;' \
+                % \
+                (
                     style.SQL_KEYWORD('ALTER'),
                     style.SQL_KEYWORD('TABLE'),
                     style.SQL_FIELD(self.quote_name(table)),
@@ -370,23 +368,30 @@ END;
                     style.SQL_KEYWORD('CONSTRAINT'),
                     style.SQL_FIELD(self.quote_name(constraint)),
                     style.SQL_KEYWORD('KEEP'),
-                    style.SQL_KEYWORD('INDEX'),
-                ) for table, constraint in constraints
-            ] + [
-                "%s %s %s;" % (
-                    style.SQL_KEYWORD('TRUNCATE'),
-                    style.SQL_KEYWORD('TABLE'),
-                    style.SQL_FIELD(self.quote_name(table)),
-                ) for table in truncated_tables
-            ] + [
-                "%s %s %s %s %s %s;" % (
+                    style.SQL_KEYWORD('INDEX')
+                )
+                for (table, constraint) in constraints
+            ] \
+            + \
+            [
+                '%s %s %s;' \
+                % \
+                (style.SQL_KEYWORD('TRUNCATE'), style.SQL_KEYWORD('TABLE'), style.SQL_FIELD(self.quote_name(table)))
+                for table in truncated_tables
+            ] \
+            + \
+            [
+                '%s %s %s %s %s %s;' \
+                % \
+                (
                     style.SQL_KEYWORD('ALTER'),
                     style.SQL_KEYWORD('TABLE'),
                     style.SQL_FIELD(self.quote_name(table)),
                     style.SQL_KEYWORD('ENABLE'),
                     style.SQL_KEYWORD('CONSTRAINT'),
-                    style.SQL_FIELD(self.quote_name(constraint)),
-                ) for table, constraint in constraints
+                    style.SQL_FIELD(self.quote_name(constraint))
+                )
+                for (table, constraint) in constraints
             ]
             # Since we've just deleted all the rows, running our sequence
             # ALTER code will reset the sequence to 0.
@@ -401,12 +406,14 @@ END;
             no_autofield_sequence_name = self._get_no_autofield_sequence_name(sequence_info['table'])
             table = self.quote_name(sequence_info['table'])
             column = self.quote_name(sequence_info['column'] or 'id')
-            query = self._sequence_reset_sql % {
+            query = self._sequence_reset_sql \
+            % \
+            {
                 'no_autofield_sequence_name': no_autofield_sequence_name,
                 'table': table,
                 'column': column,
                 'table_name': strip_quotes(table),
-                'column_name': strip_quotes(column),
+                'column_name': strip_quotes(column)
             }
             sql.append(query)
         return sql
@@ -421,12 +428,14 @@ END;
                     no_autofield_sequence_name = self._get_no_autofield_sequence_name(model._meta.db_table)
                     table = self.quote_name(model._meta.db_table)
                     column = self.quote_name(f.column)
-                    output.append(query % {
+                    output.append(query \
+                    % \
+                    {
                         'no_autofield_sequence_name': no_autofield_sequence_name,
                         'table': table,
                         'column': column,
                         'table_name': strip_quotes(table),
-                        'column_name': strip_quotes(column),
+                        'column_name': strip_quotes(column)
                     })
                     # Only one AutoField is allowed per model, so don't
                     # continue to loop
@@ -436,12 +445,14 @@ END;
                     no_autofield_sequence_name = self._get_no_autofield_sequence_name(f.m2m_db_table())
                     table = self.quote_name(f.m2m_db_table())
                     column = self.quote_name('id')
-                    output.append(query % {
+                    output.append(query \
+                    % \
+                    {
                         'no_autofield_sequence_name': no_autofield_sequence_name,
                         'table': table,
                         'column': column,
                         'table_name': strip_quotes(table),
-                        'column_name': 'ID',
+                        'column_name': 'ID'
                     })
         return output
 
@@ -450,62 +461,57 @@ END;
 
     def tablespace_sql(self, tablespace, inline=False):
         if inline:
-            return "USING INDEX TABLESPACE %s" % self.quote_name(tablespace)
+            return 'USING INDEX TABLESPACE %s' % self.quote_name(tablespace)
         else:
-            return "TABLESPACE %s" % self.quote_name(tablespace)
+            return 'TABLESPACE %s' % self.quote_name(tablespace)
 
     def adapt_datefield_value(self, value):
-        """
+        '''
         Transform a date value to an object compatible with what is expected
         by the backend driver for date columns.
         The default implementation transforms the date to text, but that is not
         necessary for Oracle.
-        """
+        '''
         return value
 
     def adapt_datetimefield_value(self, value):
-        """
+        '''
         Transform a datetime value to an object compatible with what is expected
         by the backend driver for datetime columns.
 
         If naive datetime is passed assumes that is in UTC. Normally Django
         models.DateTimeField makes sure that if USE_TZ is True passed datetime
         is timezone aware.
-        """
+        '''
 
         if value is None:
             return None
-
         # Expression values are adapted by the database.
         if hasattr(value, 'resolve_expression'):
             return value
-
         # cx_Oracle doesn't support tz-aware datetimes
         if timezone.is_aware(value):
             if settings.USE_TZ:
                 value = timezone.make_naive(value, self.connection.timezone)
             else:
-                raise ValueError("Oracle backend does not support timezone-aware datetimes when USE_TZ is False.")
+                raise ValueError('Oracle backend does not support timezone-aware datetimes when USE_TZ is False.')
 
         return Oracle_datetime.from_datetime(value)
 
     def adapt_timefield_value(self, value):
         if value is None:
             return None
-
         # Expression values are adapted by the database.
         if hasattr(value, 'resolve_expression'):
             return value
 
         if isinstance(value, str):
             return datetime.datetime.strptime(value, '%H:%M:%S')
-
         # Oracle doesn't support tz-aware times
         if timezone.is_aware(value):
-            raise ValueError("Oracle backend does not support timezone-aware times.")
+            raise ValueError('Oracle backend does not support timezone-aware times.')
 
-        return Oracle_datetime(1900, 1, 1, value.hour, value.minute,
-                               value.second, value.microsecond)
+        return Oracle_datetime(1900, 1, 1, value.hour, value.minute, value.second, value.microsecond)
 
     def combine_expression(self, connector, sub_expressions):
         lhs, rhs = sub_expressions
@@ -532,11 +538,14 @@ END;
         return '%s_SQ' % truncate_name(strip_quotes(table), name_length).upper()
 
     def _get_sequence_name(self, cursor, table, pk_name):
-        cursor.execute("""
+        cursor.execute('''
             SELECT sequence_name
             FROM user_tab_identity_cols
             WHERE table_name = UPPER(%s)
-            AND column_name = UPPER(%s)""", [table, pk_name])
+            AND column_name = UPPER(%s)''', [
+            table,
+            pk_name
+        ])
         row = cursor.fetchone()
         return self._get_no_autofield_sequence_name(table) if row is None else row[0]
 
@@ -569,7 +578,7 @@ END;
         return super().subtract_temporals(internal_type, lhs, rhs)
 
     def bulk_batch_size(self, fields, objs):
-        """Oracle restricts the number of parameters in a query."""
+        '''Oracle restricts the number of parameters in a query.'''
         if fields:
             return self.connection.features.max_query_params // len(fields)
         return len(objs)

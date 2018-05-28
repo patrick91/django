@@ -5,21 +5,14 @@ from unittest import mock
 from multiple_database.routers import TestRouter
 
 from django.core.exceptions import FieldError
-from django.db import (
-    DatabaseError, NotSupportedError, connection, connections, router,
-    transaction,
-)
-from django.test import (
-    TransactionTestCase, override_settings, skipIfDBFeature,
-    skipUnlessDBFeature,
-)
+from django.db import DatabaseError, NotSupportedError, connection, connections, router, transaction
+from django.test import TransactionTestCase, override_settings, skipIfDBFeature, skipUnlessDBFeature
 from django.test.utils import CaptureQueriesContext
 
 from .models import City, Country, Person, PersonProfile
 
 
 class SelectForUpdateTests(TransactionTestCase):
-
     available_apps = ['select_for_update']
 
     def setUp(self):
@@ -31,7 +24,6 @@ class SelectForUpdateTests(TransactionTestCase):
         self.city2 = City.objects.create(name='Samois-sur-Seine', country=self.country2)
         self.person = Person.objects.create(name='Reinhardt', born=self.city1, died=self.city2)
         self.person_profile = PersonProfile.objects.create(person=self.person)
-
         # We need another database connection in transaction to test that one
         # connection issuing a SELECT ... FOR UPDATE will block.
         self.new_connection = connection.copy()
@@ -48,10 +40,9 @@ class SelectForUpdateTests(TransactionTestCase):
         # Start a blocking transaction. At some point,
         # end_blocking_transaction() should be called.
         self.cursor = self.new_connection.cursor()
-        sql = 'SELECT * FROM %(db_table)s %(for_update)s;' % {
-            'db_table': Person._meta.db_table,
-            'for_update': self.new_connection.ops.for_update_sql(),
-        }
+        sql = 'SELECT * FROM %(db_table)s %(for_update)s;' \
+        % \
+        {'db_table': Person._meta.db_table, 'for_update': self.new_connection.ops.for_update_sql()}
         self.cursor.execute(sql, ())
         self.cursor.fetchone()
 
@@ -104,13 +95,9 @@ class SelectForUpdateTests(TransactionTestCase):
         select_for_update() is invoked.
         """
         with transaction.atomic(), CaptureQueriesContext(connection) as ctx:
-            list(Person.objects.select_related(
+            list(Person.objects.select_related('born__country').select_for_update(of=(
                 'born__country',
-            ).select_for_update(
-                of=('born__country',),
-            ).select_for_update(
-                of=('self', 'born__country')
-            ))
+            )).select_for_update(of=('self', 'born__country')))
         features = connections['default'].features
         if features.select_for_update_of_column:
             expected = ['"select_for_update_person"."id"', '"select_for_update_country"."id"']
@@ -144,18 +131,14 @@ class SelectForUpdateTests(TransactionTestCase):
 
     @skipUnlessDBFeature('has_select_for_update_nowait')
     def test_nowait_raises_error_on_block(self):
-        """
+        '''
         If nowait is specified, we expect an error to be raised rather
         than blocking.
-        """
+        '''
         self.start_blocking_transaction()
         status = []
 
-        thread = threading.Thread(
-            target=self.run_select_for_update,
-            args=(status,),
-            kwargs={'nowait': True},
-        )
+        thread = threading.Thread(target=self.run_select_for_update, args=(status,), kwargs={'nowait': True})
 
         thread.start()
         time.sleep(1)
@@ -165,17 +148,13 @@ class SelectForUpdateTests(TransactionTestCase):
 
     @skipUnlessDBFeature('has_select_for_update_skip_locked')
     def test_skip_locked_skips_locked_rows(self):
-        """
+        '''
         If skip_locked is specified, the locked row is skipped resulting in
         Person.DoesNotExist.
-        """
+        '''
         self.start_blocking_transaction()
         status = []
-        thread = threading.Thread(
-            target=self.run_select_for_update,
-            args=(status,),
-            kwargs={'skip_locked': True},
-        )
+        thread = threading.Thread(target=self.run_select_for_update, args=(status,), kwargs={'skip_locked': True})
         thread.start()
         time.sleep(1)
         thread.join()
@@ -185,10 +164,10 @@ class SelectForUpdateTests(TransactionTestCase):
     @skipIfDBFeature('has_select_for_update_nowait')
     @skipUnlessDBFeature('has_select_for_update')
     def test_unsupported_nowait_raises_error(self):
-        """
+        '''
         NotSupportedError is raised if a SELECT...FOR UPDATE NOWAIT is run on
         a database backend that supports FOR UPDATE but not NOWAIT.
-        """
+        '''
         with self.assertRaisesMessage(NotSupportedError, 'NOWAIT is not supported on this database backend.'):
             with transaction.atomic():
                 Person.objects.select_for_update(nowait=True).get()
@@ -196,10 +175,10 @@ class SelectForUpdateTests(TransactionTestCase):
     @skipIfDBFeature('has_select_for_update_skip_locked')
     @skipUnlessDBFeature('has_select_for_update')
     def test_unsupported_skip_locked_raises_error(self):
-        """
+        '''
         NotSupportedError is raised if a SELECT...FOR UPDATE SKIP LOCKED is run
         on a database backend that supports FOR UPDATE but not SKIP LOCKED.
-        """
+        '''
         with self.assertRaisesMessage(NotSupportedError, 'SKIP LOCKED is not supported on this database backend.'):
             with transaction.atomic():
                 Person.objects.select_for_update(skip_locked=True).get()
@@ -207,10 +186,10 @@ class SelectForUpdateTests(TransactionTestCase):
     @skipIfDBFeature('has_select_for_update_of')
     @skipUnlessDBFeature('has_select_for_update')
     def test_unsupported_of_raises_error(self):
-        """
+        '''
         NotSupportedError is raised if a SELECT...FOR UPDATE OF... is run on
         a database backend that supports FOR UPDATE but not OF.
-        """
+        '''
         msg = 'FOR UPDATE OF is not supported on this database backend.'
         with self.assertRaisesMessage(NotSupportedError, msg):
             with transaction.atomic():
@@ -218,20 +197,18 @@ class SelectForUpdateTests(TransactionTestCase):
 
     @skipUnlessDBFeature('has_select_for_update', 'has_select_for_update_of')
     def test_unrelated_of_argument_raises_error(self):
-        """
+        '''
         FieldError is raised if a non-relation field is specified in of=(...).
-        """
-        msg = (
-            'Invalid field name(s) given in select_for_update(of=(...)): %s. '
+        '''
+        msg = 'Invalid field name(s) given in select_for_update(of=(...)): %s. '
             'Only relational fields followed in the query are allowed. '
             'Choices are: self, born, born__country.'
-        )
         invalid_of = [
             ('nonexistent',),
             ('name',),
             ('born__nonexistent',),
             ('born__name',),
-            ('born__nonexistent', 'born__name'),
+            ('born__nonexistent', 'born__name')
         ]
         for of in invalid_of:
             with self.subTest(of=of):
@@ -241,22 +218,20 @@ class SelectForUpdateTests(TransactionTestCase):
 
     @skipUnlessDBFeature('has_select_for_update', 'has_select_for_update_of')
     def test_related_but_unselected_of_argument_raises_error(self):
-        """
+        '''
         FieldError is raised if a relation field that is not followed in the
         query is specified in of=(...).
-        """
-        msg = (
-            'Invalid field name(s) given in select_for_update(of=(...)): %s. '
+        '''
+        msg = 'Invalid field name(s) given in select_for_update(of=(...)): %s. '
             'Only relational fields followed in the query are allowed. '
             'Choices are: self, born, profile.'
-        )
         for name in ['born__country', 'died', 'died__country']:
             with self.subTest(name=name):
                 with self.assertRaisesMessage(FieldError, msg % name):
                     with transaction.atomic():
-                        Person.objects.select_related(
-                            'born', 'profile',
-                        ).exclude(profile=None).select_for_update(of=(name,)).get()
+                        Person.objects.select_related('born', 'profile').exclude(profile=None).select_for_update(of=(
+                            name,
+                        )).get()
 
     @skipUnlessDBFeature('has_select_for_update', 'has_select_for_update_of')
     def test_reverse_one_to_one_of_arguments(self):
@@ -265,36 +240,36 @@ class SelectForUpdateTests(TransactionTestCase):
         are excluded because LEFT JOIN isn't allowed in SELECT FOR UPDATE.
         """
         with transaction.atomic():
-            person = Person.objects.select_related(
+            person = Person.objects.select_related('profile').exclude(profile=None).select_for_update(of=(
                 'profile',
-            ).exclude(profile=None).select_for_update(of=('profile',)).get()
+            )).get()
             self.assertEqual(person.profile, self.person_profile)
 
     @skipUnlessDBFeature('has_select_for_update')
     def test_for_update_after_from(self):
         features_class = connections['default'].features.__class__
-        attribute_to_patch = "%s.%s.for_update_after_from" % (features_class.__module__, features_class.__name__)
+        attribute_to_patch = '%s.%s.for_update_after_from' % (features_class.__module__, features_class.__name__)
         with mock.patch(attribute_to_patch, return_value=True):
             with transaction.atomic():
                 self.assertIn('FOR UPDATE WHERE', str(Person.objects.filter(name='foo').select_for_update().query))
 
     @skipUnlessDBFeature('has_select_for_update')
     def test_for_update_requires_transaction(self):
-        """
+        '''
         A TransactionManagementError is raised
         when a select_for_update query is executed outside of a transaction.
-        """
+        '''
         msg = 'select_for_update cannot be used outside of a transaction.'
         with self.assertRaisesMessage(transaction.TransactionManagementError, msg):
             list(Person.objects.all().select_for_update())
 
     @skipUnlessDBFeature('has_select_for_update')
     def test_for_update_requires_transaction_only_in_execution(self):
-        """
+        '''
         No TransactionManagementError is raised
         when select_for_update is invoked outside of a transaction -
         only when the query is executed.
-        """
+        '''
         people = Person.objects.all().select_for_update()
         msg = 'select_for_update cannot be used outside of a transaction.'
         with self.assertRaisesMessage(transaction.TransactionManagementError, msg):
@@ -315,13 +290,13 @@ class SelectForUpdateTests(TransactionTestCase):
                 list(Person.objects.all().order_by('pk').select_for_update()[1:2])
 
     def run_select_for_update(self, status, **kwargs):
-        """
+        '''
         Utility method that runs a SELECT FOR UPDATE against all
         Person instances. After the select_for_update, it attempts
         to update the name of the only record, save, and commit.
 
         This function expects to run in a separate thread.
-        """
+        '''
         status.append('started')
         try:
             # We need to enter transaction management again, as this is done on
@@ -340,20 +315,16 @@ class SelectForUpdateTests(TransactionTestCase):
     @skipUnlessDBFeature('has_select_for_update')
     @skipUnlessDBFeature('supports_transactions')
     def test_block(self):
-        """
+        '''
         A thread running a select_for_update that accesses rows being touched
         by a similar operation on another connection blocks correctly.
-        """
+        '''
         # First, let's start the transaction in our thread.
         self.start_blocking_transaction()
-
         # Now, try it again using the ORM's select_for_update
         # facility. Do this in a separate thread.
         status = []
-        thread = threading.Thread(
-            target=self.run_select_for_update, args=(status,)
-        )
-
+        thread = threading.Thread(target=self.run_select_for_update, args=(status,))
         # The thread should immediately block, but we'll sleep
         # for a bit to make sure.
         thread.start()
@@ -363,21 +334,17 @@ class SelectForUpdateTests(TransactionTestCase):
             time.sleep(1)
         if sanity_count >= 10:
             raise ValueError('Thread did not run and block')
-
         # Check the person hasn't been updated. Since this isn't
         # using FOR UPDATE, it won't block.
         p = Person.objects.get(pk=self.person.pk)
         self.assertEqual('Reinhardt', p.name)
-
         # When we end our blocking transaction, our thread should
         # be able to continue.
         self.end_blocking_transaction()
         thread.join(5.0)
-
         # Check the thread has finished. Assuming it has, we should
         # find that it has updated the person's name.
         self.assertFalse(thread.isAlive())
-
         # We must commit the transaction to ensure that MySQL gets a fresh read,
         # since by default it runs in REPEATABLE READ mode
         transaction.commit()
@@ -395,14 +362,9 @@ class SelectForUpdateTests(TransactionTestCase):
 
         def raw(status):
             try:
-                list(
-                    Person.objects.raw(
-                        'SELECT * FROM %s %s' % (
-                            Person._meta.db_table,
-                            connection.ops.for_update_sql(nowait=True)
-                        )
-                    )
-                )
+                list(Person.objects.raw('SELECT * FROM %s %s' \
+                % \
+                (Person._meta.db_table, connection.ops.for_update_sql(nowait=True))))
             except DatabaseError as e:
                 status.append(e)
             finally:
@@ -438,10 +400,10 @@ class SelectForUpdateTests(TransactionTestCase):
             Person.objects.select_for_update(nowait=True, skip_locked=True)
 
     def test_ordered_select_for_update(self):
-        """
+        '''
         Subqueries should respect ordering as an ORDER BY clause may be useful
         to specify a row locking order to prevent deadlocks (#27193).
-        """
+        '''
         with transaction.atomic():
             qs = Person.objects.filter(id__in=Person.objects.order_by('-id').select_for_update())
             self.assertIn('ORDER BY', str(qs.query))

@@ -1,10 +1,8 @@
-"""
+'''
 Various edge-cases for model managers.
-"""
+'''
 
-from django.contrib.contenttypes.fields import (
-    GenericForeignKey, GenericRelation,
-)
+from django.contrib.contenttypes.fields import GenericForeignKey, GenericRelation
 from django.contrib.contenttypes.models import ContentType
 from django.db import models
 
@@ -73,14 +71,14 @@ class Child1(AbstractBase1):
         return self.data
 
 
-class Child2(AbstractBase1, AbstractBase2):
+class Child2(AbstractBase1,AbstractBase2):
     data = models.CharField(max_length=25)
 
     def __str__(self):
         return self.data
 
 
-class Child3(AbstractBase1, AbstractBase3):
+class Child3(AbstractBase1,AbstractBase3):
     data = models.CharField(max_length=25)
 
     def __str__(self):
@@ -89,7 +87,6 @@ class Child3(AbstractBase1, AbstractBase3):
 
 class Child4(AbstractBase1):
     data = models.CharField(max_length=25)
-
     # Should be the default manager, although the parent managers are
     # inherited.
     default = models.Manager()

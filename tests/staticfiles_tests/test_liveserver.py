@@ -1,8 +1,8 @@
-"""
+'''
 A subset of the tests in tests/servers/tests exercising
 django.contrib.staticfiles.testing.StaticLiveServerTestCase instead of
 django.test.LiveServerTestCase.
-"""
+'''
 
 import os
 from urllib.request import urlopen
@@ -16,12 +16,11 @@ TEST_SETTINGS = {
     'MEDIA_URL': '/media/',
     'STATIC_URL': '/static/',
     'MEDIA_ROOT': os.path.join(TEST_ROOT, 'project', 'site_media', 'media'),
-    'STATIC_ROOT': os.path.join(TEST_ROOT, 'project', 'site_media', 'static'),
+    'STATIC_ROOT': os.path.join(TEST_ROOT, 'project', 'site_media', 'static')
 }
 
 
 class LiveServerBase(StaticLiveServerTestCase):
-
     available_apps = []
 
     @classmethod
@@ -39,7 +38,6 @@ class LiveServerBase(StaticLiveServerTestCase):
 
 
 class StaticLiveServerChecks(LiveServerBase):
-
     @classmethod
     def setUpClass(cls):
         # If contrib.staticfiles isn't configured properly, the exception
@@ -58,7 +56,7 @@ class StaticLiveServerChecks(LiveServerBase):
     def raises_exception(cls):
         try:
             super().setUpClass()
-            raise Exception("The line above should have raised an exception")
+            raise Exception('The line above should have raised an exception')
         except ImproperlyConfigured:
             # This raises ImproperlyConfigured("You're using the staticfiles
             # app without having set the required STATIC_URL setting.")
@@ -73,7 +71,6 @@ class StaticLiveServerChecks(LiveServerBase):
 
 
 class StaticLiveServerView(LiveServerBase):
-
     def urlopen(self, url):
         return urlopen(self.live_server_url + url)
 

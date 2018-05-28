@@ -23,7 +23,7 @@ class ModelChoiceFieldTests(TestCase):
             ('', '---------'),
             (self.c1.pk, 'Entertainment'),
             (self.c2.pk, 'A test'),
-            (self.c3.pk, 'Third'),
+            (self.c3.pk, 'Third')
         ])
         with self.assertRaises(ValidationError):
             f.clean('')
@@ -31,7 +31,6 @@ class ModelChoiceFieldTests(TestCase):
             f.clean(None)
         with self.assertRaises(ValidationError):
             f.clean(0)
-
         # Invalid types that require TypeError to be caught.
         with self.assertRaises(ValidationError):
             f.clean([['fail']])
@@ -40,13 +39,11 @@ class ModelChoiceFieldTests(TestCase):
 
         self.assertEqual(f.clean(self.c2.id).name, 'A test')
         self.assertEqual(f.clean(self.c3.id).name, 'Third')
-
         # Add a Category object *after* the ModelChoiceField has already been
         # instantiated. This proves clean() checks the database during clean()
         # rather than caching it at  instantiation time.
         c4 = Category.objects.create(name='Fourth', url='4th')
         self.assertEqual(f.clean(c4.id).name, 'Fourth')
-
         # Delete a Category object *after* the ModelChoiceField has already been
         # instantiated. This proves clean() checks the database during clean()
         # rather than caching it at instantiation time.
@@ -61,31 +58,19 @@ class ModelChoiceFieldTests(TestCase):
         self.assertEqual(f.clean(str(self.c1.id)).name, 'Entertainment')
         with self.assertRaises(ValidationError):
             f.clean('100')
-
         # len() can be called on choices.
         self.assertEqual(len(f.choices), 2)
-
         # queryset can be changed after the field is created.
         f.queryset = Category.objects.exclude(name='Third')
-        self.assertEqual(list(f.choices), [
-            ('', '---------'),
-            (self.c1.pk, 'Entertainment'),
-            (self.c2.pk, 'A test'),
-        ])
+        self.assertEqual(list(f.choices), [('', '---------'), (self.c1.pk, 'Entertainment'), (self.c2.pk, 'A test')])
         self.assertEqual(f.clean(self.c2.id).name, 'A test')
         with self.assertRaises(ValidationError):
             f.clean(self.c3.id)
-
         # Choices can be iterated repeatedly.
         gen_one = list(f.choices)
         gen_two = f.choices
         self.assertEqual(gen_one[2], (self.c2.pk, 'A test'))
-        self.assertEqual(list(gen_two), [
-            ('', '---------'),
-            (self.c1.pk, 'Entertainment'),
-            (self.c2.pk, 'A test'),
-        ])
-
+        self.assertEqual(list(gen_two), [('', '---------'), (self.c1.pk, 'Entertainment'), (self.c2.pk, 'A test')])
         # Overriding label_from_instance() to print custom labels.
         f.queryset = Category.objects.all()
         f.label_from_instance = lambda obj: 'category ' + str(obj)
@@ -93,7 +78,7 @@ class ModelChoiceFieldTests(TestCase):
             ('', '---------'),
             (self.c1.pk, 'category Entertainment'),
             (self.c2.pk, 'category A test'),
-            (self.c3.pk, 'category Third'),
+            (self.c3.pk, 'category Third')
         ])
 
     def test_choices_freshness(self):
@@ -103,7 +88,7 @@ class ModelChoiceFieldTests(TestCase):
             ('', '---------'),
             (self.c1.pk, 'Entertainment'),
             (self.c2.pk, 'A test'),
-            (self.c3.pk, 'Third'),
+            (self.c3.pk, 'Third')
         ])
         c4 = Category.objects.create(name='Fourth', slug='4th', url='4th')
         self.assertEqual(len(f.choices), 5)
@@ -112,7 +97,7 @@ class ModelChoiceFieldTests(TestCase):
             (self.c1.pk, 'Entertainment'),
             (self.c2.pk, 'A test'),
             (self.c3.pk, 'Third'),
-            (c4.pk, 'Fourth'),
+            (c4.pk, 'Fourth')
         ])
 
     def test_choices_bool(self):
@@ -162,11 +147,12 @@ class ModelChoiceFieldTests(TestCase):
         ModelChoiceField with RadioSelect widget doesn't produce unnecessary
         db queries when accessing its BoundField's attrs.
         """
+
         class ModelChoiceForm(forms.Form):
             category = forms.ModelChoiceField(Category.objects.all(), widget=forms.RadioSelect)
 
         form = ModelChoiceForm()
-        field = form['category']  # BoundField
+        field = form['category'] # BoundField
         template = Template('{{ field.name }}{{ field }}{{ field.help_text }}')
         with self.assertNumQueries(1):
             template.render(Context({'field': field}))
@@ -181,10 +167,9 @@ class ModelChoiceFieldTests(TestCase):
 
         book = Book.objects.create(author=Writer.objects.create(name='Test writer'))
         form = ModelChoiceForm({}, instance=book)
-        self.assertEqual(
-            form.errors['author'],
-            ['Select a valid choice. That choice is not one of the available choices.']
-        )
+        self.assertEqual(form.errors['author'], [
+            'Select a valid choice. That choice is not one of the available choices.'
+        ])
 
     def test_disabled_modelchoicefield_has_changed(self):
         field = forms.ModelChoiceField(Author.objects.all(), disabled=True)
@@ -200,10 +185,7 @@ class ModelChoiceFieldTests(TestCase):
 
         category1 = Category.objects.create(name='cat1')
         category2 = Category.objects.create(name='cat2')
-        article = Article.objects.create(
-            pub_date=datetime.date(1988, 1, 4),
-            writer=Writer.objects.create(name='Test writer'),
-        )
+        article = Article.objects.create(pub_date=datetime.date(1988, 1, 4), writer=Writer.objects.create(name='Test writer'))
         article.categories.set([category1.pk])
 
         form = ArticleForm(data={'categories': [category2.pk]}, instance=article)
@@ -220,10 +202,10 @@ class ModelChoiceFieldTests(TestCase):
         self.assertIs(field.has_changed('x', 'y'), False)
 
     def test_overridable_choice_iterator(self):
-        """
+        '''
         Iterator defaults to ModelChoiceIterator and can be overridden with
         the iterator attribute on a ModelChoiceField subclass.
-        """
+        '''
         field = forms.ModelChoiceField(Category.objects.all())
         self.assertIsInstance(field.choices, ModelChoiceIterator)
 
@@ -263,14 +245,13 @@ class ModelChoiceFieldTests(TestCase):
             widget = CustomCheckboxSelectMultiple
 
         field = CustomModelMultipleChoiceField(Category.objects.all())
-        self.assertHTMLEqual(
-            field.widget.render('name', []),
-            '''<ul>
+        self.assertHTMLEqual(field.widget.render('name', []), '''<ul>
 <li><label><input type="checkbox" name="name" value="%d" data-slug="entertainment">Entertainment</label></li>
 <li><label><input type="checkbox" name="name" value="%d" data-slug="test">A test</label></li>
 <li><label><input type="checkbox" name="name" value="%d" data-slug="third-test">Third</label></li>
-</ul>''' % (self.c1.pk, self.c2.pk, self.c3.pk),
-        )
+</ul>''' \
+        % \
+        (self.c1.pk, self.c2.pk, self.c3.pk))
 
     def test_choices_not_fetched_when_not_rendering(self):
         with self.assertNumQueries(1):
@@ -284,7 +265,7 @@ class ModelChoiceFieldTests(TestCase):
             ('', '---------'),
             (self.c1.pk, 'Entertainment'),
             (self.c2.pk, 'A test'),
-            (self.c3.pk, 'Third'),
+            (self.c3.pk, 'Third')
         ])
 
     def test_num_queries(self):
@@ -298,9 +279,7 @@ class ModelChoiceFieldTests(TestCase):
             radio = forms.ModelChoiceField(queryset=categories, widget=forms.RadioSelect)
             checkbox = forms.ModelMultipleChoiceField(queryset=categories, widget=forms.CheckboxSelectMultiple)
 
-        template = Template(
-            '{% for widget in form.checkbox %}{{ widget }}{% endfor %}'
-            '{% for widget in form.radio %}{{ widget }}{% endfor %}'
-        )
+        template = Template('{% for widget in form.checkbox %}{{ widget }}{% endfor %}'
+            '{% for widget in form.radio %}{{ widget }}{% endfor %}')
         with self.assertNumQueries(2):
             template.render(Context({'form': CategoriesForm()}))

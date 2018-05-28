@@ -18,7 +18,7 @@ class BaseSignalTest(TestCase):
             len(signals.pre_save.receivers),
             len(signals.post_save.receivers),
             len(signals.pre_delete.receivers),
-            len(signals.post_delete.receivers),
+            len(signals.post_delete.receivers)
         )
 
     def tearDown(self):
@@ -27,7 +27,7 @@ class BaseSignalTest(TestCase):
             len(signals.pre_save.receivers),
             len(signals.post_save.receivers),
             len(signals.pre_delete.receivers),
-            len(signals.post_delete.receivers),
+            len(signals.post_delete.receivers)
         )
         self.assertEqual(self.pre_signals, post_signals)
 
@@ -38,90 +38,66 @@ class SignalTests(BaseSignalTest):
 
         def pre_init_callback(sender, args, **kwargs):
             data.append(kwargs['kwargs'])
+
         signals.pre_init.connect(pre_init_callback)
 
         def post_init_callback(sender, instance, **kwargs):
             data.append(instance)
+
         signals.post_init.connect(post_init_callback)
 
-        p1 = Person(first_name="John", last_name="Doe")
+        p1 = Person(first_name='John', last_name='Doe')
         self.assertEqual(data, [{}, p1])
 
     def test_save_signals(self):
         data = []
 
         def pre_save_handler(signal, sender, instance, **kwargs):
-            data.append(
-                (instance, sender, kwargs.get("raw", False))
-            )
+            data.append((instance, sender, kwargs.get('raw', False)))
 
         def post_save_handler(signal, sender, instance, **kwargs):
-            data.append(
-                (instance, sender, kwargs.get("created"), kwargs.get("raw", False))
-            )
+            data.append((instance, sender, kwargs.get('created'), kwargs.get('raw', False)))
 
         signals.pre_save.connect(pre_save_handler, weak=False)
         signals.post_save.connect(post_save_handler, weak=False)
         try:
-            p1 = Person.objects.create(first_name="John", last_name="Smith")
+            p1 = Person.objects.create(first_name='John', last_name='Smith')
 
-            self.assertEqual(data, [
-                (p1, Person, False),
-                (p1, Person, True, False),
-            ])
+            self.assertEqual(data, [(p1, Person, False), (p1, Person, True, False)])
             data[:] = []
 
-            p1.first_name = "Tom"
+            p1.first_name = 'Tom'
             p1.save()
-            self.assertEqual(data, [
-                (p1, Person, False),
-                (p1, Person, False, False),
-            ])
+            self.assertEqual(data, [(p1, Person, False), (p1, Person, False, False)])
             data[:] = []
-
             # Calling an internal method purely so that we can trigger a "raw" save.
             p1.save_base(raw=True)
-            self.assertEqual(data, [
-                (p1, Person, True),
-                (p1, Person, False, True),
-            ])
+            self.assertEqual(data, [(p1, Person, True), (p1, Person, False, True)])
             data[:] = []
 
-            p2 = Person(first_name="James", last_name="Jones")
+            p2 = Person(first_name='James', last_name='Jones')
             p2.id = 99999
             p2.save()
-            self.assertEqual(data, [
-                (p2, Person, False),
-                (p2, Person, True, False),
-            ])
+            self.assertEqual(data, [(p2, Person, False), (p2, Person, True, False)])
             data[:] = []
             p2.id = 99998
             p2.save()
-            self.assertEqual(data, [
-                (p2, Person, False),
-                (p2, Person, True, False),
-            ])
-
+            self.assertEqual(data, [(p2, Person, False), (p2, Person, True, False)])
             # The sender should stay the same when using defer().
             data[:] = []
             p3 = Person.objects.defer('first_name').get(pk=p1.pk)
             p3.last_name = 'Reese'
             p3.save()
-            self.assertEqual(data, [
-                (p3, Person, False),
-                (p3, Person, False, False),
-            ])
+            self.assertEqual(data, [(p3, Person, False), (p3, Person, False, False)])
+
         finally:
-            signals.pre_save.disconnect(pre_save_handler)
-            signals.post_save.disconnect(post_save_handler)
+            signals.pre_save.disconnect(pre_save_handler)signals.post_save.disconnect(post_save_handler)
 
     def test_delete_signals(self):
         data = []
 
         def pre_delete_handler(signal, sender, instance, **kwargs):
-            data.append(
-                (instance, sender, instance.id is None)
-            )
+            data.append((instance, sender, instance.id is None))
 
         # #8285: signals can be any callable
         class PostDeleteHandler:
@@ -129,43 +105,31 @@ class SignalTests(BaseSignalTest):
                 self.data = data
 
             def __call__(self, signal, sender, instance, **kwargs):
-                self.data.append(
-                    (instance, sender, instance.id is None)
-                )
+                self.data.append((instance, sender, instance.id is None))
+
         post_delete_handler = PostDeleteHandler(data)
 
         signals.pre_delete.connect(pre_delete_handler, weak=False)
         signals.post_delete.connect(post_delete_handler, weak=False)
         try:
-            p1 = Person.objects.create(first_name="John", last_name="Smith")
+            p1 = Person.objects.create(first_name='John', last_name='Smith')
             p1.delete()
-            self.assertEqual(data, [
-                (p1, Person, False),
-                (p1, Person, False),
-            ])
+            self.assertEqual(data, [(p1, Person, False), (p1, Person, False)])
             data[:] = []
 
-            p2 = Person(first_name="James", last_name="Jones")
+            p2 = Person(first_name='James', last_name='Jones')
             p2.id = 99999
             p2.save()
             p2.id = 99998
             p2.save()
             p2.delete()
-            self.assertEqual(data, [
-                (p2, Person, False),
-                (p2, Person, False),
-            ])
+            self.assertEqual(data, [(p2, Person, False), (p2, Person, False)])
             data[:] = []
 
-            self.assertQuerysetEqual(
-                Person.objects.all(), [
-                    "James Jones",
-                ],
-                str
-            )
+            self.assertQuerysetEqual(Person.objects.all(), ['James Jones'], str)
+
         finally:
-            signals.pre_delete.disconnect(pre_delete_handler)
-            signals.post_delete.disconnect(post_delete_handler)
+            signals.pre_delete.disconnect(pre_delete_handler)signals.post_delete.disconnect(post_delete_handler)
 
     def test_decorators(self):
         data = []
@@ -179,11 +143,11 @@ class SignalTests(BaseSignalTest):
             data.append(instance)
 
         try:
-            c1 = Car.objects.create(make="Volkswagen", model="Passat")
+            c1 = Car.objects.create(make='Volkswagen', model='Passat')
             self.assertEqual(data, [c1, c1])
+
         finally:
-            signals.pre_save.disconnect(decorated_handler)
-            signals.pre_save.disconnect(decorated_handler_with_sender_arg, sender=Car)
+            signals.pre_save.disconnect(decorated_handler)signals.pre_save.disconnect(decorated_handler_with_sender_arg, sender=Car)
 
     def test_save_and_delete_signals_with_m2m(self):
         data = []
@@ -205,11 +169,11 @@ class SignalTests(BaseSignalTest):
 
         def pre_delete_handler(signal, sender, instance, **kwargs):
             data.append('pre_delete signal, %s' % instance)
-            data.append('instance.id is not None: %s' % (instance.id is not None))
+            data.append('instance.id is not None: %s' % instance.id is not None)
 
         def post_delete_handler(signal, sender, instance, **kwargs):
             data.append('post_delete signal, %s' % instance)
-            data.append('instance.id is not None: %s' % (instance.id is not None))
+            data.append('instance.id is not None: %s' % instance.id is not None)
 
         signals.pre_save.connect(pre_save_handler, weak=False)
         signals.post_save.connect(post_save_handler, weak=False)
@@ -218,30 +182,23 @@ class SignalTests(BaseSignalTest):
         try:
             a1 = Author.objects.create(name='Neal Stephenson')
             self.assertEqual(data, [
-                "pre_save signal, Neal Stephenson",
-                "post_save signal, Neal Stephenson",
-                "Is created"
+                'pre_save signal, Neal Stephenson',
+                'post_save signal, Neal Stephenson',
+                'Is created'
             ])
             data[:] = []
 
             b1 = Book.objects.create(name='Snow Crash')
-            self.assertEqual(data, [
-                "pre_save signal, Snow Crash",
-                "post_save signal, Snow Crash",
-                "Is created"
-            ])
+            self.assertEqual(data, ['pre_save signal, Snow Crash', 'post_save signal, Snow Crash', 'Is created'])
             data[:] = []
-
             # Assigning and removing to/from m2m shouldn't generate an m2m signal.
             b1.authors.set([a1])
             self.assertEqual(data, [])
             b1.authors.set([])
             self.assertEqual(data, [])
+
         finally:
-            signals.pre_save.disconnect(pre_save_handler)
-            signals.post_save.disconnect(post_save_handler)
-            signals.pre_delete.disconnect(pre_delete_handler)
-            signals.post_delete.disconnect(post_delete_handler)
+            signals.pre_save.disconnect(pre_save_handler)signals.post_save.disconnect(post_save_handler)signals.pre_delete.disconnect(pre_delete_handler)signals.post_delete.disconnect(post_delete_handler)
 
     def test_disconnect_in_dispatch(self):
         """
@@ -271,6 +228,7 @@ class SignalTests(BaseSignalTest):
     def test_lazy_model_signal(self, ref):
         def callback(sender, args, **kwargs):
             pass
+
         signals.pre_init.connect(callback)
         signals.pre_init.disconnect(callback)
         self.assertTrue(ref.called)
@@ -295,33 +253,25 @@ class LazyModelRefTest(BaseSignalTest):
             signals.post_init.connect(self.receiver, sender='invalid')
 
     def test_already_loaded_model(self):
-        signals.post_init.connect(
-            self.receiver, sender='signals.Book', weak=False
-        )
+        signals.post_init.connect(self.receiver, sender='signals.Book', weak=False)
         try:
             instance = Book()
-            self.assertEqual(self.received, [{
-                'signal': signals.post_init,
-                'sender': Book,
-                'instance': instance
-            }])
+            self.assertEqual(self.received, [{'signal': signals.post_init, 'sender': Book, 'instance': instance}])
+
         finally:
             signals.post_init.disconnect(self.receiver, sender=Book)
 
     @isolate_apps('signals', kwarg_name='apps')
     def test_not_loaded_model(self, apps):
-        signals.post_init.connect(
-            self.receiver, sender='signals.Created', weak=False, apps=apps
-        )
+        signals.post_init.connect(self.receiver, sender='signals.Created', weak=False, apps=apps)
 
         try:
             class Created(models.Model):
                 pass
 
             instance = Created()
-            self.assertEqual(self.received, [{
-                'signal': signals.post_init, 'sender': Created, 'instance': instance
-            }])
+            self.assertEqual(self.received, [{'signal': signals.post_init, 'sender': Created, 'instance': instance}])
+
         finally:
             signals.post_init.disconnect(self.receiver, sender=Created)
 

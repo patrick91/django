@@ -9,16 +9,12 @@ from django.shortcuts import render
 from django.template import TemplateDoesNotExist
 from django.urls import get_resolver
 from django.views import View
-from django.views.debug import (
-    SafeExceptionReporterFilter, technical_500_response,
-)
-from django.views.decorators.debug import (
-    sensitive_post_parameters, sensitive_variables,
-)
+from django.views.debug import SafeExceptionReporterFilter, technical_500_response
+from django.views.decorators.debug import sensitive_post_parameters, sensitive_variables
 
 
 def index_page(request):
-    """Dummy index page"""
+    '''Dummy index page'''
     return HttpResponse('<html><body>Dummy page</body></html>')
 
 
@@ -31,6 +27,7 @@ def raises(request):
     # local vars won't hijack the technical 500 response (#15025).
     def callable():
         raise Exception
+
     try:
         raise Exception
     except Exception:
@@ -51,7 +48,7 @@ def raises400(request):
 
 
 def raises403(request):
-    raise PermissionDenied("Insufficient Permissions")
+    raise PermissionDenied('Insufficient Permissions')
 
 
 def raises404(request):
@@ -60,12 +57,12 @@ def raises404(request):
 
 
 def technical404(request):
-    raise Http404("Testing technical 404.")
+    raise Http404('Testing technical 404.')
 
 
 class Http404View(View):
     def get(self, request):
-        raise Http404("Testing class-based technical 404.")
+        raise Http404('Testing class-based technical 404.')
 
 
 def template_exception(request):
@@ -101,18 +98,14 @@ def send_log(request, exc_info):
     # only sent with DEBUG=False, but since someone might choose to remove that
     # filter, we still want to be able to test the behavior of error emails
     # with DEBUG=True. So we need to remove the filter temporarily.
-    admin_email_handler = [
-        h for h in logger.handlers
-        if h.__class__.__name__ == "AdminEmailHandler"
-    ][0]
+    admin_email_handler = [h for h in logger.handlers if h.__class__.__name__ == 'AdminEmailHandler'][0]
     orig_filters = admin_email_handler.filters
     admin_email_handler.filters = []
     admin_email_handler.include_html = True
-    logger.error(
-        'Internal Server Error: %s', request.path,
-        exc_info=exc_info,
-        extra={'status_code': 500, 'request': request},
-    )
+    logger.error('Internal Server Error: %s', request.path, exc_info=exc_info, extra={
+        'status_code': 500,
+        'request': request
+    })
     admin_email_handler.filters = orig_filters
 
 
@@ -120,8 +113,8 @@ def non_sensitive_view(request):
     # Do not just use plain strings for the variables' values in the code
     # so that the tests don't return false positives when the function's source
     # is displayed in the exception report.
-    cooked_eggs = ''.join(['s', 'c', 'r', 'a', 'm', 'b', 'l', 'e', 'd'])  # NOQA
-    sauce = ''.join(['w', 'o', 'r', 'c', 'e', 's', 't', 'e', 'r', 's', 'h', 'i', 'r', 'e'])  # NOQA
+    cooked_eggs = ''.join(['s', 'c', 'r', 'a', 'm', 'b', 'l', 'e', 'd']) # NOQA
+    sauce = ''.join(['w', 'o', 'r', 'c', 'e', 's', 't', 'e', 'r', 's', 'h', 'i', 'r', 'e']) # NOQA
     try:
         raise Exception
     except Exception:
@@ -136,8 +129,8 @@ def sensitive_view(request):
     # Do not just use plain strings for the variables' values in the code
     # so that the tests don't return false positives when the function's source
     # is displayed in the exception report.
-    cooked_eggs = ''.join(['s', 'c', 'r', 'a', 'm', 'b', 'l', 'e', 'd'])  # NOQA
-    sauce = ''.join(['w', 'o', 'r', 'c', 'e', 's', 't', 'e', 'r', 's', 'h', 'i', 'r', 'e'])  # NOQA
+    cooked_eggs = ''.join(['s', 'c', 'r', 'a', 'm', 'b', 'l', 'e', 'd']) # NOQA
+    sauce = ''.join(['w', 'o', 'r', 'c', 'e', 's', 't', 'e', 'r', 's', 'h', 'i', 'r', 'e']) # NOQA
     try:
         raise Exception
     except Exception:
@@ -152,8 +145,8 @@ def paranoid_view(request):
     # Do not just use plain strings for the variables' values in the code
     # so that the tests don't return false positives when the function's source
     # is displayed in the exception report.
-    cooked_eggs = ''.join(['s', 'c', 'r', 'a', 'm', 'b', 'l', 'e', 'd'])  # NOQA
-    sauce = ''.join(['w', 'o', 'r', 'c', 'e', 's', 't', 'e', 'r', 's', 'h', 'i', 'r', 'e'])  # NOQA
+    cooked_eggs = ''.join(['s', 'c', 'r', 'a', 'm', 'b', 'l', 'e', 'd']) # NOQA
+    sauce = ''.join(['w', 'o', 'r', 'c', 'e', 's', 't', 'e', 'r', 's', 'h', 'i', 'r', 'e']) # NOQA
     try:
         raise Exception
     except Exception:
@@ -176,7 +169,7 @@ def sensitive_args_function(sauce):
     # Do not just use plain strings for the variables' values in the code
     # so that the tests don't return false positives when the function's source
     # is displayed in the exception report.
-    cooked_eggs = ''.join(['s', 'c', 'r', 'a', 'm', 'b', 'l', 'e', 'd'])  # NOQA
+    cooked_eggs = ''.join(['s', 'c', 'r', 'a', 'm', 'b', 'l', 'e', 'd']) # NOQA
     raise Exception
 
 
@@ -194,14 +187,14 @@ def sensitive_kwargs_function(sauce=None):
     # Do not just use plain strings for the variables' values in the code
     # so that the tests don't return false positives when the function's source
     # is displayed in the exception report.
-    cooked_eggs = ''.join(['s', 'c', 'r', 'a', 'm', 'b', 'l', 'e', 'd'])  # NOQA
+    cooked_eggs = ''.join(['s', 'c', 'r', 'a', 'm', 'b', 'l', 'e', 'd']) # NOQA
     raise Exception
 
 
 class UnsafeExceptionReporterFilter(SafeExceptionReporterFilter):
-    """
+    '''
     Ignores all the filtering done by its parent class.
-    """
+    '''
 
     def get_post_parameters(self, request):
         return request.POST
@@ -216,8 +209,8 @@ def custom_exception_reporter_filter_view(request):
     # Do not just use plain strings for the variables' values in the code
     # so that the tests don't return false positives when the function's source
     # is displayed in the exception report.
-    cooked_eggs = ''.join(['s', 'c', 'r', 'a', 'm', 'b', 'l', 'e', 'd'])  # NOQA
-    sauce = ''.join(['w', 'o', 'r', 'c', 'e', 's', 't', 'e', 'r', 's', 'h', 'i', 'r', 'e'])  # NOQA
+    cooked_eggs = ''.join(['s', 'c', 'r', 'a', 'm', 'b', 'l', 'e', 'd']) # NOQA
+    sauce = ''.join(['w', 'o', 'r', 'c', 'e', 's', 't', 'e', 'r', 's', 'h', 'i', 'r', 'e']) # NOQA
     request.exception_reporter_filter = UnsafeExceptionReporterFilter()
     try:
         raise Exception
@@ -228,14 +221,13 @@ def custom_exception_reporter_filter_view(request):
 
 
 class Klass:
-
     @sensitive_variables('sauce')
     def method(self, request):
         # Do not just use plain strings for the variables' values in the code
         # so that the tests don't return false positives when the function's
         # source is displayed in the exception report.
-        cooked_eggs = ''.join(['s', 'c', 'r', 'a', 'm', 'b', 'l', 'e', 'd'])  # NOQA
-        sauce = ''.join(['w', 'o', 'r', 'c', 'e', 's', 't', 'e', 'r', 's', 'h', 'i', 'r', 'e'])  # NOQA
+        cooked_eggs = ''.join(['s', 'c', 'r', 'a', 'm', 'b', 'l', 'e', 'd']) # NOQA
+        sauce = ''.join(['w', 'o', 'r', 'c', 'e', 's', 't', 'e', 'r', 's', 'h', 'i', 'r', 'e']) # NOQA
         try:
             raise Exception
         except Exception:
@@ -251,8 +243,8 @@ def sensitive_method_view(request):
 @sensitive_variables('sauce')
 @sensitive_post_parameters('bacon-key', 'sausage-key')
 def multivalue_dict_key_error(request):
-    cooked_eggs = ''.join(['s', 'c', 'r', 'a', 'm', 'b', 'l', 'e', 'd'])  # NOQA
-    sauce = ''.join(['w', 'o', 'r', 'c', 'e', 's', 't', 'e', 'r', 's', 'h', 'i', 'r', 'e'])  # NOQA
+    cooked_eggs = ''.join(['s', 'c', 'r', 'a', 'm', 'b', 'l', 'e', 'd']) # NOQA
+    sauce = ''.join(['w', 'o', 'r', 'c', 'e', 's', 't', 'e', 'r', 's', 'h', 'i', 'r', 'e']) # NOQA
     try:
         request.POST['bar']
     except Exception:
@@ -262,10 +254,12 @@ def multivalue_dict_key_error(request):
 
 
 def json_response_view(request):
-    return JsonResponse({
-        'a': [1, 2, 3],
-        'foo': {'bar': 'baz'},
-        # Make sure datetime and Decimal objects would be serialized properly
-        'timestamp': datetime.datetime(2013, 5, 19, 20),
-        'value': decimal.Decimal('3.14'),
-    })
+    return \
+        JsonResponse({
+            'a': [1, 2, 3],
+            'foo': {'bar': 'baz'},
+            # Make sure datetime and Decimal objects would be serialized properly
+            'timestamp':
+                datetime.datetime(2013, 5, 19, 20),
+            'value': decimal.Decimal('3.14')
+        })

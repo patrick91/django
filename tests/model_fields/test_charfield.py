@@ -8,12 +8,11 @@ from .models import Post
 
 
 class TestCharField(TestCase):
-
     def test_max_length_passed_to_formfield(self):
-        """
+        '''
         CharField passes its max_length attribute to form fields created using
         the formfield() method.
-        """
+        '''
         cf1 = models.CharField()
         cf2 = models.CharField(max_length=1234)
         self.assertIsNone(cf1.formfield().max_length)
@@ -30,7 +29,6 @@ class TestCharField(TestCase):
 
 
 class ValidationTests(SimpleTestCase):
-
     def test_charfield_raises_error_on_empty_string(self):
         f = models.CharField()
         with self.assertRaises(ValidationError):

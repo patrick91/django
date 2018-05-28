@@ -23,9 +23,7 @@ class Book(models.Model):
     title = models.CharField(max_length=100)
 
     class Meta:
-        unique_together = (
-            ('author', 'title'),
-        )
+        unique_together = (('author', 'title'),)
         ordering = ['id']
 
     def __str__(self):
@@ -56,9 +54,7 @@ class BookWithOptionalAltEditor(models.Model):
     title = models.CharField(max_length=100)
 
     class Meta:
-        unique_together = (
-            ('author', 'title', 'alt_editor'),
-        )
+        unique_together = (('author', 'title', 'alt_editor'),)
 
     def __str__(self):
         return self.title
@@ -87,7 +83,6 @@ class CustomPrimaryKey(models.Model):
 
 # models for inheritance tests.
 
-
 class Place(models.Model):
     name = models.CharField(max_length=50)
     city = models.CharField(max_length=50)
@@ -102,7 +97,7 @@ class Owner(models.Model):
     place = models.ForeignKey(Place, models.CASCADE)
 
     def __str__(self):
-        return "%s at %s" % (self.name, self.place)
+        return '%s at %s' % (self.name, self.place)
 
 
 class Location(models.Model):
@@ -117,7 +112,7 @@ class OwnerProfile(models.Model):
     age = models.PositiveIntegerField()
 
     def __str__(self):
-        return "%s is %d" % (self.owner.name, self.age)
+        return '%s is %d' % (self.owner.name, self.age)
 
 
 class Restaurant(Place):
@@ -139,7 +134,7 @@ class Price(models.Model):
     quantity = models.PositiveIntegerField()
 
     def __str__(self):
-        return "%s for %s" % (self.quantity, self.price)
+        return '%s for %s' % (self.quantity, self.price)
 
     class Meta:
         unique_together = (('price', 'quantity'),)
@@ -168,10 +163,10 @@ class Revision(models.Model):
     revision = models.CharField(max_length=40)
 
     class Meta:
-        unique_together = (("repository", "revision"),)
+        unique_together = (('repository', 'revision'),)
 
     def __str__(self):
-        return "%s (%s)" % (self.revision, str(self.repository))
+        return '%s (%s)' % (self.revision, str(self.repository))
 
 
 # models for testing callable defaults (see bug #7975). If you define a model

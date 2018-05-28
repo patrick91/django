@@ -12,7 +12,6 @@ class ChoicesTests(TestCase):
 
         self.assertEqual(a.get_gender_display(), 'Male')
         self.assertEqual(s.get_gender_display(), 'Female')
-
         # If the value for the field doesn't correspond to a valid choice,
         # the value itself is provided as a display value.
         a.gender = ''

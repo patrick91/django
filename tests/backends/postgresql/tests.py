@@ -8,12 +8,12 @@ from django.test import TestCase
 
 @unittest.skipUnless(connection.vendor == 'postgresql', 'PostgreSQL tests')
 class Tests(TestCase):
-
     def test_nodb_connection(self):
         """
         The _nodb_connection property fallbacks to the default connection
         database when access to the 'postgres' database is not granted.
         """
+
         def mocked_connect(self):
             if self.settings_dict['NAME'] is None:
                 raise DatabaseError()
@@ -21,23 +21,16 @@ class Tests(TestCase):
 
         nodb_conn = connection._nodb_connection
         self.assertIsNone(nodb_conn.settings_dict['NAME'])
-
         # Now assume the 'postgres' db isn't available
-        msg = (
-            "Normally Django will use a connection to the 'postgres' database "
+        msg = "Normally Django will use a connection to the 'postgres' database "
             "to avoid running initialization queries against the production "
             "database when it's not needed (for example, when running tests). "
             "Django was unable to create a connection to the 'postgres' "
             "database and will use the first PostgreSQL database instead."
-        )
         with self.assertWarnsMessage(RuntimeWarning, msg):
-            with mock.patch('django.db.backends.base.base.BaseDatabaseWrapper.connect',
-                            side_effect=mocked_connect, autospec=True):
-                with mock.patch.object(
-                    connection,
-                    'settings_dict',
-                    {**connection.settings_dict, 'NAME': 'postgres'},
-                ):
+            with \
+                    mock.patch('django.db.backends.base.base.BaseDatabaseWrapper.connect', side_effect=mocked_connect, autospec=True):
+                with mock.patch.object(connection, 'settings_dict', {: connection.settings_dict, 'NAME': 'postgres'}):
                     nodb_conn = connection._nodb_connection
         self.assertIsNotNone(nodb_conn.settings_dict['NAME'])
         self.assertEqual(nodb_conn.settings_dict['NAME'], connections['other'].settings_dict['NAME'])
@@ -46,11 +39,11 @@ class Tests(TestCase):
         from django.db.backends.postgresql.base import DatabaseWrapper
         settings = connection.settings_dict.copy()
         max_name_length = connection.ops.max_name_length()
-        settings['NAME'] = 'a' + (max_name_length * 'a')
-        msg = (
-            'Database names longer than %d characters are not supported by '
-            'PostgreSQL. Supply a shorter NAME in settings.DATABASES.'
-        ) % max_name_length
+        settings['NAME'] = 'a' + max_name_length * 'a'
+        msg = 'Database names longer than %d characters are not supported by '
+            'PostgreSQL. Supply a shorter NAME in settings.DATABASES.' \
+        % \
+        max_name_length
         with self.assertRaisesMessage(ImproperlyConfigured, msg):
             DatabaseWrapper(settings).get_connection_params()
 
@@ -65,25 +58,22 @@ class Tests(TestCase):
             # the time zone in new_connection.settings_dict. We can
             # get the default time zone by reset & show.
             with new_connection.cursor() as cursor:
-                cursor.execute("RESET TIMEZONE")
-                cursor.execute("SHOW TIMEZONE")
+                cursor.execute('RESET TIMEZONE')
+                cursor.execute('SHOW TIMEZONE')
                 db_default_tz = cursor.fetchone()[0]
             new_tz = 'Europe/Paris' if db_default_tz == 'UTC' else 'UTC'
             new_connection.close()
-
             # Invalidate timezone name cache, because the setting_changed
             # handler cannot know about new_connection.
             del new_connection.timezone_name
-
             # Fetch a new connection with the new_tz as default
             # time zone, run a query and rollback.
             with self.settings(TIME_ZONE=new_tz):
                 new_connection.set_autocommit(False)
                 new_connection.rollback()
-
                 # Now let's see if the rollback rolled back the SET TIME ZONE.
                 with new_connection.cursor() as cursor:
-                    cursor.execute("SHOW TIMEZONE")
+                    cursor.execute('SHOW TIMEZONE')
                     tz = cursor.fetchone()[0]
                 self.assertEqual(new_tz, tz)
 
@@ -102,6 +92,7 @@ class Tests(TestCase):
             # Open a database connection.
             new_connection.cursor()
             self.assertFalse(new_connection.get_autocommit())
+
         finally:
             new_connection.close()
 
@@ -113,7 +104,7 @@ class Tests(TestCase):
         import psycopg2
         from psycopg2.extensions import (
             ISOLATION_LEVEL_READ_COMMITTED as read_committed,
-            ISOLATION_LEVEL_SERIALIZABLE as serializable,
+            ISOLATION_LEVEL_SERIALIZABLE as serializable
         )
         # Since this is a django.test.TestCase, a transaction is in progress
         # and the isolation level isn't reported as 0. This test assumes that
@@ -130,6 +121,7 @@ class Tests(TestCase):
             new_connection.set_autocommit(False)
             # Check the level on the psycopg2 connection, not the Django wrapper.
             self.assertEqual(new_connection.connection.isolation_level, serializable)
+
         finally:
             new_connection.close()
 
@@ -152,8 +144,15 @@ class Tests(TestCase):
         from django.db.backends.postgresql.operations import DatabaseOperations
         do = DatabaseOperations(connection=None)
         lookups = (
-            'iexact', 'contains', 'icontains', 'startswith', 'istartswith',
-            'endswith', 'iendswith', 'regex', 'iregex',
+            'iexact',
+            'contains',
+            'icontains',
+            'startswith',
+            'istartswith',
+            'endswith',
+            'iendswith',
+            'regex',
+            'iregex'
         )
         for lookup in lookups:
             with self.subTest(lookup=lookup):

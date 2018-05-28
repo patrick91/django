@@ -1,4 +1,4 @@
-"File-based cache backend"
+'File-based cache backend'
 import glob
 import hashlib
 import os
@@ -43,9 +43,9 @@ class FileBasedCache(BaseCache):
         return default
 
     def set(self, key, value, timeout=DEFAULT_TIMEOUT, version=None):
-        self._createdir()  # Cache dir can be deleted at any time.
+        self._createdir() # Cache dir can be deleted at any time.
         fname = self._key_to_file(key, version)
-        self._cull()  # make some room if necessary
+        self._cull() # make some room if necessary
         fd, tmp_path = tempfile.mkstemp(dir=self._dir)
         renamed = False
         try:
@@ -54,6 +54,7 @@ class FileBasedCache(BaseCache):
                 _write_content(f, expiry, value)
             file_move_safe(tmp_path, fname, allow_overwrite=True)
             renamed = True
+
         finally:
             if not renamed:
                 os.remove(tmp_path)
@@ -70,6 +71,7 @@ class FileBasedCache(BaseCache):
                         f.seek(0)
                         _write_content(f, self.get_backend_timeout(timeout), previous_value)
                         return True
+
                 finally:
                     locks.unlock(f)
         except FileNotFoundError:
@@ -95,20 +97,19 @@ class FileBasedCache(BaseCache):
         return False
 
     def _cull(self):
-        """
+        '''
         Remove random cache entries if max_entries is reached at a ratio
         of num_entries / cull_frequency. A value of 0 for CULL_FREQUENCY means
         that the entire cache will be purged.
-        """
+        '''
         filelist = self._list_cache_files()
         num_entries = len(filelist)
         if num_entries < self._max_entries:
-            return  # return early if no culling is required
+            return # return early if no culling is required
         if self._cull_frequency == 0:
-            return self.clear()  # Clear the cache when CULL_FREQUENCY = 0
+            return self.clear() # Clear the cache when CULL_FREQUENCY = 0
         # Delete a random selection of entries
-        filelist = random.sample(filelist,
-                                 int(num_entries / self._cull_frequency))
+        filelist = random.sample(filelist, int(num_entries / self._cull_frequency))
         for fname in filelist:
             self._delete(fname)
 
@@ -120,19 +121,18 @@ class FileBasedCache(BaseCache):
                 pass
 
     def _key_to_file(self, key, version=None):
-        """
+        '''
         Convert a key into a cache file path. Basically this is the
         root cache path joined with the md5sum of the key and a suffix.
-        """
+        '''
         key = self.make_key(key, version=version)
         self.validate_key(key)
-        return os.path.join(self._dir, ''.join(
-            [hashlib.md5(key.encode()).hexdigest(), self.cache_suffix]))
+        return os.path.join(self._dir, ''.join([hashlib.md5(key.encode()).hexdigest(), self.cache_suffix]))
 
     def clear(self):
-        """
+        '''
         Remove all the cache files.
-        """
+        '''
         if not os.path.exists(self._dir):
             return
         for fname in self._list_cache_files():
@@ -145,20 +145,19 @@ class FileBasedCache(BaseCache):
         try:
             exp = pickle.load(f)
         except EOFError:
-            exp = 0  # An empty file is considered expired.
+            exp = 0 # An empty file is considered expired.
         if exp is not None and exp < time.time():
-            f.close()  # On Windows a file has to be closed before deleting
+            f.close() # On Windows a file has to be closed before deleting
             self._delete(f.name)
             return True
         return False
 
     def _list_cache_files(self):
-        """
+        '''
         Get a list of paths to all the cache files. These are all the files
         in the root cache dir that end on the cache_suffix.
-        """
+        '''
         if not os.path.exists(self._dir):
             return []
-        filelist = [os.path.join(self._dir, fname) for fname
-                    in glob.glob1(self._dir, '*%s' % self.cache_suffix)]
+        filelist = [os.path.join(self._dir, fname) for fname in glob.glob1(self._dir, '*%s' % self.cache_suffix)]
         return filelist

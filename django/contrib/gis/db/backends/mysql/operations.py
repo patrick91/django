@@ -1,7 +1,5 @@
 from django.contrib.gis.db.backends.base.adapter import WKTAdapter
-from django.contrib.gis.db.backends.base.operations import (
-    BaseSpatialOperations,
-)
+from django.contrib.gis.db.backends.base.operations import BaseSpatialOperations
 from django.contrib.gis.db.backends.utils import SpatialOperator
 from django.contrib.gis.db.models import aggregates
 from django.contrib.gis.geos.geometry import GEOSGeometryBase
@@ -11,8 +9,7 @@ from django.db.backends.mysql.operations import DatabaseOperations
 from django.utils.functional import cached_property
 
 
-class MySQLOperations(BaseSpatialOperations, DatabaseOperations):
-
+class MySQLOperations(BaseSpatialOperations,DatabaseOperations):
     mysql = True
     name = 'mysql'
     geom_func_prefix = 'ST_'
@@ -34,33 +31,53 @@ class MySQLOperations(BaseSpatialOperations, DatabaseOperations):
     @cached_property
     def gis_operators(self):
         MBREquals = 'MBREqual' if self.is_mysql_5_6 else 'MBREquals'
-        return {
-            'bbcontains': SpatialOperator(func='MBRContains'),  # For consistency w/PostGIS API
-            'bboverlaps': SpatialOperator(func='MBROverlaps'),  # ...
-            'contained': SpatialOperator(func='MBRWithin'),  # ...
-            'contains': SpatialOperator(func='MBRContains'),
-            'disjoint': SpatialOperator(func='MBRDisjoint'),
-            'equals': SpatialOperator(func=MBREquals),
-            'exact': SpatialOperator(func=MBREquals),
-            'intersects': SpatialOperator(func='MBRIntersects'),
-            'overlaps': SpatialOperator(func='MBROverlaps'),
-            'same_as': SpatialOperator(func=MBREquals),
-            'touches': SpatialOperator(func='MBRTouches'),
-            'within': SpatialOperator(func='MBRWithin'),
-        }
+        return \
+            {
+                'bbcontains':
+                    SpatialOperator(func='MBRContains'), # For consistency w/PostGIS API
+                'bboverlaps':
+                    SpatialOperator(func='MBROverlaps'), # ...
+                'contained':
+                    SpatialOperator(func='MBRWithin'), # ...
+                'contains': SpatialOperator(func='MBRContains'),
+                'disjoint': SpatialOperator(func='MBRDisjoint'),
+                'equals': SpatialOperator(func=MBREquals),
+                'exact': SpatialOperator(func=MBREquals),
+                'intersects': SpatialOperator(func='MBRIntersects'),
+                'overlaps': SpatialOperator(func='MBROverlaps'),
+                'same_as': SpatialOperator(func=MBREquals),
+                'touches': SpatialOperator(func='MBRTouches'),
+                'within': SpatialOperator(func='MBRWithin')
+            }
 
     disallowed_aggregates = (
-        aggregates.Collect, aggregates.Extent, aggregates.Extent3D,
-        aggregates.MakeLine, aggregates.Union,
+        aggregates.Collect,
+        aggregates.Extent,
+        aggregates.Extent3D,
+        aggregates.MakeLine,
+        aggregates.Union
     )
 
     @cached_property
     def unsupported_functions(self):
         unsupported = {
-            'AsGML', 'AsKML', 'AsSVG', 'Azimuth', 'BoundingCircle',
-            'ForcePolygonCW', 'ForceRHR', 'LineLocatePoint', 'MakeValid',
-            'MemSize', 'Perimeter', 'PointOnSurface', 'Reverse', 'Scale',
-            'SnapToGrid', 'Transform', 'Translate',
+            'AsGML',
+            'AsKML',
+            'AsSVG',
+            'Azimuth',
+            'BoundingCircle',
+            'ForcePolygonCW',
+            'ForceRHR',
+            'LineLocatePoint',
+            'MakeValid',
+            'MemSize',
+            'Perimeter',
+            'PointOnSurface',
+            'Reverse',
+            'Scale',
+            'SnapToGrid',
+            'Transform',
+            'Translate'
         }
         if self.connection.mysql_version < (5, 7, 5):
             unsupported.update({'AsGeoJSON', 'GeoHash', 'IsValid'})
@@ -73,10 +90,9 @@ class MySQLOperations(BaseSpatialOperations, DatabaseOperations):
         value = value[0]
         if isinstance(value, Distance):
             if f.geodetic(self.connection):
-                raise ValueError(
-                    'Only numeric values of degree units are allowed on '
-                    'geodetic distance queries.'
-                )
+                raise
+                ValueError('Only numeric values of degree units are allowed on '
+                    'geodetic distance queries.')
             dist_param = getattr(value, Distance.unit_attname(f.units_name(self.connection)))
         else:
             dist_param = value
@@ -95,4 +111,5 @@ class MySQLOperations(BaseSpatialOperations, DatabaseOperations):
                 if srid:
                     geom.srid = srid
                 return geom
+
         return converter

@@ -1,6 +1,6 @@
-"""
+'''
 An interpreted text role to link docs to CVE issues. To use: :cve:`XXXXX`
-"""
+'''
 from docutils import nodes, utils
 from docutils.parsers.rst import roles
 
@@ -11,7 +11,7 @@ def cve_role(name, rawtext, text, lineno, inliner, options=None, content=None):
 
     url_pattern = inliner.document.settings.env.app.config.cve_url
     if url_pattern is None:
-        msg = inliner.reporter.warning("cve not configured: please configure cve_url in conf.py")
+        msg = inliner.reporter.warning('cve not configured: please configure cve_url in conf.py')
         prb = inliner.problematic(rawtext, rawtext, msg)
         return [prb], [msg]
 

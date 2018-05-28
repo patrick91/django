@@ -3,12 +3,8 @@ import time
 from datetime import datetime
 
 from django.template import engines
-from django.template.response import (
-    ContentNotRenderedError, SimpleTemplateResponse, TemplateResponse,
-)
-from django.test import (
-    RequestFactory, SimpleTestCase, modify_settings, override_settings,
-)
+from django.template.response import ContentNotRenderedError, SimpleTemplateResponse, TemplateResponse
+from django.test import RequestFactory, SimpleTestCase, modify_settings, override_settings
 from django.test.utils import require_jinja2
 from django.utils.deprecation import MiddlewareMixin
 
@@ -29,7 +25,6 @@ class CustomURLConfMiddleware(MiddlewareMixin):
 
 
 class SimpleTemplateResponseTest(SimpleTestCase):
-
     def _response(self, template='foo', *args, **kwargs):
         template = engines['django'].from_string(template)
         return SimpleTemplateResponse(template, *args, **kwargs)
@@ -59,13 +54,11 @@ class SimpleTemplateResponseTest(SimpleTestCase):
         # response is not re-rendered without the render call
         response = self._response().render()
         self.assertEqual(response.content, b'foo')
-
         # rebaking doesn't change the rendered content
         template = engines['django'].from_string('bar{{ baz }}')
         response.template_name = template
         response.render()
         self.assertEqual(response.content, b'foo')
-
         # but rendered content can be overridden by manually
         # setting content
         response.content = 'bar'
@@ -79,6 +72,7 @@ class SimpleTemplateResponseTest(SimpleTestCase):
         def iteration():
             for x in response:
                 pass
+
         with self.assertRaises(ContentNotRenderedError):
             iteration()
         self.assertFalse(response.is_rendered)
@@ -113,8 +107,7 @@ class SimpleTemplateResponseTest(SimpleTestCase):
         self.assertEqual(response.content, b'baz')
 
     def test_dict_context(self):
-        response = self._response('{{ foo }}{{ processors }}',
-                                  {'foo': 'bar'})
+        response = self._response('{{ foo }}{{ processors }}', {'foo': 'bar'})
         self.assertEqual(response.context_data, {'foo': 'bar'})
         response.render()
         self.assertEqual(response.content, b'bar')
@@ -140,7 +133,7 @@ class SimpleTemplateResponseTest(SimpleTestCase):
         self.assertEqual(response.content, b'Jinja2\n')
 
     def test_post_callbacks(self):
-        "Rendering a template response triggers the post-render callbacks"
+        'Rendering a template response triggers the post-render callbacks'
         post = []
 
         def post1(obj):
@@ -152,7 +145,6 @@ class SimpleTemplateResponseTest(SimpleTestCase):
         response = SimpleTemplateResponse('first/test.html', {})
         response.add_post_render_callback(post1)
         response.add_post_render_callback(post2)
-
         # When the content is rendered, all the callbacks are invoked, too.
         response.render()
         self.assertEqual(response.content, b'First template\n')
@@ -161,13 +153,9 @@ class SimpleTemplateResponseTest(SimpleTestCase):
     def test_pickling(self):
         # Create a template response. The context is
         # known to be unpicklable (e.g., a function).
-        response = SimpleTemplateResponse('first/test.html', {
-            'value': 123,
-            'fn': datetime.now,
-        })
+        response = SimpleTemplateResponse('first/test.html', {'value': 123, 'fn': datetime.now})
         with self.assertRaises(ContentNotRenderedError):
             pickle.dumps(response)
-
         # But if we render the response, we can pickle it.
         response.render()
         pickled_response = pickle.dumps(response)
@@ -176,23 +164,18 @@ class SimpleTemplateResponseTest(SimpleTestCase):
         self.assertEqual(unpickled_response.content, response.content)
         self.assertEqual(unpickled_response['content-type'], response['content-type'])
         self.assertEqual(unpickled_response.status_code, response.status_code)
-
         # ...and the unpickled response doesn't have the
         # template-related attributes, so it can't be re-rendered
         template_attrs = ('template_name', 'context_data', '_post_render_callbacks')
         for attr in template_attrs:
             self.assertFalse(hasattr(unpickled_response, attr))
-
         # ...and requesting any of those attributes raises an exception
         for attr in template_attrs:
             with self.assertRaises(AttributeError):
                 getattr(unpickled_response, attr)
 
     def test_repickling(self):
-        response = SimpleTemplateResponse('first/test.html', {
-            'value': 123,
-            'fn': datetime.now,
-        })
+        response = SimpleTemplateResponse('first/test.html', {'value': 123, 'fn': datetime.now})
         with self.assertRaises(ContentNotRenderedError):
             pickle.dumps(response)
 
@@ -202,10 +185,7 @@ class SimpleTemplateResponseTest(SimpleTestCase):
         pickle.dumps(unpickled_response)
 
     def test_pickling_cookie(self):
-        response = SimpleTemplateResponse('first/test.html', {
-            'value': 123,
-            'fn': datetime.now,
-        })
+        response = SimpleTemplateResponse('first/test.html', {'value': 123, 'fn': datetime.now})
 
         response.cookies['key'] = 'value'
 
@@ -216,15 +196,14 @@ class SimpleTemplateResponseTest(SimpleTestCase):
         self.assertEqual(unpickled_response.cookies['key'].value, 'value')
 
 
-@override_settings(TEMPLATES=[{
-    'BACKEND': 'django.template.backends.django.DjangoTemplates',
-    'DIRS': [TEMPLATE_DIR],
-    'OPTIONS': {
-        'context_processors': [test_processor_name],
-    },
-}])
+@override_settings(TEMPLATES=[
+    {
+        'BACKEND': 'django.template.backends.django.DjangoTemplates',
+        'DIRS': [TEMPLATE_DIR],
+        'OPTIONS': {'context_processors': [test_processor_name]}
+    }
+])
 class TemplateResponseTest(SimpleTestCase):
-
     def setUp(self):
         self.factory = RequestFactory()
 
@@ -238,14 +217,12 @@ class TemplateResponseTest(SimpleTestCase):
         self.assertEqual(response.content, b'yes')
 
     def test_render_with_requestcontext(self):
-        response = self._response('{{ foo }}{{ processors }}',
-                                  {'foo': 'bar'}).render()
+        response = self._response('{{ foo }}{{ processors }}', {'foo': 'bar'}).render()
         self.assertEqual(response.content, b'baryes')
 
     def test_context_processor_priority(self):
         # context processors should be overridden by passed-in context
-        response = self._response('{{ foo }}{{ processors }}',
-                                  {'processors': 'no'}).render()
+        response = self._response('{{ foo }}{{ processors }}', {'processors': 'no'}).render()
         self.assertEqual(response.content, b'no')
 
     def test_kwargs(self):
@@ -254,8 +231,7 @@ class TemplateResponseTest(SimpleTestCase):
         self.assertEqual(response.status_code, 504)
 
     def test_args(self):
-        response = TemplateResponse(self.factory.get('/'), '', {},
-                                    'application/json', 504)
+        response = TemplateResponse(self.factory.get('/'), '', {}, 'application/json', 504)
         self.assertEqual(response['content-type'], 'application/json')
         self.assertEqual(response.status_code, 504)
 
@@ -272,16 +248,9 @@ class TemplateResponseTest(SimpleTestCase):
     def test_pickling(self):
         # Create a template response. The context is
         # known to be unpicklable (e.g., a function).
-        response = TemplateResponse(
-            self.factory.get('/'),
-            'first/test.html', {
-                'value': 123,
-                'fn': datetime.now,
-            }
-        )
+        response = TemplateResponse(self.factory.get('/'), 'first/test.html', {'value': 123, 'fn': datetime.now})
         with self.assertRaises(ContentNotRenderedError):
             pickle.dumps(response)
-
         # But if we render the response, we can pickle it.
         response.render()
         pickled_response = pickle.dumps(response)
@@ -290,28 +259,18 @@ class TemplateResponseTest(SimpleTestCase):
         self.assertEqual(unpickled_response.content, response.content)
         self.assertEqual(unpickled_response['content-type'], response['content-type'])
         self.assertEqual(unpickled_response.status_code, response.status_code)
-
         # ...and the unpickled response doesn't have the
         # template-related attributes, so it can't be re-rendered
-        template_attrs = (
-            'template_name',
-            'context_data',
-            '_post_render_callbacks',
-            '_request',
-        )
+        template_attrs = ('template_name', 'context_data', '_post_render_callbacks', '_request')
         for attr in template_attrs:
             self.assertFalse(hasattr(unpickled_response, attr))
-
         # ...and requesting any of those attributes raises an exception
         for attr in template_attrs:
             with self.assertRaises(AttributeError):
                 getattr(unpickled_response, attr)
 
     def test_repickling(self):
-        response = SimpleTemplateResponse('first/test.html', {
-            'value': 123,
-            'fn': datetime.now,
-        })
+        response = SimpleTemplateResponse('first/test.html', {'value': 123, 'fn': datetime.now})
         with self.assertRaises(ContentNotRenderedError):
             pickle.dumps(response)
 
@@ -324,23 +283,16 @@ class TemplateResponseTest(SimpleTestCase):
 @modify_settings(MIDDLEWARE={'append': ['template_tests.test_response.CustomURLConfMiddleware']})
 @override_settings(ROOT_URLCONF='template_tests.urls')
 class CustomURLConfTest(SimpleTestCase):
-
     def test_custom_urlconf(self):
         response = self.client.get('/template_response_view/')
         self.assertContains(response, 'This is where you can find the snark: /snark/')
 
 
-@modify_settings(
-    MIDDLEWARE={
-        'append': [
-            'django.middleware.cache.FetchFromCacheMiddleware',
-            'django.middleware.cache.UpdateCacheMiddleware',
-        ],
-    },
-)
+@modify_settings(MIDDLEWARE={
+    'append': ['django.middleware.cache.FetchFromCacheMiddleware', 'django.middleware.cache.UpdateCacheMiddleware']
+})
 @override_settings(CACHE_MIDDLEWARE_SECONDS=2.0, ROOT_URLCONF='template_tests.alternate_urls')
 class CacheMiddlewareTest(SimpleTestCase):
-
     def test_middleware_caching(self):
         response = self.client.get('/template_response_view/')
         self.assertEqual(response.status_code, 200)
@@ -353,7 +305,6 @@ class CacheMiddlewareTest(SimpleTestCase):
         self.assertEqual(response.content, response2.content)
 
         time.sleep(2.0)
-
         # Let the cache expire and test again
         response2 = self.client.get('/template_response_view/')
         self.assertEqual(response2.status_code, 200)

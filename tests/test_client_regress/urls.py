@@ -5,7 +5,6 @@ from . import views
 
 urlpatterns = [
     url(r'', include('test_client.urls')),
-
     url(r'^no_template_view/$', views.no_template_view),
     url(r'^staff_only/$', views.staff_only_view),
     url(r'^get_view/$', views.get_view),
@@ -38,5 +37,5 @@ urlpatterns = [
     url(r'^read_all/$', views.read_all),
     url(r'^read_buffer/$', views.read_buffer),
     url(r'^request_context_view/$', views.request_context_view),
-    url(r'^render_template_multiple_times/$', views.render_template_multiple_times),
+    url(r'^render_template_multiple_times/$', views.render_template_multiple_times)
 ]

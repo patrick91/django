@@ -1,6 +1,6 @@
-"""
+'''
 Tests for defer() and only().
-"""
+'''
 
 from django.db import models
 

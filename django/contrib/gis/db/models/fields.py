@@ -4,8 +4,15 @@ from django.contrib.gis import forms, gdal
 from django.contrib.gis.db.models.proxy import SpatialProxy
 from django.contrib.gis.gdal.error import GDALException
 from django.contrib.gis.geos import (
-    GeometryCollection, GEOSException, GEOSGeometry, LineString,
-    MultiLineString, MultiPoint, MultiPolygon, Point, Polygon,
+    GeometryCollection,
+    GEOSException,
+    GEOSGeometry,
+    LineString,
+    MultiLineString,
+    MultiPoint,
+    MultiPolygon,
+    Point,
+    Polygon
 )
 from django.core.exceptions import ImproperlyConfigured
 from django.db.models.fields import Field
@@ -21,11 +28,11 @@ SRIDCacheEntry = namedtuple('SRIDCacheEntry', ['units', 'units_name', 'spheroid'
 
 
 def get_srid_info(srid, connection):
-    """
+    '''
     Return the units, unit name, and spheroid WKT associated with the
     given SRID from the `spatial_ref_sys` (or equivalent) spatial database
     table for the given database connection.  These results are cached.
-    """
+    '''
     from django.contrib.gis.gdal import SpatialReference
     global _srid_cache
 
@@ -36,19 +43,15 @@ def get_srid_info(srid, connection):
         SpatialRefSys = None
 
     alias, get_srs = (
-        (connection.alias, lambda srid: SpatialRefSys.objects.using(connection.alias).get(srid=srid).srs)
-        if SpatialRefSys else
-        (None, SpatialReference)
-    )
+        connection.alias,
+        lambda srid: SpatialRefSys.objects.using(connection.alias).get(srid=srid).srs
+    ) if SpatialRefSys else (None, SpatialReference)
     if srid not in _srid_cache[alias]:
         srs = get_srs(srid)
         units, units_name = srs.units
-        _srid_cache[alias][srid] = SRIDCacheEntry(
-            units=units,
-            units_name=units_name,
-            spheroid='SPHEROID["%s",%s,%s]' % (srs['spheroid'], srs.semi_major, srs.inverse_flattening),
-            geodetic=srs.geographic,
-        )
+        _srid_cache[alias][srid] = SRIDCacheEntry(units=units, units_name=units_name, spheroid='SPHEROID["%s",%s,%s]' \
+        % \
+        (srs['spheroid'], srs.semi_major, srs.inverse_flattening), geodetic=srs.geographic)
 
     return _srid_cache[alias][srid]
 
@@ -61,7 +64,7 @@ class BaseSpatialField(Field):
     properties that are common to all GIS fields such as the characteristics
     of the spatial reference system of the field.
     """
-    description = _("The base GIS field.")
+    description = _('The base GIS field.')
     empty_strings_allowed = False
 
     def __init__(self, verbose_name=None, srid=4326, spatial_index=True, **kwargs):
@@ -78,14 +81,11 @@ class BaseSpatialField(Field):
          Set this instead of 'db_index' for geographic fields since index
          creation is different for geometry columns.
         """
-
         # Setting the index flag with the value of the `spatial_index` keyword.
         self.spatial_index = spatial_index
-
         # Setting the SRID and getting the units.  Unit information must be
         # easily available in the field instance for distance queries.
         self.srid = srid
-
         # Setting the verbose_name keyword argument with the positional
         # first parameter, so this works like normal fields.
         kwargs['verbose_name'] = verbose_name
@@ -121,10 +121,10 @@ class BaseSpatialField(Field):
         return get_srid_info(self.srid, connection).geodetic
 
     def get_placeholder(self, value, compiler, connection):
-        """
+        '''
         Return the placeholder for the spatial column for the
         given value.
-        """
+        '''
         return connection.ops.get_geom_placeholder(self, value, compiler)
 
     def get_srid(self, obj):
@@ -134,8 +134,8 @@ class BaseSpatialField(Field):
         or raster doesn't have an SRID, then the SRID of the field will be
         returned.
         """
-        srid = obj.srid  # SRID of given geometry.
-        if srid is None or self.srid == -1 or (srid == -1 and self.srid != -1):
+        srid = obj.srid # SRID of given geometry.
+        if srid is None or self.srid == -1 or srid == -1 and self.srid != -1:
             return self.srid
         else:
             return srid
@@ -143,15 +143,15 @@ class BaseSpatialField(Field):
     def get_db_prep_value(self, value, connection, *args, **kwargs):
         if value is None:
             return None
-        return connection.ops.Adapter(
-            super().get_db_prep_value(value, connection, *args, **kwargs),
-            **({'geography': True} if self.geography and connection.ops.geography else {})
-        )
+        return \
+            connection.ops.Adapter(super().get_db_prep_value(value, connection, *args, **kwargs), **{
+                'geography': True
+            } if self.geography and connection.ops.geography else {})
 
     def get_raster_prep_value(self, value, is_candidate):
-        """
+        '''
         Return a GDALRaster if conversion is successful, otherwise return None.
-        """
+        '''
         if isinstance(value, gdal.GDALRaster):
             return value
         elif is_candidate:
@@ -178,7 +178,6 @@ class BaseSpatialField(Field):
             is_candidate = isinstance(obj, (bytes, str)) or hasattr(obj, '__geo_interface__')
             # Try to convert the input to raster.
             raster = self.get_raster_prep_value(obj, is_candidate)
-
             if raster:
                 obj = raster
             elif is_candidate:
@@ -188,25 +187,32 @@ class BaseSpatialField(Field):
                     raise ValueError("Couldn't create spatial object from lookup value '%s'." % obj)
             else:
                 raise ValueError('Cannot use object with type %s for a spatial lookup parameter.' % type(obj).__name__)
-
         # Assigning the SRID value.
         obj.srid = self.get_srid(obj)
         return obj
 
 
 class GeometryField(BaseSpatialField):
-    """
+    '''
     The base Geometry field -- maps to the OpenGIS Specification Geometry type.
-    """
-    description = _("The base Geometry field -- maps to the OpenGIS Specification Geometry type.")
+    '''
+    description = _('The base Geometry field -- maps to the OpenGIS Specification Geometry type.')
     form_class = forms.GeometryField
     # The OpenGIS Geometry name.
     geom_type = 'GEOMETRY'
     geom_class = None
 
-    def __init__(self, verbose_name=None, dim=2, geography=False, *, extent=(-180.0, -90.0, 180.0, 90.0),
-                 tolerance=0.05, **kwargs):
-        """
+    def __init__(
+        self,
+        verbose_name=None,
+        dim=2,
+        geography=False,
+        *,
+        extent=(-180.0, -90.0, 180.0, 90.0),
+        tolerance=0.05,
+        **kwargs
+    ):
+        '''
         The initialization function for geometry fields. In addition to the
         parameters from BaseSpatialField, it takes the following as keyword
         arguments:
@@ -222,13 +228,11 @@ class GeometryField(BaseSpatialField):
         tolerance:
          Define the tolerance, in meters, to use for the geometry field
          entry in the `USER_SDO_GEOM_METADATA` table.  Defaults to 0.05.
-        """
+        '''
         # Setting the dimension of the geometry field.
         self.dim = dim
-
         # Is this a geography rather than a geometry column?
         self.geography = geography
-
         # Oracle-specific private attributes for creating the entry in
         # `USER_SDO_GEOM_METADATA`
         self._extent = extent
@@ -247,27 +251,21 @@ class GeometryField(BaseSpatialField):
 
     def contribute_to_class(self, cls, name, **kwargs):
         super().contribute_to_class(cls, name, **kwargs)
-
         # Setup for lazy-instantiated Geometry object.
         setattr(cls, self.attname, SpatialProxy(self.geom_class or GEOSGeometry, self, load_func=GEOSGeometry))
 
     def formfield(self, **kwargs):
-        defaults = {
-            'form_class': self.form_class,
-            'geom_type': self.geom_type,
-            'srid': self.srid,
-            **kwargs,
-        }
+        defaults = {'form_class': self.form_class, 'geom_type': self.geom_type, 'srid': self.srid, : kwargs}
         if self.dim > 2 and not getattr(defaults['form_class'].widget, 'supports_3d', False):
             defaults.setdefault('widget', forms.Textarea)
         return super().formfield(**defaults)
 
     def select_format(self, compiler, sql, params):
-        """
+        '''
         Return the selection format string, depending on the requirements
         of the spatial backend. For example, Oracle and MySQL require custom
         selection formats in order to retrieve geometries in OGC WKB.
-        """
+        '''
         return compiler.connection.ops.select % sql, params
 
 
@@ -276,58 +274,58 @@ class PointField(GeometryField):
     geom_type = 'POINT'
     geom_class = Point
     form_class = forms.PointField
-    description = _("Point")
+    description = _('Point')
 
 
 class LineStringField(GeometryField):
     geom_type = 'LINESTRING'
     geom_class = LineString
     form_class = forms.LineStringField
-    description = _("Line string")
+    description = _('Line string')
 
 
 class PolygonField(GeometryField):
     geom_type = 'POLYGON'
     geom_class = Polygon
     form_class = forms.PolygonField
-    description = _("Polygon")
+    description = _('Polygon')
 
 
 class MultiPointField(GeometryField):
     geom_type = 'MULTIPOINT'
     geom_class = MultiPoint
     form_class = forms.MultiPointField
-    description = _("Multi-point")
+    description = _('Multi-point')
 
 
 class MultiLineStringField(GeometryField):
     geom_type = 'MULTILINESTRING'
     geom_class = MultiLineString
     form_class = forms.MultiLineStringField
-    description = _("Multi-line string")
+    description = _('Multi-line string')
 
 
 class MultiPolygonField(GeometryField):
     geom_type = 'MULTIPOLYGON'
     geom_class = MultiPolygon
     form_class = forms.MultiPolygonField
-    description = _("Multi polygon")
+    description = _('Multi polygon')
 
 
 class GeometryCollectionField(GeometryField):
     geom_type = 'GEOMETRYCOLLECTION'
     geom_class = GeometryCollection
     form_class = forms.GeometryCollectionField
-    description = _("Geometry collection")
+    description = _('Geometry collection')
 
 
 class ExtentField(Field):
-    "Used as a return value from an extent aggregate"
+    'Used as a return value from an extent aggregate'
 
-    description = _("Extent Aggregate Field")
+    description = _('Extent Aggregate Field')
 
     def get_internal_type(self):
-        return "ExtentField"
+        return 'ExtentField'
 
     def select_format(self, compiler, sql, params):
         select = compiler.connection.ops.select_extent
@@ -335,11 +333,11 @@ class ExtentField(Field):
 
 
 class RasterField(BaseSpatialField):
-    """
+    '''
     Raster field for GeoDjango -- evaluates into GDALRaster objects.
-    """
+    '''
 
-    description = _("Raster Field")
+    description = _('Raster Field')
     geom_type = 'RASTER'
     geography = False
 
@@ -367,11 +365,7 @@ class RasterField(BaseSpatialField):
         from django.contrib.gis.db.models.lookups import RasterBandTransform
         try:
             band_index = int(name)
-            return type(
-                'SpecificRasterBandTransform',
-                (RasterBandTransform,),
-                {'band_index': band_index}
-            )
+            return type('SpecificRasterBandTransform', (RasterBandTransform,), {'band_index': band_index})
         except ValueError:
             pass
         return super().get_transform(name)

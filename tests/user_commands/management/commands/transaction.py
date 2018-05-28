@@ -2,7 +2,7 @@ from django.core.management.base import BaseCommand
 
 
 class Command(BaseCommand):
-    help = "Say hello."
+    help = 'Say hello.'
     args = ''
     output_transaction = True
 

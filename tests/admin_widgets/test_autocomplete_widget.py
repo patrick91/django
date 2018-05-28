@@ -13,32 +13,20 @@ class AlbumForm(forms.ModelForm):
         model = Album
         fields = ['band', 'featuring']
         widgets = {
-            'band': AutocompleteSelect(
-                Album._meta.get_field('band').remote_field,
-                admin.site,
-                attrs={'class': 'my-class'},
-            ),
-            'featuring': AutocompleteSelect(
-                Album._meta.get_field('featuring').remote_field,
-                admin.site,
-            )
+            'band':
+                AutocompleteSelect(Album._meta.get_field('band').remote_field, admin.site, attrs={
+                    'class': 'my-class'
+                }),
+            'featuring': AutocompleteSelect(Album._meta.get_field('featuring').remote_field, admin.site)
         }
 
 
 class NotRequiredBandForm(forms.Form):
-    band = ModelChoiceField(
-        queryset=Album.objects.all(),
-        widget=AutocompleteSelect(Album._meta.get_field('band').remote_field, admin.site),
-        required=False,
-    )
+    band = ModelChoiceField(queryset=Album.objects.all(), widget=AutocompleteSelect(Album._meta.get_field('band').remote_field, admin.site), required=False)
 
 
 class RequiredBandForm(forms.Form):
-    band = ModelChoiceField(
-        queryset=Album.objects.all(),
-        widget=AutocompleteSelect(Album._meta.get_field('band').remote_field, admin.site),
-        required=True,
-    )
+    band = ModelChoiceField(queryset=Album.objects.all(), widget=AutocompleteSelect(Album._meta.get_field('band').remote_field, admin.site), required=True)
 
 
 @override_settings(ROOT_URLCONF='admin_widgets.urls')
@@ -117,7 +105,7 @@ class AutocompleteMixinTests(TestCase):
             'admin/js/vendor/select2/select2.full.min.js',
             # Language file is inserted here.
             'admin/js/jquery.init.js',
-            'admin/js/autocomplete.js',
+            'admin/js/autocomplete.js'
         )
         languages = (
             ('de', 'de'),
@@ -126,16 +114,14 @@ class AutocompleteMixinTests(TestCase):
             # Language files are case sensitive.
             ('sr-cyrl', 'sr-Cyrl'),
             ('zh-hans', 'zh-CN'),
-            ('zh-hant', 'zh-TW'),
+            ('zh-hant', 'zh-TW')
         )
         for lang, select_lang in languages:
             with self.subTest(lang=lang):
                 if select_lang:
-                    expected_files = (
-                        base_files[:2] +
-                        (('admin/js/vendor/select2/i18n/%s.js' % select_lang),) +
-                        base_files[2:]
-                    )
+                    expected_files = base_files[:2] + ('admin/js/vendor/select2/i18n/%s.js' % select_lang,) \
+                    + \
+                    base_files[2:]
                 else:
                     expected_files = base_files
                 with translation.override(lang):

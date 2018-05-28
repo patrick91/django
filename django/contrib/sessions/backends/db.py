@@ -1,8 +1,6 @@
 import logging
 
-from django.contrib.sessions.backends.base import (
-    CreateError, SessionBase, UpdateError,
-)
+from django.contrib.sessions.backends.base import CreateError, SessionBase, UpdateError
 from django.core.exceptions import SuspiciousOperation
 from django.db import DatabaseError, IntegrityError, router, transaction
 from django.utils import timezone
@@ -10,9 +8,10 @@ from django.utils.functional import cached_property
 
 
 class SessionStore(SessionBase):
-    """
+    '''
     Implement database session store.
-    """
+    '''
+
     def __init__(self, session_key=None):
         super().__init__(session_key)
 
@@ -29,10 +28,7 @@ class SessionStore(SessionBase):
 
     def _get_session_from_db(self):
         try:
-            return self.model.objects.get(
-                session_key=self.session_key,
-                expire_date__gt=timezone.now()
-            )
+            return self.model.objects.get(session_key=self.session_key, expire_date__gt=timezone.now())
         except (self.model.DoesNotExist, SuspiciousOperation) as e:
             if isinstance(e, SuspiciousOperation):
                 logger = logging.getLogger('django.security.%s' % e.__class__.__name__)
@@ -60,16 +56,13 @@ class SessionStore(SessionBase):
             return
 
     def create_model_instance(self, data):
-        """
+        '''
         Return a new instance of the session model object, which represents the
         current session state. Intended to be used for saving the session data
         to the database.
-        """
-        return self.model(
-            session_key=self._get_or_create_session_key(),
-            session_data=self.encode(data),
-            expire_date=self.get_expiry_date(),
-        )
+        '''
+        return \
+            self.model(session_key=self._get_or_create_session_key(), session_data=self.encode(data), expire_date=self.get_expiry_date())
 
     def save(self, must_create=False):
         """
@@ -92,7 +85,7 @@ class SessionStore(SessionBase):
         except DatabaseError:
             if not must_create:
                 raise UpdateError
-            raise
+            raise 
 
     def delete(self, session_key=None):
         if session_key is None:

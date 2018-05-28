@@ -6,7 +6,6 @@ from django.test.utils import extend_sys_path
 
 
 class EggLoadingTest(SimpleTestCase):
-
     def setUp(self):
         self.egg_dir = '%s/eggs' % os.path.dirname(__file__)
 
@@ -14,7 +13,7 @@ class EggLoadingTest(SimpleTestCase):
         apps.clear_cache()
 
     def test_egg1(self):
-        """Models module can be loaded from an app in an egg"""
+        '''Models module can be loaded from an app in an egg'''
         egg_name = '%s/modelapp.egg' % self.egg_dir
         with extend_sys_path(egg_name):
             with self.settings(INSTALLED_APPS=['app_with_models']):
@@ -23,7 +22,7 @@ class EggLoadingTest(SimpleTestCase):
         del apps.all_models['app_with_models']
 
     def test_egg2(self):
-        """Loading an app from an egg that has no models returns no models (and no error)"""
+        '''Loading an app from an egg that has no models returns no models (and no error)'''
         egg_name = '%s/nomodelapp.egg' % self.egg_dir
         with extend_sys_path(egg_name):
             with self.settings(INSTALLED_APPS=['app_no_models']):
@@ -41,7 +40,7 @@ class EggLoadingTest(SimpleTestCase):
         del apps.all_models['app_with_models']
 
     def test_egg4(self):
-        """Loading an app with no models from under the top-level egg package generates no error"""
+        '''Loading an app with no models from under the top-level egg package generates no error'''
         egg_name = '%s/omelet.egg' % self.egg_dir
         with extend_sys_path(egg_name):
             with self.settings(INSTALLED_APPS=['omelet.app_no_models']):
@@ -50,7 +49,7 @@ class EggLoadingTest(SimpleTestCase):
         del apps.all_models['app_no_models']
 
     def test_egg5(self):
-        """Loading an app from an egg that has an import error in its models module raises that error"""
+        '''Loading an app from an egg that has an import error in its models module raises that error'''
         egg_name = '%s/brokenapp.egg' % self.egg_dir
         with extend_sys_path(egg_name):
             with self.assertRaisesMessage(ImportError, 'modelz'):
@@ -65,9 +64,7 @@ class GetModelsTest(SimpleTestCase):
 
     def test_get_model_only_returns_installed_models(self):
         with self.assertRaises(LookupError):
-            apps.get_model("not_installed", "NotInstalledModel")
+            apps.get_model('not_installed', 'NotInstalledModel')
 
     def test_get_models_only_returns_installed_models(self):
-        self.assertNotIn(
-            "NotInstalledModel",
-            [m.__name__ for m in apps.get_models()])
+        self.assertNotIn('NotInstalledModel', [m.__name__ for m in apps.get_models()])

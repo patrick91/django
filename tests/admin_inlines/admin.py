@@ -3,16 +3,44 @@ from django.contrib import admin
 from django.db import models
 
 from .models import (
-    Author, BinaryTree, CapoFamiglia, Chapter, ChildModel1, ChildModel2,
-    Consigliere, EditablePKBook, ExtraTerrestrial, Fashionista, Holder,
-    Holder2, Holder3, Holder4, Inner, Inner2, Inner3, Inner4Stacked,
-    Inner4Tabular, NonAutoPKBook, NonAutoPKBookChild, Novel,
-    ParentModelWithCustomPk, Poll, Profile, ProfileCollection, Question,
-    ReadOnlyInline, ShoppingWeakness, Sighting, SomeChildModel,
-    SomeParentModel, SottoCapo, Title, TitleCollection,
+    Author,
+    BinaryTree,
+    CapoFamiglia,
+    Chapter,
+    ChildModel1,
+    ChildModel2,
+    Consigliere,
+    EditablePKBook,
+    ExtraTerrestrial,
+    Fashionista,
+    Holder,
+    Holder2,
+    Holder3,
+    Holder4,
+    Inner,
+    Inner2,
+    Inner3,
+    Inner4Stacked,
+    Inner4Tabular,
+    NonAutoPKBook,
+    NonAutoPKBookChild,
+    Novel,
+    ParentModelWithCustomPk,
+    Poll,
+    Profile,
+    ProfileCollection,
+    Question,
+    ReadOnlyInline,
+    ShoppingWeakness,
+    Sighting,
+    SomeChildModel,
+    SomeParentModel,
+    SottoCapo,
+    Title,
+    TitleCollection
 )
 
-site = admin.AdminSite(name="admin")
+site = admin.AdminSite(name='admin')
 
 
 class BookInline(admin.TabularInline):
@@ -44,20 +72,22 @@ class EditablePKBookStackedInline(admin.StackedInline):
 
 class AuthorAdmin(admin.ModelAdmin):
     inlines = [
-        BookInline, NonAutoPKBookTabularInline, NonAutoPKBookStackedInline,
-        EditablePKBookTabularInline, EditablePKBookStackedInline,
-        NonAutoPKBookChildTabularInline,
+        BookInline,
+        NonAutoPKBookTabularInline,
+        NonAutoPKBookStackedInline,
+        EditablePKBookTabularInline,
+        EditablePKBookStackedInline,
+        NonAutoPKBookChildTabularInline
     ]
 
 
 class InnerInline(admin.StackedInline):
     model = Inner
     can_delete = False
-    readonly_fields = ('readonly',)  # For bug #13174 tests.
+    readonly_fields = ('readonly',) # For bug #13174 tests.
 
 
 class HolderAdmin(admin.ModelAdmin):
-
     class Media:
         js = ('my_awesome_admin_scripts.js',)
 
@@ -81,9 +111,7 @@ class CustomNumberWidget(forms.NumberInput):
 
 class InnerInline3(admin.StackedInline):
     model = Inner3
-    formfield_overrides = {
-        models.IntegerField: {'widget': CustomNumberWidget},
-    }
+    formfield_overrides = {models.IntegerField: {'widget': CustomNumberWidget}}
 
     class Media:
         js = ('my_awesome_inline_scripts.js',)
@@ -94,10 +122,10 @@ class TitleForm(forms.ModelForm):
 
     def clean(self):
         cleaned_data = self.cleaned_data
-        title1 = cleaned_data.get("title1")
-        title2 = cleaned_data.get("title2")
+        title1 = cleaned_data.get('title1')
+        title2 = cleaned_data.get('title2')
         if title1 != title2:
-            raise forms.ValidationError("The two titles must be the same")
+            raise forms.ValidationError('The two titles must be the same')
         return cleaned_data
 
 
@@ -199,13 +227,10 @@ class SightingInline(admin.TabularInline):
 
 # admin and form for #18263
 class SomeChildModelForm(forms.ModelForm):
-
     class Meta:
         fields = '__all__'
         model = SomeChildModel
-        widgets = {
-            'position': forms.HiddenInput,
-        }
+        widgets = {'position': forms.HiddenInput}
         labels = {'readonly_field': 'Label from ModelForm.Meta'}
         help_texts = {'readonly_field': 'Help text from ModelForm.Meta'}
 

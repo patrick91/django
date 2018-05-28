@@ -14,8 +14,7 @@ class MySQLIntrospection(DatabaseIntrospection):
         with self.connection.cursor() as cursor:
             # In order to get the specific geometry type of the field,
             # we introspect on the table definition using `DESCRIBE`.
-            cursor.execute('DESCRIBE %s' %
-                           self.connection.ops.quote_name(table_name))
+            cursor.execute('DESCRIBE %s' % self.connection.ops.quote_name(table_name))
             # Increment over description info until we get to the geometry
             # column.
             for column, typ, null, key, default, extra in cursor.fetchall():
@@ -31,7 +30,4 @@ class MySQLIntrospection(DatabaseIntrospection):
     def supports_spatial_index(self, cursor, table_name):
         # Supported with MyISAM, or InnoDB on MySQL 5.7.5+
         storage_engine = self.get_storage_engine(cursor, table_name)
-        return (
-            (storage_engine == 'InnoDB' and self.connection.mysql_version >= (5, 7, 5)) or
-            storage_engine == 'MyISAM'
-        )
+        return storage_engine == 'InnoDB' and self.connection.mysql_version >= (5, 7, 5) or storage_engine == 'MyISAM'

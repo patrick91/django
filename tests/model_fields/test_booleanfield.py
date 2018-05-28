@@ -71,28 +71,25 @@ class BooleanFieldTests(TestCase):
         b4.refresh_from_db()
         self.assertIs(b4.nbfield, False)
         self.assertIs(b4.nbfield_old, False)
-
         # When an extra clause exists, the boolean conversions are applied with
         # an offset (#13293).
         b5 = BooleanModel.objects.all().extra(select={'string_col': 'string'})[0]
         self.assertNotIsInstance(b5.pk, bool)
 
     def test_select_related(self):
-        """
+        '''
         Boolean fields retrieved via select_related() should return booleans.
-        """
+        '''
         bmt = BooleanModel.objects.create(bfield=True)
         bmf = BooleanModel.objects.create(bfield=False)
         nbmt = NullBooleanModel.objects.create(nbfield=True, nbfield_old=True)
         nbmf = NullBooleanModel.objects.create(nbfield=False, nbfield_old=False)
         m1 = FksToBooleans.objects.create(bf=bmt, nbf=nbmt)
         m2 = FksToBooleans.objects.create(bf=bmf, nbf=nbmf)
-
         # select_related('fk_field_name')
         ma = FksToBooleans.objects.select_related('bf').get(pk=m1.id)
         self.assertIs(ma.bf.bfield, True)
         self.assertIs(ma.nbf.nbfield, True)
-
         # select_related()
         mb = FksToBooleans.objects.select_related().get(pk=m1.id)
         mc = FksToBooleans.objects.select_related().get(pk=m2.id)
@@ -118,11 +115,10 @@ class BooleanFieldTests(TestCase):
         nb = NullBooleanModel()
         self.assertIsNone(nb.nbfield)
         self.assertIsNone(nb.nbfield_old)
-        nb.save()  # no error
+        nb.save() # no error
 
 
 class ValidationTest(SimpleTestCase):
-
     def test_boolean_field_doesnt_accept_empty_input(self):
         f = models.BooleanField()
         with self.assertRaises(ValidationError):

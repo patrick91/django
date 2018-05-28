@@ -10,20 +10,9 @@ class FlatPage(models.Model):
     title = models.CharField(_('title'), max_length=200)
     content = models.TextField(_('content'), blank=True)
     enable_comments = models.BooleanField(_('enable comments'), default=False)
-    template_name = models.CharField(
-        _('template name'),
-        max_length=70,
-        blank=True,
-        help_text=_(
-            "Example: 'flatpages/contact_page.html'. If this isn't provided, "
-            "the system will use 'flatpages/default.html'."
-        ),
-    )
-    registration_required = models.BooleanField(
-        _('registration required'),
-        help_text=_("If this is checked, only logged-in users will be able to view the page."),
-        default=False,
-    )
+    template_name = models.CharField(_('template name'), max_length=70, blank=True, help_text=_("Example: 'flatpages/contact_page.html'. If this isn't provided, "
+            "the system will use 'flatpages/default.html'."))
+    registration_required = models.BooleanField(_('registration required'), help_text=_('If this is checked, only logged-in users will be able to view the page.'), default=False)
     sites = models.ManyToManyField(Site, verbose_name=_('sites'))
 
     class Meta:
@@ -33,7 +22,7 @@ class FlatPage(models.Model):
         ordering = ('url',)
 
     def __str__(self):
-        return "%s -- %s" % (self.url, self.title)
+        return '%s -- %s' % (self.url, self.title)
 
     def get_absolute_url(self):
         # Handle script prefix manually because we bypass reverse()

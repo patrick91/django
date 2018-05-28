@@ -1,6 +1,6 @@
-"""
+'''
  Error checking functions for GEOS ctypes prototype functions.
-"""
+'''
 from ctypes import c_void_p, string_at
 
 from django.contrib.gis.geos.error import GEOSException
@@ -18,7 +18,7 @@ def last_arg_byref(args):
 
 
 def check_dbl(result, func, cargs):
-    "Check the status code and returns the double value passed in by reference."
+    'Check the status code and returns the double value passed in by reference.'
     # Checking the status code
     if result != 1:
         return None
@@ -27,14 +27,14 @@ def check_dbl(result, func, cargs):
 
 
 def check_geom(result, func, cargs):
-    "Error checking on routines that return Geometries."
+    'Error checking on routines that return Geometries.'
     if not result:
         raise GEOSException('Error encountered checking Geometry returned from GEOS C function "%s".' % func.__name__)
     return result
 
 
 def check_minus_one(result, func, cargs):
-    "Error checking on routines that should not return -1."
+    'Error checking on routines that should not return -1.'
     if result == -1:
         raise GEOSException('Error encountered in GEOS C function "%s".' % func.__name__)
     else:
@@ -42,7 +42,7 @@ def check_minus_one(result, func, cargs):
 
 
 def check_predicate(result, func, cargs):
-    "Error checking for unary/binary predicate functions."
+    'Error checking for unary/binary predicate functions.'
     if result == 1:
         return True
     elif result == 0:
@@ -52,11 +52,11 @@ def check_predicate(result, func, cargs):
 
 
 def check_sized_string(result, func, cargs):
-    """
+    '''
     Error checking for routines that return explicitly sized strings.
 
     This frees the memory allocated by GEOS at the result pointer.
-    """
+    '''
     if not result:
         raise GEOSException('Invalid string pointer returned by GEOS C function "%s"' % func.__name__)
     # A c_size_t object is passed in by reference for the second
@@ -69,11 +69,11 @@ def check_sized_string(result, func, cargs):
 
 
 def check_string(result, func, cargs):
-    """
+    '''
     Error checking for routines that return strings.
 
     This frees the memory allocated by GEOS at the result pointer.
-    """
+    '''
     if not result:
         raise GEOSException('Error encountered checking string return value in GEOS C function "%s".' % func.__name__)
     # Getting the string value at the pointer address.

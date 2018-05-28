@@ -10,9 +10,9 @@ from .uploadhandler import ErroringUploadHandler, QuotaUploadHandler
 
 
 def file_upload_view(request):
-    """
+    '''
     A file upload can be updated into the POST dictionary.
-    """
+    '''
     form_data = request.POST.copy()
     form_data.update(request.FILES)
     if isinstance(form_data.get('file_field'), UploadedFile) and isinstance(form_data['name'], str):
@@ -26,9 +26,9 @@ def file_upload_view(request):
 
 
 def file_upload_view_verify(request):
-    """
+    '''
     Use the sha digest hash to verify the uploaded contents.
-    """
+    '''
     form_data = request.POST.copy()
     form_data.update(request.FILES)
 
@@ -44,7 +44,6 @@ def file_upload_view_verify(request):
             new_hash = hashlib.sha1(value.encode()).hexdigest()
         if new_hash != submitted_hash:
             return HttpResponseServerError()
-
     # Adding large file to the database should succeed
     largefile = request.FILES['file_field2']
     obj = FileModel()
@@ -54,13 +53,11 @@ def file_upload_view_verify(request):
 
 
 def file_upload_unicode_name(request):
-
     # Check to see if unicode name came through properly.
     if not request.FILES['file_unicode'].name.endswith(UNICODE_FILENAME):
         return HttpResponseServerError()
 
     response = None
-
     # Check to make sure the exotic characters are preserved even
     # through file save.
     uni_named_file = request.FILES['file_unicode']
@@ -68,7 +65,6 @@ def file_upload_unicode_name(request):
     full_name = '%s/%s' % (UPLOAD_TO, uni_named_file.name)
     if not os.path.exists(full_name):
         response = HttpResponseServerError()
-
     # Cleanup the object with its exotic file name immediately.
     # (shutil.rmtree used elsewhere in the tests to clean up the
     # upload directory has been seen to choke on unicode
@@ -83,28 +79,30 @@ def file_upload_unicode_name(request):
 
 
 def file_upload_echo(request):
-    """
+    '''
     Simple view to echo back info about uploaded files for tests.
-    """
-    r = {k: f.name for k, f in request.FILES.items()}
+    '''
+    r = {k: f.name for (k, f) in request.FILES.items()}
     return JsonResponse(r)
 
 
 def file_upload_echo_content(request):
-    """
+    '''
     Simple view to echo back the content of uploaded files for tests.
-    """
+    '''
+
     def read_and_close(f):
         with f:
             return f.read().decode()
-    r = {k: read_and_close(f) for k, f in request.FILES.items()}
+
+    r = {k: read_and_close(f) for (k, f) in request.FILES.items()}
     return JsonResponse(r)
 
 
 def file_upload_quota(request):
-    """
+    '''
     Dynamically add in an upload handler.
-    """
+    '''
     request.upload_handlers.insert(0, QuotaUploadHandler())
     return file_upload_echo(request)
 
@@ -119,9 +117,9 @@ def file_upload_quota_broken(request):
 
 
 def file_upload_getlist_count(request):
-    """
+    '''
     Check the .getlist() function to ensure we receive the correct number of files.
-    """
+    '''
     file_counts = {}
 
     for key in request.FILES:
@@ -135,9 +133,9 @@ def file_upload_errors(request):
 
 
 def file_upload_filename_case_view(request):
-    """
+    '''
     Check adding the file to the database will preserve the filename case.
-    """
+    '''
     file = request.FILES['file_field']
     obj = FileModel()
     obj.testfile.save(file.name, file)
@@ -145,16 +143,16 @@ def file_upload_filename_case_view(request):
 
 
 def file_upload_content_type_extra(request):
-    """
+    '''
     Simple view to echo back extra content-type parameters.
-    """
+    '''
     params = {}
     for file_name, uploadedfile in request.FILES.items():
-        params[file_name] = {k: v.decode() for k, v in uploadedfile.content_type_extra.items()}
+        params[file_name] = {k: v.decode() for (k, v) in uploadedfile.content_type_extra.items()}
     return JsonResponse(params)
 
 
 def file_upload_fd_closing(request, access):
     if access == 't':
-        request.FILES  # Trigger file parsing.
+        request.FILES # Trigger file parsing.
     return HttpResponse('')

@@ -1,14 +1,11 @@
 import unittest
 from datetime import date, datetime, time, timedelta
 
-from django.utils.dateparse import (
-    parse_date, parse_datetime, parse_duration, parse_time,
-)
+from django.utils.dateparse import parse_date, parse_datetime, parse_duration, parse_time
 from django.utils.timezone import get_fixed_timezone
 
 
 class DateParseTests(unittest.TestCase):
-
     def test_parse_date(self):
         # Valid inputs
         self.assertEqual(parse_date('2012-04-23'), date(2012, 4, 23))
@@ -37,12 +34,11 @@ class DateParseTests(unittest.TestCase):
             ('2012-4-9 4:8:16-0320', datetime(2012, 4, 9, 4, 8, 16, 0, get_fixed_timezone(-200))),
             ('2012-04-23T10:20:30.400+02:30', datetime(2012, 4, 23, 10, 20, 30, 400000, get_fixed_timezone(150))),
             ('2012-04-23T10:20:30.400+02', datetime(2012, 4, 23, 10, 20, 30, 400000, get_fixed_timezone(120))),
-            ('2012-04-23T10:20:30.400-02', datetime(2012, 4, 23, 10, 20, 30, 400000, get_fixed_timezone(-120))),
+            ('2012-04-23T10:20:30.400-02', datetime(2012, 4, 23, 10, 20, 30, 400000, get_fixed_timezone(-120)))
         )
         for source, expected in valid_inputs:
             with self.subTest(source=source):
                 self.assertEqual(parse_datetime(source), expected)
-
         # Invalid inputs
         self.assertIsNone(parse_datetime('20120423091500'))
         with self.assertRaises(ValueError):
@@ -50,16 +46,15 @@ class DateParseTests(unittest.TestCase):
 
 
 class DurationParseTests(unittest.TestCase):
-
     def test_parse_python_format(self):
         timedeltas = [
-            timedelta(days=4, minutes=15, seconds=30, milliseconds=100),  # fractions of seconds
-            timedelta(hours=10, minutes=15, seconds=30),  # hours, minutes, seconds
-            timedelta(days=4, minutes=15, seconds=30),  # multiple days
-            timedelta(days=1, minutes=00, seconds=00),  # single day
-            timedelta(days=-4, minutes=15, seconds=30),  # negative durations
-            timedelta(minutes=15, seconds=30),  # minute & seconds
-            timedelta(seconds=30),  # seconds
+            timedelta(days=4, minutes=15, seconds=30, milliseconds=100), # fractions of seconds
+            timedelta(hours=10, minutes=15, seconds=30), # hours, minutes, seconds
+            timedelta(days=4, minutes=15, seconds=30), # multiple days
+            timedelta(days=1, minutes=00, seconds=00), # single day
+            timedelta(days=-4, minutes=15, seconds=30), # negative durations
+            timedelta(minutes=15, seconds=30), # minute & seconds
+            timedelta(seconds=30) # seconds
         ]
         for delta in timedeltas:
             with self.subTest(delta=delta):
@@ -74,7 +69,7 @@ class DurationParseTests(unittest.TestCase):
             ('-1 day +0:00:01', timedelta(days=-1, seconds=1)),
             ('4 days 0:15:30.1', timedelta(days=4, minutes=15, seconds=30, milliseconds=100)),
             ('4 days 0:15:30.0001', timedelta(days=4, minutes=15, seconds=30, microseconds=100)),
-            ('-4 days -15:00:30', timedelta(days=-4, hours=-15, seconds=-30)),
+            ('-4 days -15:00:30', timedelta(days=-4, hours=-15, seconds=-30))
         )
         for source, expected in test_values:
             with self.subTest(source=source):
@@ -103,7 +98,7 @@ class DurationParseTests(unittest.TestCase):
             ('15:30.001', timedelta(minutes=15, seconds=30, milliseconds=1)),
             ('15:30.0001', timedelta(minutes=15, seconds=30, microseconds=100)),
             ('15:30.00001', timedelta(minutes=15, seconds=30, microseconds=10)),
-            ('15:30.000001', timedelta(minutes=15, seconds=30, microseconds=1)),
+            ('15:30.000001', timedelta(minutes=15, seconds=30, microseconds=1))
         )
         for source, expected in test_values:
             with self.subTest(source=source):
@@ -115,7 +110,7 @@ class DurationParseTests(unittest.TestCase):
             ('-172800', timedelta(days=-2)),
             ('-15:30', timedelta(minutes=-15, seconds=30)),
             ('-1:15:30', timedelta(hours=-1, minutes=15, seconds=30)),
-            ('-30.1', timedelta(seconds=-30, milliseconds=-100)),
+            ('-30.1', timedelta(seconds=-30, milliseconds=-100))
         )
         for source, expected in test_values:
             with self.subTest(source=source):
@@ -131,7 +126,7 @@ class DurationParseTests(unittest.TestCase):
             ('PT5H', timedelta(hours=5)),
             ('PT5M', timedelta(minutes=5)),
             ('PT5S', timedelta(seconds=5)),
-            ('PT0.000005S', timedelta(microseconds=5)),
+            ('PT0.000005S', timedelta(microseconds=5))
         )
         for source, expected in test_values:
             with self.subTest(source=source):

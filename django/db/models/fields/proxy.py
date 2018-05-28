@@ -7,10 +7,10 @@ from django.db.models import fields
 
 
 class OrderWrt(fields.IntegerField):
-    """
+    '''
     A proxy for the _order database field that is used when
     Meta.order_with_respect_to is specified.
-    """
+    '''
 
     def __init__(self, *args, **kwargs):
         kwargs['name'] = '_order'

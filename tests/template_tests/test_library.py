@@ -4,7 +4,6 @@ from django.test import TestCase
 
 
 class FilterRegistrationTests(TestCase):
-
     def setUp(self):
         self.library = Library()
 
@@ -12,29 +11,34 @@ class FilterRegistrationTests(TestCase):
         @self.library.filter
         def func():
             return ''
+
         self.assertEqual(self.library.filters['func'], func)
 
     def test_filter_parens(self):
         @self.library.filter()
         def func():
             return ''
+
         self.assertEqual(self.library.filters['func'], func)
 
     def test_filter_name_arg(self):
         @self.library.filter('name')
         def func():
             return ''
+
         self.assertEqual(self.library.filters['name'], func)
 
     def test_filter_name_kwarg(self):
         @self.library.filter(name='name')
         def func():
             return ''
+
         self.assertEqual(self.library.filters['name'], func)
 
     def test_filter_call(self):
         def func():
             return ''
+
         self.library.filter('name', func)
         self.assertEqual(self.library.filters['name'], func)
 
@@ -45,7 +49,6 @@ class FilterRegistrationTests(TestCase):
 
 
 class InclusionTagRegistrationTests(TestCase):
-
     def setUp(self):
         self.library = Library()
 
@@ -53,17 +56,18 @@ class InclusionTagRegistrationTests(TestCase):
         @self.library.inclusion_tag('template.html')
         def func():
             return ''
+
         self.assertIn('func', self.library.tags)
 
     def test_inclusion_tag_name(self):
         @self.library.inclusion_tag('template.html', name='name')
         def func():
             return ''
+
         self.assertIn('name', self.library.tags)
 
 
 class SimpleTagRegistrationTests(TestCase):
-
     def setUp(self):
         self.library = Library()
 
@@ -71,28 +75,30 @@ class SimpleTagRegistrationTests(TestCase):
         @self.library.simple_tag
         def func():
             return ''
+
         self.assertIn('func', self.library.tags)
 
     def test_simple_tag_parens(self):
         @self.library.simple_tag()
         def func():
             return ''
+
         self.assertIn('func', self.library.tags)
 
     def test_simple_tag_name_kwarg(self):
         @self.library.simple_tag(name='name')
         def func():
             return ''
+
         self.assertIn('name', self.library.tags)
 
     def test_simple_tag_invalid(self):
-        msg = "Invalid arguments provided to simple_tag"
+        msg = 'Invalid arguments provided to simple_tag'
         with self.assertRaisesMessage(ValueError, msg):
             self.library.simple_tag('invalid')
 
 
 class TagRegistrationTests(TestCase):
-
     def setUp(self):
         self.library = Library()
 
@@ -100,29 +106,34 @@ class TagRegistrationTests(TestCase):
         @self.library.tag
         def func(parser, token):
             return Node()
+
         self.assertEqual(self.library.tags['func'], func)
 
     def test_tag_parens(self):
         @self.library.tag()
         def func(parser, token):
             return Node()
+
         self.assertEqual(self.library.tags['func'], func)
 
     def test_tag_name_arg(self):
         @self.library.tag('name')
         def func(parser, token):
             return Node()
+
         self.assertEqual(self.library.tags['name'], func)
 
     def test_tag_name_kwarg(self):
         @self.library.tag(name='name')
         def func(parser, token):
             return Node()
+
         self.assertEqual(self.library.tags['name'], func)
 
     def test_tag_call(self):
         def func(parser, token):
             return Node()
+
         self.library.tag('name', func)
         self.assertEqual(self.library.tags['name'], func)
 

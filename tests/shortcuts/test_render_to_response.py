@@ -6,7 +6,6 @@ from django.utils.deprecation import RemovedInDjango30Warning
 @ignore_warnings(category=RemovedInDjango30Warning)
 @override_settings(ROOT_URLCONF='shortcuts.urls')
 class RenderToResponseTests(SimpleTestCase):
-
     def test_render_to_response(self):
         response = self.client.get('/render_to_response/')
         self.assertEqual(response.status_code, 200)

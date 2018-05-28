@@ -1,12 +1,10 @@
-"""
+'''
 ******** Models for test_data.py ***********
 The following classes are for testing basic data marshalling, including
 NULL values, where allowed.
 The basic idea is to have a model for each Django data type.
-"""
-from django.contrib.contenttypes.fields import (
-    GenericForeignKey, GenericRelation,
-)
+'''
+from django.contrib.contenttypes.fields import GenericForeignKey, GenericRelation
 from django.contrib.contenttypes.models import ContentType
 from django.db import models
 
@@ -60,9 +58,9 @@ class IntegerData(models.Model):
 class BigIntegerData(models.Model):
     data = models.BigIntegerField(null=True)
 
+
 # class ImageData(models.Model):
 #    data = models.ImageField(null=True)
-
 
 class GenericIPAddressData(models.Model):
     data = models.GenericIPAddressField(null=True)
@@ -97,7 +95,7 @@ class TimeData(models.Model):
 
 
 class Tag(models.Model):
-    """A tag on an item."""
+    '''A tag on an item.'''
     data = models.SlugField()
     content_type = models.ForeignKey(ContentType, models.CASCADE)
     object_id = models.PositiveIntegerField()
@@ -105,7 +103,7 @@ class Tag(models.Model):
     content_object = GenericForeignKey()
 
     class Meta:
-        ordering = ["data"]
+        ordering = ['data']
 
 
 class GenericData(models.Model):
@@ -113,14 +111,14 @@ class GenericData(models.Model):
 
     tags = GenericRelation(Tag)
 
+
 # The following test classes are all for validation
 # of related objects; in particular, forward, backward,
 # and self references.
 
-
 class Anchor(models.Model):
-    """This is a model that can be used as
-    something for other models to point at"""
+    '''This is a model that can be used as
+    something for other models to point at'''
 
     data = models.CharField(max_length=30)
 
@@ -129,8 +127,8 @@ class Anchor(models.Model):
 
 
 class UniqueAnchor(models.Model):
-    """This is a model that can be used as
-    something for other models to point at"""
+    '''This is a model that can be used as
+    something for other models to point at'''
 
     data = models.CharField(unique=True, max_length=30)
 
@@ -173,13 +171,13 @@ class Intermediate(models.Model):
     right = models.ForeignKey(Anchor, models.CASCADE)
     extra = models.CharField(max_length=30, blank=True, default="doesn't matter")
 
+
 # The following test classes are for validating the
 # deserialization of objects that use a user-defined
 # field as the primary key.
 # Some of these data types have been commented out
 # because they can't be used as a primary key on one
 # or all database backends.
-
 
 class BooleanPKData(models.Model):
     data = models.BooleanField(primary_key=True, default=False)
@@ -204,9 +202,9 @@ class DecimalPKData(models.Model):
 class EmailPKData(models.Model):
     data = models.EmailField(primary_key=True)
 
+
 # class FilePKData(models.Model):
 #    data = models.FileField(primary_key=True)
-
 
 class FilePathPKData(models.Model):
     data = models.FilePathField(primary_key=True)
@@ -219,9 +217,9 @@ class FloatPKData(models.Model):
 class IntegerPKData(models.Model):
     data = models.IntegerField(primary_key=True)
 
+
 # class ImagePKData(models.Model):
 #    data = models.ImageField(primary_key=True)
-
 
 class GenericIPAddressPKData(models.Model):
     data = models.GenericIPAddressField(primary_key=True)
@@ -242,12 +240,12 @@ class SlugPKData(models.Model):
 class SmallPKData(models.Model):
     data = models.SmallIntegerField(primary_key=True)
 
+
 # class TextPKData(models.Model):
 #     data = models.TextField(primary_key=True)
 
 # class TimePKData(models.Model):
 #    data = models.TimeField(primary_key=True)
-
 
 class UUIDData(models.Model):
     data = models.UUIDField(primary_key=True)
@@ -259,7 +257,6 @@ class FKToUUID(models.Model):
 
 # Tests for handling fields with pre_save functions, or
 # models with save functions that modify data
-
 
 class AutoNowDateTimeData(models.Model):
     data = models.DateTimeField(null=True, auto_now=True)
@@ -277,9 +274,9 @@ class ModifyingSaveData(models.Model):
         self.data = 666
         super().save(*args, **kwargs)
 
+
 # Tests for serialization of models using inheritance.
 # Regression for #7202, #7350
-
 
 class AbstractBaseModel(models.Model):
     parent_data = models.IntegerField()

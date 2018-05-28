@@ -1,13 +1,13 @@
-"""
+'''
 Regression tests for defer() / only() behavior.
-"""
+'''
 
 from django.db import models
 
 
 class Item(models.Model):
     name = models.CharField(max_length=15)
-    text = models.TextField(default="xyzzy")
+    text = models.TextField(default='xyzzy')
     value = models.IntegerField()
     other_value = models.IntegerField(default=0)
 
@@ -32,7 +32,7 @@ class Child(models.Model):
 class Leaf(models.Model):
     name = models.CharField(max_length=10)
     child = models.ForeignKey(Child, models.CASCADE)
-    second_child = models.ForeignKey(Child, models.SET_NULL, related_name="other", null=True)
+    second_child = models.ForeignKey(Child, models.SET_NULL, related_name='other', null=True)
     value = models.IntegerField(default=42)
 
     def __str__(self):
@@ -66,7 +66,7 @@ class SpecialFeature(models.Model):
 
 
 class OneToOneItem(models.Model):
-    item = models.OneToOneField(Item, models.CASCADE, related_name="one_to_one_item")
+    item = models.OneToOneField(Item, models.CASCADE, related_name='one_to_one_item')
     name = models.CharField(max_length=15)
 
 

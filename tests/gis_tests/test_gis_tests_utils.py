@@ -27,10 +27,11 @@ def test_mutation(raises=True):
                 getattr(TestFunc(), 'as_' + connection.vendor)(None, None)
 
         return test
+
     return wrapper
 
 
-class FuncTestMixinTests(FuncTestMixin, SimpleTestCase):
+class FuncTestMixinTests(FuncTestMixin,SimpleTestCase):
     @test_mutation()
     def test_mutated_attribute(func):
         func.attribute = 'mutated'

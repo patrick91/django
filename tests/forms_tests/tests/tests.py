@@ -7,8 +7,13 @@ from django.forms.models import ModelFormMetaclass
 from django.test import SimpleTestCase, TestCase
 
 from ..models import (
-    BoundaryModel, ChoiceFieldModel, ChoiceModel, ChoiceOptionModel, Defaults,
-    FileModel, OptionalMultiChoiceModel,
+    BoundaryModel,
+    ChoiceFieldModel,
+    ChoiceModel,
+    ChoiceOptionModel,
+    Defaults,
+    FileModel,
+    OptionalMultiChoiceModel
 )
 
 
@@ -55,9 +60,10 @@ class FileForm(Form):
 
 
 class TestTicket14567(TestCase):
-    """
+    '''
     The return values of ModelMultipleChoiceFields are QuerySets
-    """
+    '''
+
     def test_empty_queryset_return(self):
         "If a model's ManyToManyField has blank=True and is saved with no data, a queryset is returned."
         option = ChoiceOptionModel.objects.create(name='default')
@@ -79,13 +85,11 @@ class ModelFormCallableModelDefault(TestCase):
         self.assertEqual(choices[0], (option.pk, str(option)))
 
     def test_callable_initial_value(self):
-        "The initial value for a callable default returning a queryset is the pk (refs #13769)"
+        'The initial value for a callable default returning a queryset is the pk (refs #13769)'
         ChoiceOptionModel.objects.create(id=1, name='default')
         ChoiceOptionModel.objects.create(id=2, name='option 2')
         ChoiceOptionModel.objects.create(id=3, name='option 3')
-        self.assertHTMLEqual(
-            ChoiceFieldForm().as_p(),
-            """<p><label for="id_choice">Choice:</label> <select name="choice" id="id_choice">
+        self.assertHTMLEqual(ChoiceFieldForm().as_p(), '''<p><label for="id_choice">Choice:</label> <select name="choice" id="id_choice">
 <option value="1" selected>ChoiceOption 1</option>
 <option value="2">ChoiceOption 2</option>
 <option value="3">ChoiceOption 3</option>
@@ -106,22 +110,19 @@ class ModelFormCallableModelDefault(TestCase):
 <option value="1" selected>ChoiceOption 1</option>
 <option value="2">ChoiceOption 2</option>
 <option value="3">ChoiceOption 3</option>
-</select><input type="hidden" name="initial-multi_choice_int" value="1" id="initial-id_multi_choice_int_0"></p>"""
-        )
+</select><input type="hidden" name="initial-multi_choice_int" value="1" id="initial-id_multi_choice_int_0"></p>''')
 
     def test_initial_instance_value(self):
-        "Initial instances for model fields may also be instances (refs #7287)"
+        'Initial instances for model fields may also be instances (refs #7287)'
         ChoiceOptionModel.objects.create(id=1, name='default')
         obj2 = ChoiceOptionModel.objects.create(id=2, name='option 2')
         obj3 = ChoiceOptionModel.objects.create(id=3, name='option 3')
-        self.assertHTMLEqual(
-            ChoiceFieldForm(initial={
-                'choice': obj2,
-                'choice_int': obj2,
-                'multi_choice': [obj2, obj3],
-                'multi_choice_int': ChoiceOptionModel.objects.exclude(name="default"),
-            }).as_p(),
-            """<p><label for="id_choice">Choice:</label> <select name="choice" id="id_choice">
+        self.assertHTMLEqual(ChoiceFieldForm(initial={
+            'choice': obj2,
+            'choice_int': obj2,
+            'multi_choice': [obj2, obj3],
+            'multi_choice_int': ChoiceOptionModel.objects.exclude(name='default')
+        }).as_p(), '''<p><label for="id_choice">Choice:</label> <select name="choice" id="id_choice">
 <option value="1">ChoiceOption 1</option>
 <option value="2" selected>ChoiceOption 2</option>
 <option value="3">ChoiceOption 3</option>
@@ -144,8 +145,7 @@ class ModelFormCallableModelDefault(TestCase):
 <option value="2" selected>ChoiceOption 2</option>
 <option value="3" selected>ChoiceOption 3</option>
 </select><input type="hidden" name="initial-multi_choice_int" value="2" id="initial-id_multi_choice_int_0">
-<input type="hidden" name="initial-multi_choice_int" value="3" id="initial-id_multi_choice_int_1"></p>"""
-        )
+<input type="hidden" name="initial-multi_choice_int" value="3" id="initial-id_multi_choice_int_1"></p>''')
 
 
 class FormsModelTestCase(TestCase):
@@ -188,7 +188,6 @@ class FormsModelTestCase(TestCase):
         r1 = DefaultsForm()['callable_default'].as_widget()
         r2 = DefaultsForm()['callable_default'].as_widget()
         self.assertNotEqual(r1, r2)
-
         # In a ModelForm that is passed an instance, the initial values come from the
         # instance's values, not the model's defaults.
         foo_instance = Defaults(name='instance value', def_date=datetime.date(1969, 4, 4), value=12)
@@ -217,20 +216,19 @@ class FormsModelTestCase(TestCase):
 
 class RelatedModelFormTests(SimpleTestCase):
     def test_invalid_loading_order(self):
-        """
+        '''
         Test for issue 10405
-        """
+        '''
+
         class A(models.Model):
-            ref = models.ForeignKey("B", models.CASCADE)
+            ref = models.ForeignKey('B', models.CASCADE)
 
         class Meta:
             model = A
             fields = '__all__'
 
-        msg = (
-            "Cannot create form field for 'ref' yet, because "
+        msg = "Cannot create form field for 'ref' yet, because "
             "its related model 'B' has not been loaded yet"
-        )
         with self.assertRaisesMessage(ValueError, msg):
             ModelFormMetaclass('Form', (ModelForm,), {'Meta': Meta})
 
@@ -238,11 +236,12 @@ class RelatedModelFormTests(SimpleTestCase):
             pass
 
     def test_valid_loading_order(self):
-        """
+        '''
         Test for issue 10405
-        """
+        '''
+
         class C(models.Model):
-            ref = models.ForeignKey("D", models.CASCADE)
+            ref = models.ForeignKey('D', models.CASCADE)
 
         class D(models.Model):
             pass
@@ -260,15 +259,12 @@ class ManyToManyExclusionTestCase(TestCase):
         opt1 = ChoiceOptionModel.objects.create(id=1, name='default')
         opt2 = ChoiceOptionModel.objects.create(id=2, name='option 2')
         opt3 = ChoiceOptionModel.objects.create(id=3, name='option 3')
-        initial = {
-            'choice': opt1,
-            'choice_int': opt1,
-        }
+        initial = {'choice': opt1, 'choice_int': opt1}
         data = {
             'choice': opt2.pk,
             'choice_int': opt2.pk,
             'multi_choice': 'string data!',
-            'multi_choice_int': [opt1.pk],
+            'multi_choice_int': [opt1.pk]
         }
         instance = ChoiceFieldModel.objects.create(**initial)
         instance.multi_choice.set([opt2, opt3])
@@ -286,28 +282,22 @@ class ManyToManyExclusionTestCase(TestCase):
 class EmptyLabelTestCase(TestCase):
     def test_empty_field_char(self):
         f = EmptyCharLabelChoiceForm()
-        self.assertHTMLEqual(
-            f.as_p(),
-            """<p><label for="id_name">Name:</label> <input id="id_name" maxlength="10" name="name" type="text" required></p>
+        self.assertHTMLEqual(f.as_p(), '''<p><label for="id_name">Name:</label> <input id="id_name" maxlength="10" name="name" type="text" required></p>
 <p><label for="id_choice">Choice:</label> <select id="id_choice" name="choice">
 <option value="" selected>No Preference</option>
 <option value="f">Foo</option>
 <option value="b">Bar</option>
-</select></p>"""
-        )
+</select></p>''')
 
     def test_empty_field_char_none(self):
         f = EmptyCharLabelNoneChoiceForm()
-        self.assertHTMLEqual(
-            f.as_p(),
-            """<p><label for="id_name">Name:</label> <input id="id_name" maxlength="10" name="name" type="text" required></p>
+        self.assertHTMLEqual(f.as_p(), '''<p><label for="id_name">Name:</label> <input id="id_name" maxlength="10" name="name" type="text" required></p>
 <p><label for="id_choice_string_w_none">Choice string w none:</label>
 <select id="id_choice_string_w_none" name="choice_string_w_none">
 <option value="" selected>No Preference</option>
 <option value="f">Foo</option>
 <option value="b">Bar</option>
-</select></p>"""
-        )
+</select></p>''')
 
     def test_save_empty_label_forms(self):
         # Saving a form with a blank choice results in the expected
@@ -315,7 +305,7 @@ class EmptyLabelTestCase(TestCase):
         tests = [
             (EmptyCharLabelNoneChoiceForm, 'choice_string_w_none', None),
             (EmptyIntegerLabelChoiceForm, 'choice_integer', None),
-            (EmptyCharLabelChoiceForm, 'choice', ''),
+            (EmptyCharLabelChoiceForm, 'choice', '')
         ]
 
         for form, key, expected in tests:
@@ -328,16 +318,13 @@ class EmptyLabelTestCase(TestCase):
 
     def test_empty_field_integer(self):
         f = EmptyIntegerLabelChoiceForm()
-        self.assertHTMLEqual(
-            f.as_p(),
-            """<p><label for="id_name">Name:</label> <input id="id_name" maxlength="10" name="name" type="text" required></p>
+        self.assertHTMLEqual(f.as_p(), '''<p><label for="id_name">Name:</label> <input id="id_name" maxlength="10" name="name" type="text" required></p>
 <p><label for="id_choice_integer">Choice integer:</label>
 <select id="id_choice_integer" name="choice_integer">
 <option value="" selected>No Preference</option>
 <option value="1">Foo</option>
 <option value="2">Bar</option>
-</select></p>"""
-        )
+</select></p>''')
 
     def test_get_display_value_on_none(self):
         m = ChoiceModel.objects.create(name='test', choice='', choice_integer=None)
@@ -347,28 +334,22 @@ class EmptyLabelTestCase(TestCase):
     def test_html_rendering_of_prepopulated_models(self):
         none_model = ChoiceModel(name='none-test', choice_integer=None)
         f = EmptyIntegerLabelChoiceForm(instance=none_model)
-        self.assertHTMLEqual(
-            f.as_p(),
-            """<p><label for="id_name">Name:</label>
+        self.assertHTMLEqual(f.as_p(), '''<p><label for="id_name">Name:</label>
 <input id="id_name" maxlength="10" name="name" type="text" value="none-test" required></p>
 <p><label for="id_choice_integer">Choice integer:</label>
 <select id="id_choice_integer" name="choice_integer">
 <option value="" selected>No Preference</option>
 <option value="1">Foo</option>
 <option value="2">Bar</option>
-</select></p>"""
-        )
+</select></p>''')
 
         foo_model = ChoiceModel(name='foo-test', choice_integer=1)
         f = EmptyIntegerLabelChoiceForm(instance=foo_model)
-        self.assertHTMLEqual(
-            f.as_p(),
-            """<p><label for="id_name">Name:</label>
+        self.assertHTMLEqual(f.as_p(), '''<p><label for="id_name">Name:</label>
 <input id="id_name" maxlength="10" name="name" type="text" value="foo-test" required></p>
 <p><label for="id_choice_integer">Choice integer:</label>
 <select id="id_choice_integer" name="choice_integer">
 <option value="">No Preference</option>
 <option value="1" selected>Foo</option>
 <option value="2">Bar</option>
-</select></p>"""
-        )
+</select></p>''')

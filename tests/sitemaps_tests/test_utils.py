@@ -1,9 +1,7 @@
 from unittest import mock
 from urllib.parse import urlencode
 
-from django.contrib.sitemaps import (
-    SitemapNotFound, _get_sitemap_full_url, ping_google,
-)
+from django.contrib.sitemaps import SitemapNotFound, _get_sitemap_full_url, ping_google
 from django.core.exceptions import ImproperlyConfigured
 from django.test import modify_settings, override_settings
 
@@ -11,7 +9,6 @@ from .base import SitemapTestsBase
 
 
 class PingGoogleTests(SitemapTestsBase):
-
     @mock.patch('django.contrib.sitemaps.urlopen')
     def test_something(self, urlopen):
         ping_google()

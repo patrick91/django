@@ -5,7 +5,6 @@ from ..utils import setup
 
 
 class FilterTagTests(SimpleTestCase):
-
     @setup({'filter01': '{% filter upper %}{% endfilter %}'})
     def test_filter01(self):
         output = self.engine.render_to_string('filter01')

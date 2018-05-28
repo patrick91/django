@@ -11,9 +11,9 @@ class DefaultContentTypeTests(SimpleTestCase):
 
     @ignore_warnings(category=RemovedInDjango30Warning)
     def test_default_content_type_is_text_html(self):
-        """
+        '''
         Content-Type of the default error responses is text/html. Refs #20822.
-        """
+        '''
         with self.settings(DEFAULT_CONTENT_TYPE='text/xml'):
             response = self.client.get('/raises400/')
             self.assertEqual(response['Content-Type'], 'text/html')
@@ -40,5 +40,6 @@ class DefaultContentTypeTests(SimpleTestCase):
         try:
             with self.assertRaisesMessage(RemovedInDjango30Warning, self.msg):
                 Settings('fake_settings_module')
+
         finally:
             del sys.modules['fake_settings_module']

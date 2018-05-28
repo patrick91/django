@@ -19,35 +19,62 @@ from django.urls import reverse
 from django.utils import formats
 
 from .admin import (
-    BandAdmin, ChildAdmin, ChordsBandAdmin, ConcertAdmin,
-    CustomPaginationAdmin, CustomPaginator, DynamicListDisplayChildAdmin,
-    DynamicListDisplayLinksChildAdmin, DynamicListFilterChildAdmin,
-    DynamicSearchFieldsChildAdmin, EmptyValueChildAdmin, EventAdmin,
-    FilteredChildAdmin, GroupAdmin, InvitationAdmin,
-    NoListDisplayLinksParentAdmin, ParentAdmin, QuartetAdmin, SwallowAdmin,
-    site as custom_site,
+    BandAdmin,
+    ChildAdmin,
+    ChordsBandAdmin,
+    ConcertAdmin,
+    CustomPaginationAdmin,
+    CustomPaginator,
+    DynamicListDisplayChildAdmin,
+    DynamicListDisplayLinksChildAdmin,
+    DynamicListFilterChildAdmin,
+    DynamicSearchFieldsChildAdmin,
+    EmptyValueChildAdmin,
+    EventAdmin,
+    FilteredChildAdmin,
+    GroupAdmin,
+    InvitationAdmin,
+    NoListDisplayLinksParentAdmin,
+    ParentAdmin,
+    QuartetAdmin,
+    SwallowAdmin,
+    site as custom_site
 )
 from .models import (
-    Band, CharPK, Child, ChordsBand, ChordsMusician, Concert, CustomIdUser,
-    Event, Genre, Group, Invitation, Membership, Musician, OrderedObject,
-    Parent, Quartet, Swallow, SwallowOneToOne, UnorderedObject,
+    Band,
+    CharPK,
+    Child,
+    ChordsBand,
+    ChordsMusician,
+    Concert,
+    CustomIdUser,
+    Event,
+    Genre,
+    Group,
+    Invitation,
+    Membership,
+    Musician,
+    OrderedObject,
+    Parent,
+    Quartet,
+    Swallow,
+    SwallowOneToOne,
+    UnorderedObject
 )
 
 
 def build_tbody_html(pk, href, extra_fields):
-    return (
+    return \
         '<tbody><tr class="row1">'
         '<td class="action-checkbox">'
         '<input type="checkbox" name="_selected_action" value="{}" '
         'class="action-select"></td>'
         '<th class="field-name"><a href="{}">name</a></th>'
-        '{}</tr></tbody>'
-    ).format(pk, href, extra_fields)
+        '{}</tr></tbody>'.format(pk, href, extra_fields)
 
 
-@override_settings(ROOT_URLCONF="admin_changelist.urls")
+@override_settings(ROOT_URLCONF='admin_changelist.urls')
 class ChangeListTests(TestCase):
-
     def setUp(self):
         self.factory = RequestFactory()
 
@@ -62,11 +89,7 @@ class ChangeListTests(TestCase):
     def test_specified_ordering_by_f_expression(self):
         class OrderedByFBandAdmin(admin.ModelAdmin):
             list_display = ['name', 'genres', 'nr_of_members']
-            ordering = (
-                F('nr_of_members').desc(nulls_last=True),
-                Upper(F('name')).asc(),
-                F('genres').asc(),
-            )
+            ordering = (F('nr_of_members').desc(nulls_last=True), Upper(F('name')).asc(), F('genres').asc())
 
         m = OrderedByFBandAdmin(Band, custom_site)
         request = self.factory.get('/band/')
@@ -101,7 +124,7 @@ class ChangeListTests(TestCase):
             list_display = ('band', 'player')
 
             def get_list_select_related(self, request):
-                return ('band', 'player')
+                return 'band', 'player'
 
         ia = GetListSelectRelatedAdmin(Invitation, custom_site)
         request = self.factory.get('/invitation/')
@@ -109,10 +132,10 @@ class ChangeListTests(TestCase):
         self.assertEqual(cl.queryset.query.select_related, {'player': {}, 'band': {}})
 
     def test_result_list_empty_changelist_value(self):
-        """
+        '''
         Regression test for #14982: EMPTY_CHANGELIST_VALUE should be honored
         for relationship fields
-        """
+        '''
         new_child = Child.objects.create(name='name', parent=None)
         request = self.factory.get('/child/')
         m = ChildAdmin(Child, custom_site)
@@ -126,9 +149,9 @@ class ChangeListTests(TestCase):
         self.assertNotEqual(table_output.find(row_html), -1, 'Failed to find expected row element: %s' % table_output)
 
     def test_result_list_set_empty_value_display_on_admin_site(self):
-        """
+        '''
         Empty value display can be set on AdminSite.
-        """
+        '''
         new_child = Child.objects.create(name='name', parent=None)
         request = self.factory.get('/child/')
         # Set a new empty display value on AdminSite.
@@ -144,9 +167,9 @@ class ChangeListTests(TestCase):
         self.assertNotEqual(table_output.find(row_html), -1, 'Failed to find expected row element: %s' % table_output)
 
     def test_result_list_set_empty_value_display_in_model_admin(self):
-        """
+        '''
         Empty value display can be set in ModelAdmin or individual fields.
-        """
+        '''
         new_child = Child.objects.create(name='name', parent=None)
         request = self.factory.get('/child/')
         m = EmptyValueChildAdmin(Child, admin.site)
@@ -156,19 +179,15 @@ class ChangeListTests(TestCase):
         context = Context({'cl': cl, 'opts': Child._meta})
         table_output = template.render(context)
         link = reverse('admin:admin_changelist_child_change', args=(new_child.id,))
-        row_html = build_tbody_html(
-            new_child.id,
-            link,
-            '<td class="field-age_display">&amp;dagger;</td>'
-            '<td class="field-age">-empty-</td>'
-        )
+        row_html = build_tbody_html(new_child.id, link, '<td class="field-age_display">&amp;dagger;</td>'
+            '<td class="field-age">-empty-</td>')
         self.assertNotEqual(table_output.find(row_html), -1, 'Failed to find expected row element: %s' % table_output)
 
     def test_result_list_html(self):
-        """
+        '''
         Inclusion tag result_list generates a table when with default
         ModelAdmin settings.
-        """
+        '''
         new_parent = Parent.objects.create(name='parent')
         new_child = Child.objects.create(name='name', parent=new_parent)
         request = self.factory.get('/child/')
@@ -183,19 +202,18 @@ class ChangeListTests(TestCase):
         self.assertNotEqual(table_output.find(row_html), -1, 'Failed to find expected row element: %s' % table_output)
 
     def test_result_list_editable_html(self):
-        """
+        '''
         Regression tests for #11791: Inclusion tag result_list generates a
         table and this checks that the items are nested within the table
         element tags.
         Also a regression test for #13599, verifies that hidden fields
         when list_editable is enabled are rendered in a div outside the
         table.
-        """
+        '''
         new_parent = Parent.objects.create(name='parent')
         new_child = Child.objects.create(name='name', parent=new_parent)
         request = self.factory.get('/child/')
         m = ChildAdmin(Child, custom_site)
-
         # Test with list_editable fields
         m.list_display = ['id', 'name', 'parent']
         m.list_display_links = ['id']
@@ -207,34 +225,28 @@ class ChangeListTests(TestCase):
         context = Context({'cl': cl, 'opts': Child._meta})
         table_output = template.render(context)
         # make sure that hidden fields are in the correct place
-        hiddenfields_div = (
-            '<div class="hiddenfields">'
+        hiddenfields_div = '<div class="hiddenfields">'
             '<input type="hidden" name="form-0-id" value="%d" id="id_form-0-id">'
-            '</div>'
-        ) % new_child.id
+            '</div>' \
+        % \
+        new_child.id
         self.assertInHTML(hiddenfields_div, table_output, msg_prefix='Failed to find hidden fields')
-
         # make sure that list editable fields are rendered in divs correctly
-        editable_name_field = (
-            '<input name="form-0-name" value="name" class="vTextField" '
+        editable_name_field = '<input name="form-0-name" value="name" class="vTextField" '
             'maxlength="30" type="text" id="id_form-0-name">'
-        )
-        self.assertInHTML(
-            '<td class="field-name">%s</td>' % editable_name_field,
-            table_output,
-            msg_prefix='Failed to find "name" list_editable field',
-        )
+        self.assertInHTML('<td class="field-name">%s</td>' \
+        % \
+        editable_name_field, table_output, msg_prefix='Failed to find "name" list_editable field')
 
     def test_result_list_editable(self):
-        """
+        '''
         Regression test for #14312: list_editable with pagination
-        """
+        '''
         new_parent = Parent.objects.create(name='parent')
         for i in range(200):
             Child.objects.create(name='name %s' % i, parent=new_parent)
-        request = self.factory.get('/child/', data={'p': -1})  # Anything outside range
+        request = self.factory.get('/child/', data={'p': -1}) # Anything outside range
         m = ChildAdmin(Child, custom_site)
-
         # Test with list_editable fields
         m.list_display = ['id', 'name', 'parent']
         m.list_display_links = ['id']
@@ -270,7 +282,6 @@ class ChangeListTests(TestCase):
 
         cl = m.get_changelist_instance(request)
         cl.get_results(request)
-
         # There's only one Group instance
         self.assertEqual(cl.result_count, 1)
 
@@ -289,7 +300,6 @@ class ChangeListTests(TestCase):
 
         cl = m.get_changelist_instance(request)
         cl.get_results(request)
-
         # There's only one Group instance
         self.assertEqual(cl.result_count, 1)
 
@@ -310,7 +320,6 @@ class ChangeListTests(TestCase):
 
         cl = m.get_changelist_instance(request)
         cl.get_results(request)
-
         # There's only one Concert instance
         self.assertEqual(cl.result_count, 1)
 
@@ -330,7 +339,6 @@ class ChangeListTests(TestCase):
 
         cl = m.get_changelist_instance(request)
         cl.get_results(request)
-
         # There's only one Quartet instance
         self.assertEqual(cl.result_count, 1)
 
@@ -350,15 +358,14 @@ class ChangeListTests(TestCase):
 
         cl = m.get_changelist_instance(request)
         cl.get_results(request)
-
         # There's only one ChordsBand instance
         self.assertEqual(cl.result_count, 1)
 
     def test_distinct_for_non_unique_related_object_in_list_filter(self):
-        """
+        '''
         Regressions tests for #15819: If a field listed in list_filters
         is a non-unique related object, distinct() must be called.
-        """
+        '''
         parent = Parent.objects.create(name='Mary')
         # Two children with the same name
         Child.objects.create(parent=parent, name='Daniel')
@@ -372,10 +379,10 @@ class ChangeListTests(TestCase):
         self.assertEqual(cl.queryset.count(), 1)
 
     def test_distinct_for_non_unique_related_object_in_search_fields(self):
-        """
+        '''
         Regressions tests for #15819: If a field listed in search_fields
         is a non-unique related object, distinct() must be called.
-        """
+        '''
         parent = Parent.objects.create(name='Mary')
         Child.objects.create(parent=parent, name='Danielle')
         Child.objects.create(parent=parent, name='Daniel')
@@ -451,6 +458,7 @@ class ChangeListTests(TestCase):
             request = self.factory.get('/', data={SEARCH_VAR: 'Woodstock'})
             cl = m.get_changelist_instance(request)
             self.assertCountEqual(cl.queryset, [])
+
         finally:
             Field._unregister_lookup(Contains, 'cc')
 
@@ -473,11 +481,12 @@ class ChangeListTests(TestCase):
             request = self.factory.get('/', data={SEARCH_VAR: '21'})
             cl = m.get_changelist_instance(request)
             self.assertCountEqual(cl.queryset, [])
+
         finally:
             IntegerField._unregister_lookup(Exact, 'exactly')
 
     def test_custom_lookup_with_pk_shortcut(self):
-        self.assertEqual(CharPK._meta.pk.name, 'char_pk')  # Not equal to 'pk'.
+        self.assertEqual(CharPK._meta.pk.name, 'char_pk') # Not equal to 'pk'.
         m = admin.ModelAdmin(CustomIdUser, custom_site)
 
         abc = CharPK.objects.create(char_pk='abc')
@@ -503,7 +512,6 @@ class ChangeListTests(TestCase):
             request = self.factory.get('/band/', lookup_params)
             cl = m.get_changelist_instance(request)
             self.assertFalse(cl.queryset.query.distinct)
-
         # A ManyToManyField in params does have distinct applied.
         request = self.factory.get('/band/', {'genres': '0'})
         cl = m.get_changelist_instance(request)
@@ -520,14 +528,12 @@ class ChangeListTests(TestCase):
             Child.objects.create(name='filtered %s' % i, parent=parent)
 
         request = self.factory.get('/child/')
-
         # Test default queryset
         m = ChildAdmin(Child, custom_site)
         cl = m.get_changelist_instance(request)
         self.assertEqual(cl.queryset.count(), 60)
         self.assertEqual(cl.paginator.count, 60)
         self.assertEqual(list(cl.paginator.page_range), [1, 2, 3, 4, 5, 6])
-
         # Test custom queryset
         m = FilteredChildAdmin(Child, custom_site)
         cl = m.get_changelist_instance(request)
@@ -536,10 +542,10 @@ class ChangeListTests(TestCase):
         self.assertEqual(list(cl.paginator.page_range), [1, 2, 3])
 
     def test_computed_list_display_localization(self):
-        """
+        '''
         Regression test for #13196: output of functions should be  localized
         in the changelist.
-        """
+        '''
         superuser = User.objects.create_superuser(username='super', email='super@localhost', password='secret')
         self.client.force_login(superuser)
         event = Event.objects.create(date=datetime.date.today())
@@ -548,16 +554,15 @@ class ChangeListTests(TestCase):
         self.assertNotContains(response, str(event.date))
 
     def test_dynamic_list_display(self):
-        """
+        '''
         Regression tests for #14206: dynamic list_display support.
-        """
+        '''
         parent = Parent.objects.create(name='parent')
         for i in range(10):
             Child.objects.create(name='child %s' % i, parent=parent)
 
         user_noparents = self._create_superuser('noparents')
         user_parents = self._create_superuser('parents')
-
         # Test with user 'noparents'
         m = custom_site._registry[Child]
         request = self._mocked_authenticated_request('/child/', user_noparents)
@@ -568,7 +573,6 @@ class ChangeListTests(TestCase):
         list_display_links = m.get_list_display_links(request, list_display)
         self.assertEqual(list_display, ['name', 'age'])
         self.assertEqual(list_display_links, ['name'])
-
         # Test with user 'parents'
         m = DynamicListDisplayChildAdmin(Child, custom_site)
         request = self._mocked_authenticated_request('/child/', user_parents)
@@ -581,7 +585,6 @@ class ChangeListTests(TestCase):
         list_display_links = m.get_list_display_links(request, list_display)
         self.assertEqual(list_display, ('parent', 'name', 'age'))
         self.assertEqual(list_display_links, ['parent'])
-
         # Test default implementation
         custom_site.register(Child, ChildAdmin)
         m = custom_site._registry[Child]
@@ -594,10 +597,8 @@ class ChangeListTests(TestCase):
         for i in range(30):
             Child.objects.create(name='name %s' % i, parent=parent)
             Child.objects.create(name='filtered %s' % i, parent=parent)
-
         # Add "show all" parameter to request
         request = self.factory.get('/child/', data={ALL_VAR: ''})
-
         # Test valid "show all" request (number of total objects is under max)
         m = ChildAdmin(Child, custom_site)
         m.list_max_show_all = 200
@@ -605,7 +606,6 @@ class ChangeListTests(TestCase):
         cl = m.get_changelist_instance(request)
         cl.get_results(request)
         self.assertEqual(len(cl.result_list), 60)
-
         # Test invalid "show all" request (number of total objects over max)
         # falls back to paginated pages
         m = ChildAdmin(Child, custom_site)
@@ -616,9 +616,9 @@ class ChangeListTests(TestCase):
         self.assertEqual(len(cl.result_list), 10)
 
     def test_dynamic_list_display_links(self):
-        """
+        '''
         Regression tests for #16257: dynamic list_display_links support.
-        """
+        '''
         parent = Parent.objects.create(name='parent')
         for i in range(1, 10):
             Child.objects.create(id=i, name='child %s' % i, parent=parent, age=i)
@@ -690,7 +690,6 @@ class ChangeListTests(TestCase):
         superuser = self._create_superuser('superuser')
         self.client.force_login(superuser)
         changelist_url = reverse('admin:admin_changelist_swallow_changelist')
-
         # Send the POST from User1 for step 3. It's still using the changelist
         # ordering from before User2's edits in step 2.
         data = {
@@ -707,10 +706,9 @@ class ChangeListTests(TestCase):
             'form-1-speed': '5.0',
             'form-2-load': '5.0',
             'form-2-speed': '4.0',
-            '_save': 'Save',
+            '_save': 'Save'
         }
         response = self.client.post(changelist_url, data, follow=True, extra={'o': '-2'})
-
         # The object User1 edited in step 3 is displayed on the changelist and
         # has the correct edits applied.
         self.assertContains(response, '1 swallow was changed successfully.')
@@ -758,12 +756,10 @@ class ChangeListTests(TestCase):
 
         # When no order is defined at all, everything is ordered by '-pk'.
         check_results_order()
-
         # When an order field is defined but multiple records have the same
         # value for that field, make sure everything gets ordered by -pk as well.
         UnorderedObjectAdmin.ordering = ['bool']
         check_results_order()
-
         # When order fields are defined, including the pk itself, use them.
         UnorderedObjectAdmin.ordering = ['bool', '-pk']
         check_results_order()
@@ -802,12 +798,10 @@ class ChangeListTests(TestCase):
 
         # When no order is defined at all, use the model's default ordering (i.e. 'number')
         check_results_order(ascending=True)
-
         # When an order field is defined but multiple records have the same
         # value for that field, make sure everything gets ordered by -pk as well.
         OrderedObjectAdmin.ordering = ['bool']
         check_results_order()
-
         # When order fields are defined, including the pk itself, use them.
         OrderedObjectAdmin.ordering = ['bool', '-pk']
         check_results_order()
@@ -819,22 +813,20 @@ class ChangeListTests(TestCase):
         check_results_order(ascending=True)
 
     def test_dynamic_list_filter(self):
-        """
+        '''
         Regression tests for ticket #17646: dynamic list_filter support.
-        """
+        '''
         parent = Parent.objects.create(name='parent')
         for i in range(10):
             Child.objects.create(name='child %s' % i, parent=parent)
 
         user_noparents = self._create_superuser('noparents')
         user_parents = self._create_superuser('parents')
-
         # Test with user 'noparents'
         m = DynamicListFilterChildAdmin(Child, custom_site)
         request = self._mocked_authenticated_request('/child/', user_noparents)
         response = m.changelist_view(request)
         self.assertEqual(response.context_data['cl'].list_filter, ['name', 'age'])
-
         # Test with user 'parents'
         m = DynamicListFilterChildAdmin(Child, custom_site)
         request = self._mocked_authenticated_request('/child/', user_parents)
@@ -849,10 +841,10 @@ class ChangeListTests(TestCase):
         self.assertEqual(response.context_data['cl'].search_fields, ('name', 'age'))
 
     def test_pagination_page_range(self):
-        """
+        '''
         Regression tests for ticket #15653: ensure the number of pages
         generated for changelist views are correct.
-        """
+        '''
         # instantiating and setting up ChangeList object
         m = GroupAdmin(Group, custom_site)
         request = self.factory.get('/group/')
@@ -865,13 +857,12 @@ class ChangeListTests(TestCase):
             (5, per_page * 11, list(range(11))),
             (5, per_page * 12, [0, 1, 2, 3, 4, 5, 6, 7, 8, '.', 10, 11]),
             (6, per_page * 12, [0, 1, '.', 3, 4, 5, 6, 7, 8, 9, 10, 11]),
-            (6, per_page * 13, [0, 1, '.', 3, 4, 5, 6, 7, 8, 9, '.', 11, 12]),
+            (6, per_page * 13, [0, 1, '.', 3, 4, 5, 6, 7, 8, 9, '.', 11, 12])
         ]:
             # assuming we have exactly `objects_count` objects
             Group.objects.all().delete()
             for i in range(objects_count):
                 Group.objects.create(name='test band')
-
             # setting page number and calculating page range
             cl.page_num = page_num
             cl.get_results(request)
@@ -879,10 +870,10 @@ class ChangeListTests(TestCase):
             self.assertEqual(expected_page_range, list(real_page_range))
 
     def test_object_tools_displayed_no_add_permission(self):
-        """
+        '''
         When ModelAdmin.has_add_permission() returns False, the object-tools
         block is still shown.
-        """
+        '''
         superuser = self._create_superuser('superuser')
         m = EventAdmin(Event, custom_site)
         request = self._mocked_authenticated_request('/event/', superuser)
@@ -894,7 +885,6 @@ class ChangeListTests(TestCase):
 
 
 class GetAdminLogTests(TestCase):
-
     def test_custom_user_pk_not_named_id(self):
         """
         {% get_admin_log %} works if the user model's primary key isn't named
@@ -906,18 +896,16 @@ class GetAdminLogTests(TestCase):
         self.assertEqual(template.render(context), '')
 
     def test_no_user(self):
-        """{% get_admin_log %} works without specifying a user."""
+        '''{% get_admin_log %} works without specifying a user.'''
         user = User(username='jondoe', password='secret', email='super@example.com')
         user.save()
         ct = ContentType.objects.get_for_model(User)
         LogEntry.objects.log_action(user.pk, ct.pk, user.pk, repr(user), 1)
-        t = Template(
-            '{% load log %}'
+        t = Template('{% load log %}'
             '{% get_admin_log 100 as admin_log %}'
             '{% for entry in admin_log %}'
             '{{ entry|safe }}'
-            '{% endfor %}'
-        )
+            '{% endfor %}')
         self.assertEqual(t.render(Context({})), 'Added "<User: jondoe>".')
 
     def test_missing_args(self):
@@ -943,33 +931,28 @@ class GetAdminLogTests(TestCase):
 
 @override_settings(ROOT_URLCONF='admin_changelist.urls')
 class SeleniumTests(AdminSeleniumTestCase):
-
     available_apps = ['admin_changelist'] + AdminSeleniumTestCase.available_apps
 
     def setUp(self):
         User.objects.create_superuser(username='super', password='secret', email=None)
 
     def test_add_row_selection(self):
-        """
+        '''
         The status line for selected rows gets updated correctly (#22038).
-        """
+        '''
         self.admin_login(username='super', password='secret')
         self.selenium.get(self.live_server_url + reverse('admin:auth_user_changelist'))
 
         form_id = '#changelist-form'
-
         # Test amount of rows in the Changelist
-        rows = self.selenium.find_elements_by_css_selector(
-            '%s #result_list tbody tr' % form_id)
+        rows = self.selenium.find_elements_by_css_selector('%s #result_list tbody tr' % form_id)
         self.assertEqual(len(rows), 1)
-
         # Test current selection
-        selection_indicator = self.selenium.find_element_by_css_selector(
-            '%s .action-counter' % form_id)
-        self.assertEqual(selection_indicator.text, "0 of 1 selected")
-
+        selection_indicator = self.selenium.find_element_by_css_selector('%s .action-counter' % form_id)
+        self.assertEqual(selection_indicator.text, '0 of 1 selected')
         # Select a row and check again
-        row_selector = self.selenium.find_element_by_css_selector(
-            '%s #result_list tbody tr:first-child .action-select' % form_id)
+        row_selector = self.selenium.find_element_by_css_selector('%s #result_list tbody tr:first-child .action-select' \
+        % \
+        form_id)
         row_selector.click()
-        self.assertEqual(selection_indicator.text, "1 of 1 selected")
+        self.assertEqual(selection_indicator.text, '1 of 1 selected')

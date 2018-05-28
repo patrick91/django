@@ -8,13 +8,12 @@ from ..models import Square
 
 
 class DatabaseWrapperTests(SimpleTestCase):
-
     def test_initialization_class_attributes(self):
-        """
+        '''
         The "initialization" class attributes like client_class and
         creation_class should be set on the class and reflected in the
         corresponding instance attributes of the instantiated backend.
-        """
+        '''
         conn = connections[DEFAULT_DB_ALIAS]
         conn_class = type(conn)
         attr_names = [
@@ -23,7 +22,7 @@ class DatabaseWrapperTests(SimpleTestCase):
             ('features_class', 'features'),
             ('introspection_class', 'introspection'),
             ('ops_class', 'ops'),
-            ('validation_class', 'validation'),
+            ('validation_class', 'validation')
         ]
         for class_attr_name, instance_attr_name in attr_names:
             class_attr_value = getattr(conn_class, class_attr_name)
@@ -37,7 +36,6 @@ class DatabaseWrapperTests(SimpleTestCase):
 
 
 class ExecuteWrapperTests(TestCase):
-
     @staticmethod
     def call_execute(connection, params=None):
         ret_val = '1' if params is None else '%s'
@@ -102,13 +100,14 @@ class ExecuteWrapperTests(TestCase):
     def test_outer_wrapper_blocks(self):
         def blocker(*args):
             pass
+
         wrapper = self.mock_wrapper()
-        c = connection  # This alias shortens the next line.
+        c = connection # This alias shortens the next line.
         with c.execute_wrapper(wrapper), c.execute_wrapper(blocker), c.execute_wrapper(wrapper):
             with c.cursor() as cursor:
-                cursor.execute("The database never sees this")
+                cursor.execute('The database never sees this')
                 self.assertEqual(wrapper.call_count, 1)
-                cursor.executemany("The database never sees this %s", [("either",)])
+                cursor.executemany('The database never sees this %s', [('either',)])
                 self.assertEqual(wrapper.call_count, 2)
 
     def test_wrapper_gets_sql(self):

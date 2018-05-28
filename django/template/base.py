@@ -55,15 +55,16 @@ import re
 from enum import Enum
 from inspect import getcallargs, getfullargspec
 
-from django.template.context import (  # NOQA: imported for backwards compatibility
-    BaseContext, Context, ContextPopException, RequestContext,
+from django.template.context import (
+    BaseContext,
+    Context,
+    ContextPopException,
+    RequestContext # NOQA: imported for backwards compatibility
 )
 from django.utils.formats import localize
 from django.utils.html import conditional_escape, escape
 from django.utils.safestring import SafeData, mark_safe
-from django.utils.text import (
-    get_text_list, smart_split, unescape_string_literal,
-)
+from django.utils.text import get_text_list, smart_split, unescape_string_literal
 from django.utils.timezone import template_localtime
 from django.utils.translation import gettext_lazy, pgettext_lazy
 
@@ -82,17 +83,21 @@ COMMENT_TAG_END = '#}'
 TRANSLATOR_COMMENT_MARK = 'Translators'
 SINGLE_BRACE_START = '{'
 SINGLE_BRACE_END = '}'
-
 # what to report as the origin for templates that come from non-loader sources
 # (e.g. strings)
 UNKNOWN_SOURCE = '<unknown source>'
-
 # match a variable or block tag and capture the entire tag, including start/end
 # delimiters
-tag_re = (re.compile('(%s.*?%s|%s.*?%s|%s.*?%s)' %
-          (re.escape(BLOCK_TAG_START), re.escape(BLOCK_TAG_END),
-           re.escape(VARIABLE_TAG_START), re.escape(VARIABLE_TAG_END),
-           re.escape(COMMENT_TAG_START), re.escape(COMMENT_TAG_END))))
+tag_re = re.compile('(%s.*?%s|%s.*?%s|%s.*?%s)' \
+% \
+(
+    re.escape(BLOCK_TAG_START),
+    re.escape(BLOCK_TAG_END),
+    re.escape(VARIABLE_TAG_START),
+    re.escape(VARIABLE_TAG_END),
+    re.escape(COMMENT_TAG_START),
+    re.escape(COMMENT_TAG_END)
+))
 
 logger = logging.getLogger('django.template')
 
@@ -105,7 +110,6 @@ class TokenType(Enum):
 
 
 class VariableDoesNotExist(Exception):
-
     def __init__(self, msg, params=()):
         self.msg = msg
         self.params = params
@@ -124,18 +128,12 @@ class Origin:
         return self.name
 
     def __eq__(self, other):
-        return (
-            isinstance(other, Origin) and
-            self.name == other.name and
-            self.loader == other.loader
-        )
+        return isinstance(other, Origin) and self.name == other.name and self.loader == other.loader
 
     @property
     def loader_name(self):
         if self.loader:
-            return '%s.%s' % (
-                self.loader.__module__, self.loader.__class__.__name__,
-            )
+            return '%s.%s' % (self.loader.__module__, self.loader.__class__.__name__)
 
 
 class Template:
@@ -163,7 +161,7 @@ class Template:
         return self.nodelist.render(context)
 
     def render(self, context):
-        "Display stage -- can be called many times"
+        'Display stage -- can be called many times'
         with context.render_context.push_state(self):
             if context.template is None:
                 with context.bind_template(self):
@@ -173,32 +171,29 @@ class Template:
                 return self._render(context)
 
     def compile_nodelist(self):
-        """
+        '''
         Parse and compile the template source into a nodelist. If debug
         is True and an exception occurs during parsing, the exception is
         is annotated with contextual line information where it occurred in the
         template source.
-        """
+        '''
         if self.engine.debug:
             lexer = DebugLexer(self.source)
         else:
             lexer = Lexer(self.source)
 
         tokens = lexer.tokenize()
-        parser = Parser(
-            tokens, self.engine.template_libraries, self.engine.template_builtins,
-            self.origin,
-        )
+        parser = Parser(tokens, self.engine.template_libraries, self.engine.template_builtins, self.origin)
 
         try:
             return parser.parse()
         except Exception as e:
             if self.engine.debug:
                 e.template_debug = self.get_exception_info(e, e.token)
-            raise
+            raise 
 
     def get_exception_info(self, exception, token):
-        """
+        '''
         Return a dictionary containing contextual line information of where
         the exception occurred in the template. The following information is
         provided:
@@ -233,13 +228,13 @@ class Template:
 
         end
             The end position of the token in the template source.
-        """
+        '''
         start, end = token.position
         context_lines = 10
         line = 0
         upto = 0
         source_lines = []
-        before = during = after = ""
+        before = during = after = ''
         for num, next in enumerate(linebreak_iter(self.source)):
             if start >= upto and end <= next:
                 line = num
@@ -252,7 +247,6 @@ class Template:
 
         top = max(1, line - context_lines)
         bottom = min(total, line + 1 + context_lines)
-
         # In some rare cases exc_value.args can be empty or an invalid
         # string.
         try:
@@ -260,20 +254,21 @@ class Template:
         except (IndexError, UnicodeDecodeError):
             message = '(Could not get exception message)'
 
-        return {
-            'message': message,
-            'source_lines': source_lines[top:bottom],
-            'before': before,
-            'during': during,
-            'after': after,
-            'top': top,
-            'bottom': bottom,
-            'total': total,
-            'line': line,
-            'name': self.origin.name,
-            'start': start,
-            'end': end,
-        }
+        return \
+            {
+                'message': message,
+                'source_lines': source_lines[top:bottom],
+                'before': before,
+                'during': during,
+                'after': after,
+                'top': top,
+                'bottom': bottom,
+                'total': total,
+                'line': line,
+                'name': self.origin.name,
+                'start': start,
+                'end': end
+            }
 
 
 def linebreak_iter(template_source):
@@ -287,7 +282,7 @@ def linebreak_iter(template_source):
 
 class Token:
     def __init__(self, token_type, contents, position=None, lineno=None):
-        """
+        '''
         A token representing a string from the template.
 
         token_type
@@ -304,15 +299,14 @@ class Token:
         lineno
             The line number the token appears on in the template source.
             This is used for traceback information and gettext files.
-        """
+        '''
         self.token_type, self.contents = token_type, contents
         self.lineno = lineno
         self.position = position
 
     def __str__(self):
         token_name = self.token_type.name.capitalize()
-        return ('<%s token: "%s...">' %
-                (token_name, self.contents[:20].replace('\n', '')))
+        return '<%s token: "%s...">' % (token_name, self.contents[:20].replace('\n', ''))
 
     def split_contents(self):
         split = []
@@ -336,9 +330,9 @@ class Lexer:
         self.verbatim = False
 
     def tokenize(self):
-        """
+        '''
         Return a list of tokens from a given template_string.
-        """
+        '''
         in_tag = False
         lineno = 1
         result = []
@@ -350,11 +344,11 @@ class Lexer:
         return result
 
     def create_token(self, token_string, position, lineno, in_tag):
-        """
+        '''
         Convert the given token string into a new Token object and return it.
         If in_tag is True, we are processing something that matched a tag,
         otherwise it should be treated as a literal string.
-        """
+        '''
         if in_tag and token_string.startswith(BLOCK_TAG_START):
             # The [2:-2] ranges below strip off *_TAG_START and *_TAG_END.
             # We could do len(BLOCK_TAG_START) to be more "correct", but we've
@@ -381,11 +375,11 @@ class Lexer:
 
 class DebugLexer(Lexer):
     def tokenize(self):
-        """
+        '''
         Split a template string into tokens and annotates each token with its
         start and end position in the source. This is slower than the default
         lexer so only use it when debug is True.
-        """
+        '''
         lineno = 1
         result = []
         upto = 0
@@ -438,9 +432,9 @@ class Parser:
         while self.tokens:
             token = self.next_token()
             # Use the raw values here for TokenType.* for a tiny performance boost.
-            if token.token_type.value == 0:  # TokenType.TEXT
+            if token.token_type.value == 0: # TokenType.TEXT
                 self.extend_nodelist(nodelist, TextNode(token.contents), token)
-            elif token.token_type.value == 1:  # TokenType.VAR
+            elif token.token_type.value == 1: # TokenType.VAR
                 if not token.contents:
                     raise self.error(token, 'Empty variable tag on line %d' % token.lineno)
                 try:
@@ -449,7 +443,7 @@ class Parser:
                     raise self.error(token, e)
                 var_node = VariableNode(filter_expression)
                 self.extend_nodelist(nodelist, var_node, token)
-            elif token.token_type.value == 2:  # TokenType.BLOCK
+            elif token.token_type.value == 2: # TokenType.BLOCK
                 try:
                     command = token.contents.split()[0]
                 except IndexError:
@@ -493,9 +487,7 @@ class Parser:
     def extend_nodelist(self, nodelist, node, token):
         # Check that non-text nodes don't appear before an extends tag.
         if node.must_be_first and nodelist.contains_nontext:
-            raise self.error(
-                token, '%r must be the first tag in the template.' % node,
-            )
+            raise self.error(token, '%r must be the first tag in the template.' % node)
         if isinstance(nodelist, NodeList) and not isinstance(node, TextNode):
             nodelist.contains_nontext = True
         # Set origin and token here since we can't modify the node __init__()
@@ -505,12 +497,12 @@ class Parser:
         nodelist.append(node)
 
     def error(self, token, e):
-        """
+        '''
         Return an exception annotated with the originating token. Since the
         parser can be called recursively, check if a token is already set. This
         ensures the innermost token is highlighted if an exception occurs,
         e.g. a compile error within the body of an if statement.
-        """
+        '''
         if not isinstance(e, Exception):
             e = TemplateSyntaxError(e)
         if not hasattr(e, 'token'):
@@ -519,28 +511,22 @@ class Parser:
 
     def invalid_block_tag(self, token, command, parse_until=None):
         if parse_until:
-            raise self.error(
-                token,
-                "Invalid block tag on line %d: '%s', expected %s. Did you "
-                "forget to register or load this tag?" % (
-                    token.lineno,
-                    command,
-                    get_text_list(["'%s'" % p for p in parse_until], 'or'),
-                ),
-            )
-        raise self.error(
-            token,
-            "Invalid block tag on line %d: '%s'. Did you forget to register "
-            "or load this tag?" % (token.lineno, command)
-        )
+            raise
+            self.error(token, "Invalid block tag on line %d: '%s', expected %s. Did you "
+                "forget to register or load this tag?" \
+            % \
+            (token.lineno, command, get_text_list(["'%s'" % p for p in parse_until], 'or')))
+        raise
+        self.error(token, "Invalid block tag on line %d: '%s'. Did you forget to register "
+            "or load this tag?" \
+        % \
+        (token.lineno, command))
 
     def unclosed_block_tag(self, parse_until):
         command, token = self.command_stack.pop()
-        msg = "Unclosed tag on line %d: '%s'. Looking for one of: %s." % (
-            token.lineno,
-            command,
-            ', '.join(parse_until),
-        )
+        msg = "Unclosed tag on line %d: '%s'. Looking for one of: %s." \
+        % \
+        (token.lineno, command, ', '.join(parse_until))
         raise self.error(token, msg)
 
     def next_token(self):
@@ -557,9 +543,9 @@ class Parser:
         self.filters.update(lib.filters)
 
     def compile_filter(self, token):
-        """
+        '''
         Convenient wrapper for FilterExpression
-        """
+        '''
         return FilterExpression(token, self)
 
     def find_filter(self, filter_name):
@@ -572,20 +558,24 @@ class Parser:
 # This only matches constant *strings* (things in quotes or marked for
 # translation). Numbers are treated as variables for implementation reasons
 # (so that they retain their type when passed to filters).
-constant_string = r"""
+constant_string = r'''
 (?:%(i18n_open)s%(strdq)s%(i18n_close)s|
 %(i18n_open)s%(strsq)s%(i18n_close)s|
 %(strdq)s|
 %(strsq)s)
-""" % {
-    'strdq': r'"[^"\\]*(?:\\.[^"\\]*)*"',  # double-quoted string
-    'strsq': r"'[^'\\]*(?:\\.[^'\\]*)*'",  # single-quoted string
-    'i18n_open': re.escape("_("),
-    'i18n_close': re.escape(")"),
+''' \
+% \
+{
+    'strdq':
+        r'"[^"\\]*(?:\\.[^"\\]*)*"', # double-quoted string
+    'strsq':
+        r"'[^'\\]*(?:\\.[^'\\]*)*'", # single-quoted string
+    'i18n_open': re.escape('_('),
+    'i18n_close': re.escape(')')
 }
-constant_string = constant_string.replace("\n", "")
+constant_string = constant_string.replace('\n', '')
 
-filter_raw_string = r"""
+filter_raw_string = r'''
 ^(?P<constant>%(constant)s)|
 ^(?P<var>[%(var_chars)s]+|%(num)s)|
  (?:\s*%(filter_sep)s\s*
@@ -596,12 +586,14 @@ filter_raw_string = r"""
               (?P<var_arg>[%(var_chars)s]+|%(num)s)
              )
          )?
- )""" % {
+ )''' \
+% \
+{
     'constant': constant_string,
     'num': r'[-+\.]?\d[\d\.e]*',
     'var_chars': r'\w\.',
     'filter_sep': re.escape(FILTER_SEPARATOR),
-    'arg_sep': re.escape(FILTER_ARGUMENT_SEPARATOR),
+    'arg_sep': re.escape(FILTER_ARGUMENT_SEPARATOR)
 }
 
 filter_re = re.compile(filter_raw_string, re.VERBOSE)
@@ -621,6 +613,7 @@ class FilterExpression:
         >>> fe.var
         <Variable: 'variable'>
     """
+
     def __init__(self, token, parser):
         self.token = token
         matches = filter_re.finditer(token)
@@ -630,26 +623,30 @@ class FilterExpression:
         for match in matches:
             start = match.start()
             if upto != start:
-                raise TemplateSyntaxError("Could not parse some characters: "
-                                          "%s|%s|%s" %
-                                          (token[:upto], token[upto:start],
-                                           token[start:]))
+                raise
+                TemplateSyntaxError("Could not parse some characters: "
+                                          "%s|%s|%s" \
+                % \
+                (token[:upto], token[upto:start], token[start:]))
             if var_obj is None:
-                var, constant = match.group("var", "constant")
+                var, constant = match.group('var', 'constant')
                 if constant:
                     try:
                         var_obj = Variable(constant).resolve({})
                     except VariableDoesNotExist:
                         var_obj = None
                 elif var is None:
-                    raise TemplateSyntaxError("Could not find variable at "
-                                              "start of %s." % token)
+                    raise
+                    TemplateSyntaxError("Could not find variable at "
+                                              "start of %s." \
+                    % \
+                    token)
                 else:
                     var_obj = Variable(var)
             else:
-                filter_name = match.group("filter_name")
+                filter_name = match.group('filter_name')
                 args = []
-                constant_arg, var_arg = match.group("constant_arg", "var_arg")
+                constant_arg, var_arg = match.group('constant_arg', 'var_arg')
                 if constant_arg:
                     args.append((False, Variable(constant_arg).resolve({})))
                 elif var_arg:
@@ -659,8 +656,11 @@ class FilterExpression:
                 filters.append((filter_func, args))
             upto = match.end()
         if upto != len(token):
-            raise TemplateSyntaxError("Could not parse the remainder: '%s' "
-                                      "from '%s'" % (token[upto:], token))
+            raise
+            TemplateSyntaxError("Could not parse the remainder: '%s' "
+                                      "from '%s'" \
+            % \
+            (token[upto:], token))
 
         self.filters = filters
         self.var = var_obj
@@ -693,7 +693,7 @@ class FilterExpression:
             if getattr(func, 'expects_localtime', False):
                 obj = template_localtime(obj, context.use_tz)
             if getattr(func, 'needs_autoescape', False):
-                new_obj = func(obj, autoescape=context.autoescape, *arg_vals)
+                new_obj = func(obj, *arg_vals, autoescape=context.autoescape)
             else:
                 new_obj = func(obj, *arg_vals)
             if getattr(func, 'is_safe', False) and isinstance(obj, SafeData):
@@ -713,11 +713,11 @@ class FilterExpression:
         alen = len(args)
         dlen = len(defaults or [])
         # Not enough OR Too many
-        if plen < (alen - dlen) or plen > alen:
-            raise TemplateSyntaxError("%s requires %d arguments, %d provided" %
-                                      (name, alen - dlen, plen))
+        if plen < alen - dlen or plen > alen:
+            raise TemplateSyntaxError('%s requires %d arguments, %d provided' % (name, alen - dlen, plen))
 
         return True
+
     args_check = staticmethod(args_check)
 
     def __str__(self):
@@ -751,8 +751,7 @@ class Variable:
         self.message_context = None
 
         if not isinstance(var, str):
-            raise TypeError(
-                "Variable must be a string or number, got %s" % type(var))
+            raise TypeError('Variable must be a string or number, got %s' % type(var))
         try:
             # First try to treat this variable as a number.
             #
@@ -784,13 +783,15 @@ class Variable:
                 # Otherwise we'll set self.lookups so that resolve() knows we're
                 # dealing with a bonafide variable
                 if var.find(VARIABLE_ATTRIBUTE_SEPARATOR + '_') > -1 or var[0] == '_':
-                    raise TemplateSyntaxError("Variables and attributes may "
-                                              "not begin with underscores: '%s'" %
-                                              var)
+                    raise
+                    TemplateSyntaxError("Variables and attributes may "
+                                              "not begin with underscores: '%s'" \
+                    % \
+                    var)
                 self.lookups = tuple(var.split(VARIABLE_ATTRIBUTE_SEPARATOR))
 
     def resolve(self, context):
-        """Resolve this variable against a given context."""
+        '''Resolve this variable against a given context.'''
         if self.lookups is not None:
             # We're dealing with a variable that needs to be resolved
             value = self._resolve_lookup(context)
@@ -808,7 +809,7 @@ class Variable:
         return value
 
     def __repr__(self):
-        return "<%s: %r>" % (self.__class__.__name__, self.var)
+        return '<%s: %r>' % (self.__class__.__name__, self.var)
 
     def __str__(self):
         return self.var
@@ -823,14 +824,17 @@ class Variable:
         instead.
         """
         current = context
-        try:  # catch-all for silent variable failures
+        try:
+            # catch-all for silent variable failures
             for bit in self.lookups:
-                try:  # dictionary lookup
+                try:
+                    # dictionary lookup
                     current = current[bit]
-                    # ValueError/IndexError are for numpy.array lookup on
-                    # numpy < 1.9 and 1.9+ respectively
+                # ValueError/IndexError are for numpy.array lookup on
+                # numpy < 1.9 and 1.9+ respectively
                 except (TypeError, AttributeError, KeyError, ValueError, IndexError):
-                    try:  # attribute lookup
+                    try:
+                        # attribute lookup
                         # Don't return class attributes if the class is the context:
                         if isinstance(current, BaseContext) and getattr(type(current), bit):
                             raise AttributeError
@@ -839,43 +843,47 @@ class Variable:
                         # Reraise if the exception was raised by a @property
                         if not isinstance(current, BaseContext) and bit in dir(current):
                             raise
-                        try:  # list-index lookup
+                        try:
+                            # list-index lookup
                             current = current[int(bit)]
-                        except (IndexError,  # list index out of range
-                                ValueError,  # invalid literal for int()
-                                KeyError,    # current is a dict without `int(bit)` key
-                                TypeError):  # unsubscriptable object
-                            raise VariableDoesNotExist("Failed lookup for key "
-                                                       "[%s] in %r",
-                                                       (bit, current))  # missing attribute
+                        except
+                        (
+                            IndexError, # list index out of range
+                            ValueError, # invalid literal for int()
+                            KeyError, # current is a dict without `int(bit)` key
+                            TypeError
+                        ): # unsubscriptable object
+                            raise
+                            VariableDoesNotExist("Failed lookup for key "
+                                                       "[%s] in %r", (
+                                bit,
+                                current
+                            )) # missing attribute
                 if callable(current):
                     if getattr(current, 'do_not_call_in_templates', False):
                         pass
                     elif getattr(current, 'alters_data', False):
                         current = context.template.engine.string_if_invalid
                     else:
-                        try:  # method call (assuming no args required)
+                        try:
+                            # method call (assuming no args required)
                             current = current()
                         except TypeError:
                             try:
                                 getcallargs(current)
-                            except TypeError:  # arguments *were* required
-                                current = context.template.engine.string_if_invalid  # invalid method call
+                            except
+                            TypeError: # arguments *were* required
+                                current = context.template.engine.string_if_invalid # invalid method call
                             else:
                                 raise
         except Exception as e:
             template_name = getattr(context, 'template_name', None) or 'unknown'
-            logger.debug(
-                "Exception while resolving variable '%s' in template '%s'.",
-                bit,
-                template_name,
-                exc_info=True,
-            )
+            logger.debug("Exception while resolving variable '%s' in template '%s'.", bit, template_name, exc_info=True)
 
             if getattr(e, 'silent_variable_failure', False):
                 current = context.template.engine.string_if_invalid
             else:
-                raise
+                raise 
 
         return current
 
@@ -888,33 +896,33 @@ class Node:
     token = None
 
     def render(self, context):
-        """
+        '''
         Return the node rendered as a string.
-        """
+        '''
         pass
 
     def render_annotated(self, context):
-        """
+        '''
         Render the node. If debug is True and an exception occurs during
         rendering, the exception is annotated with contextual line information
         where it occurred in the template. For internal usage this method is
         preferred over using the render method directly.
-        """
+        '''
         try:
             return self.render(context)
         except Exception as e:
             if context.template.engine.debug and not hasattr(e, 'template_debug'):
                 e.template_debug = context.render_context.template.get_exception_info(e, self.token)
-            raise
+            raise 
 
     def __iter__(self):
         yield self
 
     def get_nodes_by_type(self, nodetype):
-        """
+        '''
         Return a list of all nodes (within this node and its nodelist)
         of the given type
-        """
+        '''
         nodes = []
         if isinstance(self, nodetype):
             nodes.append(self)
@@ -941,7 +949,7 @@ class NodeList(list):
         return mark_safe(''.join(bits))
 
     def get_nodes_by_type(self, nodetype):
-        "Return a list of all nodes of the given type"
+        'Return a list of all nodes of the given type'
         nodes = []
         for node in self:
             nodes.extend(node.get_nodes_by_type(nodetype))
@@ -953,7 +961,7 @@ class TextNode(Node):
         self.s = s
 
     def __repr__(self):
-        return "<%s: %r>" % (self.__class__.__name__, self.s[:25])
+        return '<%s: %r>' % (self.__class__.__name__, self.s[:25])
 
     def render(self, context):
         return self.s
@@ -980,7 +988,7 @@ class VariableNode(Node):
         self.filter_expression = filter_expression
 
     def __repr__(self):
-        return "<Variable Node: %s>" % self.filter_expression
+        return '<Variable Node: %s>' % self.filter_expression
 
     def render(self, context):
         try:
@@ -994,11 +1002,11 @@ class VariableNode(Node):
 
 
 # Regex for token keyword arguments
-kwarg_re = re.compile(r"(?:(\w+)=)?(.+)")
+kwarg_re = re.compile(r'(?:(\w+)=)?(.+)')
 
 
 def token_kwargs(bits, parser, support_legacy=False):
-    """
+    '''
     Parse token keyword arguments and return a dictionary of the arguments
     retrieved from the ``bits`` token list.
 
@@ -1012,7 +1020,7 @@ def token_kwargs(bits, parser, support_legacy=False):
     There is no requirement for all remaining token ``bits`` to be keyword
     arguments, so return the dictionary as soon as an invalid argument format
     is reached.
-    """
+    '''
     if not bits:
         return {}
     match = kwarg_re.match(bits[0])
@@ -1031,11 +1039,8 @@ def token_kwargs(bits, parser, support_legacy=False):
                 return kwargs
             key, value = match.groups()
             del bits[:1]
-        else:
-            if len(bits) < 3 or bits[1] != 'as':
-                return kwargs
-            key, value = bits[2], bits[0]
-            del bits[:3]
+        elif len(bits) < 3 or bits[1] != 'as':
+            return kwargskey, value = bits[2], bits[0]del bits[:3]
         kwargs[key] = parser.compile_filter(value)
         if bits and not kwarg_format:
             if bits[0] != 'and':

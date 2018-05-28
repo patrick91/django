@@ -4,7 +4,6 @@ from django.utils.ipv6 import clean_ipv6_address, is_valid_ipv6_address
 
 
 class TestUtilsIPv6(unittest.TestCase):
-
     def test_validates_correct_plain_address(self):
         self.assertTrue(is_valid_ipv6_address('fe80::223:6cff:fe8a:2e8a'))
         self.assertTrue(is_valid_ipv6_address('2a02::223:6cff:fe8a:2e8a'))

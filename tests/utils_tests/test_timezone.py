@@ -7,13 +7,12 @@ import pytz
 from django.test import SimpleTestCase, override_settings
 from django.utils import timezone
 
-CET = pytz.timezone("Europe/Paris")
-EAT = timezone.get_fixed_timezone(180)      # Africa/Nairobi
-ICT = timezone.get_fixed_timezone(420)      # Asia/Bangkok
+CET = pytz.timezone('Europe/Paris')
+EAT = timezone.get_fixed_timezone(180) # Africa/Nairobi
+ICT = timezone.get_fixed_timezone(420) # Asia/Bangkok
 
 
 class TimezoneTests(SimpleTestCase):
-
     def test_now(self):
         with override_settings(USE_TZ=True):
             self.assertTrue(timezone.is_aware(timezone.now()))
@@ -59,6 +58,7 @@ class TimezoneTests(SimpleTestCase):
             with timezone.override(None):
                 self.assertIs(default, timezone.get_current_timezone())
             self.assertIs(default, timezone.get_current_timezone())
+
         finally:
             timezone.deactivate()
 
@@ -89,6 +89,7 @@ class TimezoneTests(SimpleTestCase):
 
             func_tz_none()
             self.assertIs(default, timezone.get_current_timezone())
+
         finally:
             timezone.deactivate()
 
@@ -113,51 +114,31 @@ class TimezoneTests(SimpleTestCase):
         self.assertTrue(timezone.is_naive(datetime.datetime(2011, 9, 1, 13, 20, 30)))
 
     def test_make_aware(self):
-        self.assertEqual(
-            timezone.make_aware(datetime.datetime(2011, 9, 1, 13, 20, 30), EAT),
-            datetime.datetime(2011, 9, 1, 13, 20, 30, tzinfo=EAT))
+        self.assertEqual(timezone.make_aware(datetime.datetime(2011, 9, 1, 13, 20, 30), EAT), datetime.datetime(2011, 9, 1, 13, 20, 30, tzinfo=EAT))
         with self.assertRaises(ValueError):
             timezone.make_aware(datetime.datetime(2011, 9, 1, 13, 20, 30, tzinfo=EAT), EAT)
 
     def test_make_naive(self):
-        self.assertEqual(
-            timezone.make_naive(datetime.datetime(2011, 9, 1, 13, 20, 30, tzinfo=EAT), EAT),
-            datetime.datetime(2011, 9, 1, 13, 20, 30))
-        self.assertEqual(
-            timezone.make_naive(datetime.datetime(2011, 9, 1, 17, 20, 30, tzinfo=ICT), EAT),
-            datetime.datetime(2011, 9, 1, 13, 20, 30))
+        self.assertEqual(timezone.make_naive(datetime.datetime(2011, 9, 1, 13, 20, 30, tzinfo=EAT), EAT), datetime.datetime(2011, 9, 1, 13, 20, 30))
+        self.assertEqual(timezone.make_naive(datetime.datetime(2011, 9, 1, 17, 20, 30, tzinfo=ICT), EAT), datetime.datetime(2011, 9, 1, 13, 20, 30))
 
         with self.assertRaisesMessage(ValueError, 'make_naive() cannot be applied to a naive datetime'):
             timezone.make_naive(datetime.datetime(2011, 9, 1, 13, 20, 30), EAT)
 
     def test_make_naive_no_tz(self):
-        self.assertEqual(
-            timezone.make_naive(datetime.datetime(2011, 9, 1, 13, 20, 30, tzinfo=EAT)),
-            datetime.datetime(2011, 9, 1, 5, 20, 30)
-        )
+        self.assertEqual(timezone.make_naive(datetime.datetime(2011, 9, 1, 13, 20, 30, tzinfo=EAT)), datetime.datetime(2011, 9, 1, 5, 20, 30))
 
     def test_make_aware_no_tz(self):
-        self.assertEqual(
-            timezone.make_aware(datetime.datetime(2011, 9, 1, 13, 20, 30)),
-            datetime.datetime(2011, 9, 1, 13, 20, 30, tzinfo=timezone.get_fixed_timezone(-300))
-        )
+        self.assertEqual(timezone.make_aware(datetime.datetime(2011, 9, 1, 13, 20, 30)), datetime.datetime(2011, 9, 1, 13, 20, 30, tzinfo=timezone.get_fixed_timezone(-300)))
 
     def test_make_aware2(self):
-        self.assertEqual(
-            timezone.make_aware(datetime.datetime(2011, 9, 1, 12, 20, 30), CET),
-            CET.localize(datetime.datetime(2011, 9, 1, 12, 20, 30)))
+        self.assertEqual(timezone.make_aware(datetime.datetime(2011, 9, 1, 12, 20, 30), CET), CET.localize(datetime.datetime(2011, 9, 1, 12, 20, 30)))
         with self.assertRaises(ValueError):
             timezone.make_aware(CET.localize(datetime.datetime(2011, 9, 1, 12, 20, 30)), CET)
 
     def test_make_aware_pytz(self):
-        self.assertEqual(
-            timezone.make_naive(CET.localize(datetime.datetime(2011, 9, 1, 12, 20, 30)), CET),
-            datetime.datetime(2011, 9, 1, 12, 20, 30))
-        self.assertEqual(
-            timezone.make_naive(
-                pytz.timezone("Asia/Bangkok").localize(datetime.datetime(2011, 9, 1, 17, 20, 30)), CET
-            ),
-            datetime.datetime(2011, 9, 1, 12, 20, 30))
+        self.assertEqual(timezone.make_naive(CET.localize(datetime.datetime(2011, 9, 1, 12, 20, 30)), CET), datetime.datetime(2011, 9, 1, 12, 20, 30))
+        self.assertEqual(timezone.make_naive(pytz.timezone('Asia/Bangkok').localize(datetime.datetime(2011, 9, 1, 17, 20, 30)), CET), datetime.datetime(2011, 9, 1, 12, 20, 30))
         with self.assertRaisesMessage(ValueError, 'make_naive() cannot be applied to a naive datetime'):
             timezone.make_naive(datetime.datetime(2011, 9, 1, 12, 20, 30), CET)
 

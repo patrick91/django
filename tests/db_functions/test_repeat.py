@@ -12,7 +12,7 @@ class RepeatTests(TestCase):
             (Repeat('name', 0), ''),
             (Repeat('name', 2), 'JohnJohn'),
             (Repeat('name', Length('alias'), output_field=CharField()), 'JohnJohnJohn'),
-            (Repeat(Value('x'), 3, output_field=CharField()), 'xxx'),
+            (Repeat(Value('x'), 3, output_field=CharField()), 'xxx')
         )
         for function, repeated_text in tests:
             with self.subTest(function=function):

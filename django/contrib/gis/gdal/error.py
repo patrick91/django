@@ -1,8 +1,8 @@
-"""
+'''
  This module houses the GDAL & SRS Exception objects, and the
  check_err() routine which checks the status code returned by
  GDAL/OGR methods.
-"""
+'''
 
 
 # #### GDAL & SRS Exceptions ####
@@ -25,9 +25,8 @@ OGRERR_DICT = {
     5: (GDALException, 'Corrupt data.'),
     6: (GDALException, 'OGR failure.'),
     7: (SRSException, 'Unsupported SRS.'),
-    8: (GDALException, 'Invalid handle.'),
+    8: (GDALException, 'Invalid handle.')
 }
-
 # CPL Error Codes
 # http://www.gdal.org/cpl__error_8h.html
 CPLERR_DICT = {
@@ -40,16 +39,16 @@ CPLERR_DICT = {
     7: (GDALException, 'AssertionFailed'),
     8: (GDALException, 'NoWriteAccess'),
     9: (GDALException, 'UserInterrupt'),
-    10: (GDALException, 'ObjectNull'),
+    10: (GDALException, 'ObjectNull')
 }
 
 ERR_NONE = 0
 
 
 def check_err(code, cpl=False):
-    """
+    '''
     Check the given CPL/OGRERR and raise an exception where appropriate.
-    """
+    '''
     err_dict = CPLERR_DICT if cpl else OGRERR_DICT
 
     if code == ERR_NONE:

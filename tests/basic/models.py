@@ -1,8 +1,8 @@
-"""
+'''
 Bare-bones model
 
 This is a basic model with only two non-primary-key fields.
-"""
+'''
 from django.db import models
 
 
@@ -28,12 +28,7 @@ class ArticleSelectOnSave(Article):
 
 
 class SelfRef(models.Model):
-    selfref = models.ForeignKey(
-        'self',
-        models.SET_NULL,
-        null=True, blank=True,
-        related_name='+',
-    )
+    selfref = models.ForeignKey('self', models.SET_NULL, null=True, blank=True, related_name='+')
     article = models.ForeignKey(Article, models.SET_NULL, null=True, blank=True)
 
     def __str__(self):

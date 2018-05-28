@@ -8,9 +8,7 @@ from django.template import defaultfilters
 from django.utils.formats import number_format
 from django.utils.safestring import mark_safe
 from django.utils.timezone import is_aware, utc
-from django.utils.translation import (
-    gettext as _, ngettext, npgettext_lazy, pgettext,
-)
+from django.utils.translation import gettext as _, ngettext, npgettext_lazy, pgettext
 
 register = template.Library()
 
@@ -29,8 +27,8 @@ def ordinal(value):
         # Translators: Ordinal format for 11 (11th), 12 (12th), and 13 (13th).
         value = pgettext('ordinal 11, 12, 13', '{}th').format(value)
     else:
-        templates = (
-            # Translators: Ordinal format when value ends with 0, e.g. 80th.
+        templates = # Translators: Ordinal format when value ends with 0, e.g. 80th.
+        (
             pgettext('ordinal 0', '{}th'),
             # Translators: Ordinal format when value ends with 1, e.g. 81st, except 11.
             pgettext('ordinal 1', '{}st'),
@@ -49,7 +47,7 @@ def ordinal(value):
             # Translators: Ordinal format when value ends with 8, e.g. 88th.
             pgettext('ordinal 8', '{}th'),
             # Translators: Ordinal format when value ends with 9, e.g. 89th.
-            pgettext('ordinal 9', '{}th'),
+            pgettext('ordinal 9', '{}th')
         )
         value = templates[value % 10].format(value)
     # Mark value safe so i18n does not break with <sup> or <sub> see #19988
@@ -71,7 +69,7 @@ def intcomma(value, use_l10n=True):
         else:
             return number_format(value, force_grouping=True)
     orig = str(value)
-    new = re.sub(r"^(-?\d+)(\d{3})", r'\g<1>,\g<2>', orig)
+    new = re.sub(r'^(-?\d+)(\d{3})', r'\g<1>,\g<2>', orig)
     if orig == new:
         return new
     else:
@@ -80,50 +78,94 @@ def intcomma(value, use_l10n=True):
 
 # A tuple of standard large number to their converters
 intword_converters = (
-    (6, lambda number: (
-        ngettext('%(value).1f million', '%(value).1f million', number),
-        ngettext('%(value)s million', '%(value)s million', number),
-    )),
-    (9, lambda number: (
-        ngettext('%(value).1f billion', '%(value).1f billion', number),
-        ngettext('%(value)s billion', '%(value)s billion', number),
-    )),
-    (12, lambda number: (
-        ngettext('%(value).1f trillion', '%(value).1f trillion', number),
-        ngettext('%(value)s trillion', '%(value)s trillion', number),
-    )),
-    (15, lambda number: (
-        ngettext('%(value).1f quadrillion', '%(value).1f quadrillion', number),
-        ngettext('%(value)s quadrillion', '%(value)s quadrillion', number),
-    )),
-    (18, lambda number: (
-        ngettext('%(value).1f quintillion', '%(value).1f quintillion', number),
-        ngettext('%(value)s quintillion', '%(value)s quintillion', number),
-    )),
-    (21, lambda number: (
-        ngettext('%(value).1f sextillion', '%(value).1f sextillion', number),
-        ngettext('%(value)s sextillion', '%(value)s sextillion', number),
-    )),
-    (24, lambda number: (
-        ngettext('%(value).1f septillion', '%(value).1f septillion', number),
-        ngettext('%(value)s septillion', '%(value)s septillion', number),
-    )),
-    (27, lambda number: (
-        ngettext('%(value).1f octillion', '%(value).1f octillion', number),
-        ngettext('%(value)s octillion', '%(value)s octillion', number),
-    )),
-    (30, lambda number: (
-        ngettext('%(value).1f nonillion', '%(value).1f nonillion', number),
-        ngettext('%(value)s nonillion', '%(value)s nonillion', number),
-    )),
-    (33, lambda number: (
-        ngettext('%(value).1f decillion', '%(value).1f decillion', number),
-        ngettext('%(value)s decillion', '%(value)s decillion', number),
-    )),
-    (100, lambda number: (
-        ngettext('%(value).1f googol', '%(value).1f googol', number),
-        ngettext('%(value)s googol', '%(value)s googol', number),
-    )),
+    (
+        6,
+        lambda number: \
+                (
+                    ngettext('%(value).1f million', '%(value).1f million', number),
+                    ngettext('%(value)s million', '%(value)s million', number)
+                )
+    ),
+    (
+        9,
+        lambda number: \
+                (
+                    ngettext('%(value).1f billion', '%(value).1f billion', number),
+                    ngettext('%(value)s billion', '%(value)s billion', number)
+                )
+    ),
+    (
+        12,
+        lambda number: \
+                (
+                    ngettext('%(value).1f trillion', '%(value).1f trillion', number),
+                    ngettext('%(value)s trillion', '%(value)s trillion', number)
+                )
+    ),
+    (
+        15,
+        lambda number: \
+                (
+                    ngettext('%(value).1f quadrillion', '%(value).1f quadrillion', number),
+                    ngettext('%(value)s quadrillion', '%(value)s quadrillion', number)
+                )
+    ),
+    (
+        18,
+        lambda number: \
+                (
+                    ngettext('%(value).1f quintillion', '%(value).1f quintillion', number),
+                    ngettext('%(value)s quintillion', '%(value)s quintillion', number)
+                )
+    ),
+    (
+        21,
+        lambda number: \
+                (
+                    ngettext('%(value).1f sextillion', '%(value).1f sextillion', number),
+                    ngettext('%(value)s sextillion', '%(value)s sextillion', number)
+                )
+    ),
+    (
+        24,
+        lambda number: \
+                (
+                    ngettext('%(value).1f septillion', '%(value).1f septillion', number),
+                    ngettext('%(value)s septillion', '%(value)s septillion', number)
+                )
+    ),
+    (
+        27,
+        lambda number: \
+                (
+                    ngettext('%(value).1f octillion', '%(value).1f octillion', number),
+                    ngettext('%(value)s octillion', '%(value)s octillion', number)
+                )
+    ),
+    (
+        30,
+        lambda number: \
+                (
+                    ngettext('%(value).1f nonillion', '%(value).1f nonillion', number),
+                    ngettext('%(value)s nonillion', '%(value)s nonillion', number)
+                )
+    ),
+    (
+        33,
+        lambda number: \
+                (
+                    ngettext('%(value).1f decillion', '%(value).1f decillion', number),
+                    ngettext('%(value)s decillion', '%(value)s decillion', number)
+                )
+    ),
+    (
+        100,
+        lambda number: \
+                (
+                    ngettext('%(value).1f googol', '%(value).1f googol', number),
+                    ngettext('%(value)s googol', '%(value)s googol', number)
+                )
+    )
 )
 
 
@@ -143,9 +185,9 @@ def intword(value):
         return value
 
     def _check_for_i18n(value, float_formatted, string_formatted):
-        """
+        '''
         Use the i18n enabled defaultfilters.floatformat if possible
-        """
+        '''
         if settings.USE_L10N:
             value = defaultfilters.floatformat(value, 1)
             template = string_formatted
@@ -163,29 +205,29 @@ def intword(value):
 
 @register.filter(is_safe=True)
 def apnumber(value):
-    """
+    '''
     For numbers 1-9, return the number spelled out. Otherwise, return the
     number. This follows Associated Press style.
-    """
+    '''
     try:
         value = int(value)
     except (TypeError, ValueError):
         return value
     if not 0 < value < 10:
         return value
-    return (_('one'), _('two'), _('three'), _('four'), _('five'),
-            _('six'), _('seven'), _('eight'), _('nine'))[value - 1]
+    return \
+        (_('one'), _('two'), _('three'), _('four'), _('five'), _('six'), _('seven'), _('eight'), _('nine'))[value - 1]
 
 
 # Perform the comparison in the default time zone when USE_TZ = True
 # (unless a specific time zone has been applied with the |timezone filter).
 @register.filter(expects_localtime=True)
 def naturalday(value, arg=None):
-    """
+    '''
     For date values that are tomorrow, today or yesterday compared to
     present day return representing string. Otherwise, return a string
     formatted according to settings.DATE_FORMAT.
-    """
+    '''
     try:
         tzinfo = getattr(value, 'tzinfo', None)
         value = date(value.year, value.month, value.day)
@@ -210,11 +252,11 @@ def naturalday(value, arg=None):
 # with both naive and aware datetimes. Therefore avoid the cost of conversion.
 @register.filter
 def naturaltime(value):
-    """
+    '''
     For date and time values show how many seconds, minutes, or hours ago
     compared to current timestamp return representing string.
-    """
-    if not isinstance(value, date):  # datetime is a subclass of date
+    '''
+    if not isinstance(value, date): # datetime is a subclass of date
         return value
 
     now = datetime.now(utc if is_aware(value) else None)
@@ -222,71 +264,91 @@ def naturaltime(value):
         delta = now - value
         if delta.days != 0:
             # Translators: delta will contain a string like '2 months' or '1 month, 2 weeks'
-            return _('%(delta)s ago') % {'delta': defaultfilters.timesince(value, now, time_strings={
-                # Translators: 'naturaltime-past' strings will be included in
-                # '%(delta)s ago'
-                'year': npgettext_lazy('naturaltime-past', '%d year', '%d years'),
-                'month': npgettext_lazy('naturaltime-past', '%d month', '%d months'),
-                'week': npgettext_lazy('naturaltime-past', '%d week', '%d weeks'),
-                'day': npgettext_lazy('naturaltime-past', '%d day', '%d days'),
-                'hour': npgettext_lazy('naturaltime-past', '%d hour', '%d hours'),
-                'minute': npgettext_lazy('naturaltime-past', '%d minute', '%d minutes')
-            })}
+            return \
+                _('%(delta)s ago') \
+                % \
+                {
+                    'delta':
+                        defaultfilters.timesince(value, now, time_strings={
+                            # Translators: 'naturaltime-past' strings will be included in
+                            # '%(delta)s ago'
+                            'year':
+                                npgettext_lazy('naturaltime-past', '%d year', '%d years'),
+                            'month': npgettext_lazy('naturaltime-past', '%d month', '%d months'),
+                            'week': npgettext_lazy('naturaltime-past', '%d week', '%d weeks'),
+                            'day': npgettext_lazy('naturaltime-past', '%d day', '%d days'),
+                            'hour': npgettext_lazy('naturaltime-past', '%d hour', '%d hours'),
+                            'minute': npgettext_lazy('naturaltime-past', '%d minute', '%d minutes')
+                        })
+                }
         elif delta.seconds == 0:
             return _('now')
         elif delta.seconds < 60:
-            return ngettext(
-                # Translators: please keep a non-breaking space (U+00A0)
+            return \
+                ngettext(# Translators: please keep a non-breaking space (U+00A0)
                 # between count and time unit.
-                'a second ago', '%(count)s seconds ago', delta.seconds
-            ) % {'count': delta.seconds}
+                'a second ago', '%(count)s seconds ago', delta.seconds) \
+                % \
+                {'count': delta.seconds}
         elif delta.seconds // 60 < 60:
             count = delta.seconds // 60
-            return ngettext(
-                # Translators: please keep a non-breaking space (U+00A0)
+            return \
+                ngettext(# Translators: please keep a non-breaking space (U+00A0)
                 # between count and time unit.
-                'a minute ago', '%(count)s minutes ago', count
-            ) % {'count': count}
+                'a minute ago', '%(count)s minutes ago', count) \
+                % \
+                {'count': count}
         else:
             count = delta.seconds // 60 // 60
-            return ngettext(
-                # Translators: please keep a non-breaking space (U+00A0)
+            return \
+                ngettext(# Translators: please keep a non-breaking space (U+00A0)
                 # between count and time unit.
-                'an hour ago', '%(count)s hours ago', count
-            ) % {'count': count}
+                'an hour ago', '%(count)s hours ago', count) \
+                % \
+                {'count': count}
     else:
         delta = value - now
         if delta.days != 0:
             # Translators: delta will contain a string like '2 months' or '1 month, 2 weeks'
-            return _('%(delta)s from now') % {'delta': defaultfilters.timeuntil(value, now, time_strings={
-                # Translators: 'naturaltime-future' strings will be included in
-                # '%(delta)s from now'
-                'year': npgettext_lazy('naturaltime-future', '%d year', '%d years'),
-                'month': npgettext_lazy('naturaltime-future', '%d month', '%d months'),
-                'week': npgettext_lazy('naturaltime-future', '%d week', '%d weeks'),
-                'day': npgettext_lazy('naturaltime-future', '%d day', '%d days'),
-                'hour': npgettext_lazy('naturaltime-future', '%d hour', '%d hours'),
-                'minute': npgettext_lazy('naturaltime-future', '%d minute', '%d minutes')
-            })}
+            return \
+                _('%(delta)s from now') \
+                % \
+                {
+                    'delta':
+                        defaultfilters.timeuntil(value, now, time_strings={
+                            # Translators: 'naturaltime-future' strings will be included in
+                            # '%(delta)s from now'
+                            'year':
+                                npgettext_lazy('naturaltime-future', '%d year', '%d years'),
+                            'month': npgettext_lazy('naturaltime-future', '%d month', '%d months'),
+                            'week': npgettext_lazy('naturaltime-future', '%d week', '%d weeks'),
+                            'day': npgettext_lazy('naturaltime-future', '%d day', '%d days'),
+                            'hour': npgettext_lazy('naturaltime-future', '%d hour', '%d hours'),
+                            'minute': npgettext_lazy('naturaltime-future', '%d minute', '%d minutes')
+                        })
+                }
         elif delta.seconds == 0:
             return _('now')
         elif delta.seconds < 60:
-            return ngettext(
-                # Translators: please keep a non-breaking space (U+00A0)
+            return \
+                ngettext(# Translators: please keep a non-breaking space (U+00A0)
                 # between count and time unit.
-                'a second from now', '%(count)s seconds from now', delta.seconds
-            ) % {'count': delta.seconds}
+                'a second from now', '%(count)s seconds from now', delta.seconds) \
+                % \
+                {'count': delta.seconds}
         elif delta.seconds // 60 < 60:
             count = delta.seconds // 60
-            return ngettext(
-                # Translators: please keep a non-breaking space (U+00A0)
+            return \
+                ngettext(# Translators: please keep a non-breaking space (U+00A0)
                 # between count and time unit.
-                'a minute from now', '%(count)s minutes from now', count
-            ) % {'count': count}
+                'a minute from now', '%(count)s minutes from now', count) \
+                % \
+                {'count': count}
         else:
             count = delta.seconds // 60 // 60
-            return ngettext(
-                # Translators: please keep a non-breaking space (U+00A0)
+            return \
+                ngettext(# Translators: please keep a non-breaking space (U+00A0)
                 # between count and time unit.
-                'an hour from now', '%(count)s hours from now', count
-            ) % {'count': count}
+                'an hour from now', '%(count)s hours from now', count) \
+                % \
+                {'count': count}

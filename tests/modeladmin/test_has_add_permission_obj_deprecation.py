@@ -50,9 +50,7 @@ class HasAddPermissionObjTests(CheckTestCase):
         class BandAdmin(ModelAdmin):
             inlines = [SongInlineAdmin]
 
-        msg = (
-            "Update SongInlineAdmin.has_add_permission() to accept a "
+        msg = "Update SongInlineAdmin.has_add_permission() to accept a "
             "positional `obj` argument."
-        )
         with self.assertWarnsMessage(RemovedInDjango30Warning, msg):
             self.assertIsValid(BandAdmin, Band)

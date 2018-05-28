@@ -1,6 +1,6 @@
-"""
+'''
 Models for testing various aspects of the djang.contrib.admindocs app
-"""
+'''
 
 from django.db import models
 
@@ -18,7 +18,7 @@ class Family(models.Model):
 
 
 class Person(models.Model):
-    """
+    '''
     Stores information about a person, related to :model:`myapp.Company`.
 
     **Notes**
@@ -34,15 +34,15 @@ class Person(models.Model):
         :file: admin_docs/evilfile.txt
 
     .. include:: admin_docs/evilfile.txt
-    """
+    '''
     first_name = models.CharField(max_length=200, help_text="The person's first name")
     last_name = models.CharField(max_length=200, help_text="The person's last name")
-    company = models.ForeignKey(Company, models.CASCADE, help_text="place of work")
+    company = models.ForeignKey(Company, models.CASCADE, help_text='place of work')
     family = models.ForeignKey(Family, models.SET_NULL, related_name='+', null=True)
-    groups = models.ManyToManyField(Group, help_text="has membership")
+    groups = models.ManyToManyField(Group, help_text='has membership')
 
     def _get_full_name(self):
-        return "%s %s" % (self.first_name, self.last_name)
+        return '%s %s' % (self.first_name, self.last_name)
 
     def rename_company(self, new_name):
         self.company.name = new_name
@@ -68,9 +68,9 @@ class Person(models.Model):
         pass
 
     def get_full_name(self):
-        """
+        '''
         Get the full name of the person
-        """
+        '''
         return self._get_full_name()
 
     def get_status_count(self):

@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-"""
+'''
 Helper script to update sampleproject's translation catalogs.
 
 When a bug has been identified related to i18n, this helps capture the issue
@@ -24,7 +24,7 @@ How this script helps:
  * Fix issue.
  * Run this script.
  * Tests all pass.
-"""
+'''
 
 import os
 import re
@@ -35,7 +35,7 @@ sys.path.append(os.path.abspath(os.path.join(proj_dir, '..', '..', '..')))
 
 
 def update_translation_catalogs():
-    """Run makemessages and compilemessages in sampleproject."""
+    '''Run makemessages and compilemessages in sampleproject.'''
     from django.core.management import call_command
 
     prev_cwd = os.getcwd()
@@ -43,7 +43,6 @@ def update_translation_catalogs():
     os.chdir(proj_dir)
     call_command('makemessages')
     call_command('compilemessages')
-
     # keep the diff friendly - remove 'POT-Creation-Date'
     pofile = os.path.join(proj_dir, 'locale', 'fr', 'LC_MESSAGES', 'django.po')
 
@@ -56,5 +55,5 @@ def update_translation_catalogs():
     os.chdir(prev_cwd)
 
 
-if __name__ == "__main__":
+if __name__ == '__main__':
     update_translation_catalogs()

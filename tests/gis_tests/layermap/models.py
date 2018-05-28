@@ -17,7 +17,7 @@ class State(NamedModel):
 
 class County(NamedModel):
     state = models.ForeignKey(State, models.CASCADE)
-    mpoly = models.MultiPolygonField(srid=4269)  # Multipolygon in NAD83
+    mpoly = models.MultiPolygonField(srid=4269) # Multipolygon in NAD83
 
 
 class CountyFeat(NamedModel):
@@ -73,22 +73,14 @@ class Invalid(models.Model):
 co_mapping = {
     'name': 'Name',
     # ForeignKey's use another mapping dictionary for the _related_ Model (State in this case).
-    'state': {'name': 'State'},
-    'mpoly': 'MULTIPOLYGON',  # Will convert POLYGON features into MULTIPOLYGONS.
+    'state':
+        {'name': 'State'},
+    'mpoly':
+        'MULTIPOLYGON' # Will convert POLYGON features into MULTIPOLYGONS.
 }
 
-cofeat_mapping = {'name': 'Name',
-                  'poly': 'POLYGON',
-                  }
+cofeat_mapping = {'name': 'Name', 'poly': 'POLYGON'}
 
-city_mapping = {'name': 'Name',
-                'population': 'Population',
-                'density': 'Density',
-                'dt': 'Created',
-                'point': 'POINT',
-                }
+city_mapping = {'name': 'Name', 'population': 'Population', 'density': 'Density', 'dt': 'Created', 'point': 'POINT'}
 
-inter_mapping = {'name': 'Name',
-                 'length': 'Length',
-                 'path': 'LINESTRING',
-                 }
+inter_mapping = {'name': 'Name', 'length': 'Length', 'path': 'LINESTRING'}

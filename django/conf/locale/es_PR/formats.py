@@ -7,11 +7,12 @@ YEAR_MONTH_FORMAT = r'F \d\e Y'
 MONTH_DAY_FORMAT = r'j \d\e F'
 SHORT_DATE_FORMAT = 'd/m/Y'
 SHORT_DATETIME_FORMAT = 'd/m/Y H:i'
-FIRST_DAY_OF_WEEK = 0  # Sunday
+FIRST_DAY_OF_WEEK = 0 # Sunday
 
 DATE_INPUT_FORMATS = [
     # '31/12/2009', '31/12/09'
-    '%d/%m/%Y', '%d/%m/%y'
+    '%d/%m/%Y',
+    '%d/%m/%y'
 ]
 DATETIME_INPUT_FORMATS = [
     '%d/%m/%Y %H:%M:%S',
@@ -19,7 +20,7 @@ DATETIME_INPUT_FORMATS = [
     '%d/%m/%Y %H:%M',
     '%d/%m/%y %H:%M:%S',
     '%d/%m/%y %H:%M:%S.%f',
-    '%d/%m/%y %H:%M',
+    '%d/%m/%y %H:%M'
 ]
 
 DECIMAL_SEPARATOR = '.'

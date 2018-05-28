@@ -7,17 +7,17 @@ class User(models.Model):
 
 
 class UserSite(models.Model):
-    user = models.ForeignKey(User, models.CASCADE, to_field="username")
+    user = models.ForeignKey(User, models.CASCADE, to_field='username')
     data = models.IntegerField()
 
 
 class UserProfile(models.Model):
-    user = models.ForeignKey(User, models.CASCADE, unique=True, to_field="username")
+    user = models.ForeignKey(User, models.CASCADE, unique=True, to_field='username')
     about = models.TextField()
 
 
 class ProfileNetwork(models.Model):
-    profile = models.ForeignKey(UserProfile, models.CASCADE, to_field="user")
+    profile = models.ForeignKey(UserProfile, models.CASCADE, to_field='user')
     network = models.IntegerField()
     identifier = models.IntegerField()
 

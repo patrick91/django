@@ -27,7 +27,7 @@ class GISLookup(Lookup):
     def process_rhs_params(self):
         if self.rhs_params:
             # Check if a band index was passed in the query argument.
-            if len(self.rhs_params) == (2 if self.lookup_name == 'relate' else 1):
+            if len(self.rhs_params) == 2 if self.lookup_name == 'relate' else 1:
                 self.process_band_indices()
             elif len(self.rhs_params) > 1:
                 raise ValueError('Tuple too long for lookup %s.' % self.lookup_name)
@@ -35,10 +35,10 @@ class GISLookup(Lookup):
             self.process_band_indices(only_lhs=True)
 
     def process_band_indices(self, only_lhs=False):
-        """
+        '''
         Extract the lhs band index from the band transform class and the rhs
         band index from the input tuple.
-        """
+        '''
         # PostGIS band indices are 1-based, so the band index needs to be
         # increased to be consistent with the GDALRaster band indices.
         if only_lhs:
@@ -55,7 +55,7 @@ class GISLookup(Lookup):
 
     def get_db_prep_lookup(self, value, connection):
         # get_db_prep_lookup is called by process_rhs from super class
-        return ('%s', [connection.ops.Adapter(value)])
+        return '%s', [connection.ops.Adapter(value)]
 
     def process_rhs(self, compiler, connection):
         if isinstance(self.rhs, Query):
@@ -78,7 +78,7 @@ class GISLookup(Lookup):
         rhs_sql, rhs_params = self.process_rhs(compiler, connection)
         sql_params.extend(rhs_params)
 
-        template_params = {'lhs': lhs_sql, 'rhs': rhs_sql, 'value': '%s', **self.template_params}
+        template_params = {'lhs': lhs_sql, 'rhs': rhs_sql, 'value': '%s', : self.template_params}
         rhs_op = self.get_rhs_op(connection, rhs_sql)
         return rhs_op.as_sql(connection, self, template_params, sql_params)
 
@@ -161,11 +161,11 @@ class StrictlyAboveLookup(GISLookup):
 
 @BaseSpatialField.register_lookup
 class SameAsLookup(GISLookup):
-    """
+    '''
     The "~=" operator is the "same as" operator. It tests actual geometric
     equality of two features. So if A and B are the same feature,
     vertex-by-vertex, the operator returns true.
-    """
+    '''
     lookup_name = 'same_as'
 
 
@@ -284,18 +284,17 @@ class DistanceLookupBase(GISLookup):
             raise ValueError("2, 3, or 4-element tuple required for '%s' lookup." % self.lookup_name)
         elif len(self.rhs_params) == 3 and self.rhs_params[2] != 'spheroid':
             raise ValueError("For 4-element tuples the last argument must be the 'spheroid' directive.")
-
         # Check if the second parameter is a band index.
         if len(self.rhs_params) > 1 and self.rhs_params[1] != 'spheroid':
             self.process_band_indices()
 
     def process_distance(self, compiler, connection):
         dist_param = self.rhs_params[0]
-        return (
-            compiler.compile(dist_param.resolve_expression(compiler.query))
-            if hasattr(dist_param, 'resolve_expression') else
-            ('%s', connection.ops.get_distance(self.lhs.output_field, self.rhs_params, self.lookup_name))
-        )
+        return \
+            compiler.compile(dist_param.resolve_expression(compiler.query)) if hasattr(dist_param, 'resolve_expression') else (
+                '%s',
+                connection.ops.get_distance(self.lhs.output_field, self.rhs_params, self.lookup_name)
+            )
 
 
 @BaseSpatialField.register_lookup
@@ -312,14 +311,11 @@ class DWithinLookup(DistanceLookupBase):
 
 class DistanceLookupFromFunction(DistanceLookupBase):
     def as_sql(self, compiler, connection):
-        spheroid = (len(self.rhs_params) == 2 and self.rhs_params[-1] == 'spheroid') or None
+        spheroid = len(self.rhs_params) == 2 and self.rhs_params[-1] == 'spheroid' or None
         distance_expr = connection.ops.distance_expr_for_lookup(self.lhs, self.rhs, spheroid=spheroid)
         sql, params = compiler.compile(distance_expr.resolve_expression(compiler.query))
         dist_sql, dist_params = self.process_distance(compiler, connection)
-        return (
-            '%(func)s %(op)s %(dist)s' % {'func': sql, 'op': self.op, 'dist': dist_sql},
-            params + dist_params,
-        )
+        return '%(func)s %(op)s %(dist)s' % {'func': sql, 'op': self.op, 'dist': dist_sql}, params + dist_params
 
 
 @BaseSpatialField.register_lookup

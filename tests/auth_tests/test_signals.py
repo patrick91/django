@@ -10,7 +10,6 @@ from .models import MinimalUser, UserWithDisabledLastLoginField
 
 @override_settings(ROOT_URLCONF='auth_tests.urls')
 class SignalTestCase(TestCase):
-
     @classmethod
     def setUpTestData(cls):
         cls.u1 = User.objects.create_user(username='testclient', password='password')
@@ -26,7 +25,7 @@ class SignalTestCase(TestCase):
         self.login_failed.append(kwargs)
 
     def setUp(self):
-        """Set up the listeners and reset the logged in/logged out counters"""
+        '''Set up the listeners and reset the logged in/logged out counters'''
         self.logged_in = []
         self.logged_out = []
         self.login_failed = []
@@ -35,7 +34,7 @@ class SignalTestCase(TestCase):
         signals.user_login_failed.connect(self.listener_login_failed)
 
     def tearDown(self):
-        """Disconnect the listeners"""
+        '''Disconnect the listeners'''
         signals.user_logged_in.disconnect(self.listener_login)
         signals.user_logged_out.disconnect(self.listener_logout)
         signals.user_login_failed.disconnect(self.listener_login_failed)
@@ -49,12 +48,10 @@ class SignalTestCase(TestCase):
         # verify the password is cleansed
         self.assertIn('***', self.login_failed[0]['credentials']['password'])
         self.assertIn('request', self.login_failed[0])
-
         # Like this:
         self.client.login(username='testclient', password='password')
         self.assertEqual(len(self.logged_in), 1)
         self.assertEqual(self.logged_in[0].username, 'testclient')
-
         # Ensure there were no more failures.
         self.assertEqual(len(self.login_failed), 1)
 
@@ -72,7 +69,7 @@ class SignalTestCase(TestCase):
         self.assertEqual(self.logged_out[0].username, 'testclient')
 
     def test_update_last_login(self):
-        """Only `last_login` is updated in `update_last_login`"""
+        '''Only `last_login` is updated in `update_last_login`'''
         user = self.u3
         old_last_login = user.last_login
 
@@ -88,10 +85,10 @@ class SignalTestCase(TestCase):
         self.assertIsNone(self.login_failed[0]['request'])
 
     def test_login_with_custom_user_without_last_login_field(self):
-        """
+        '''
         The user_logged_in signal is only registered if the user model has a
         last_login field.
-        """
+        '''
         last_login_receivers = signals.user_logged_in.receivers
         try:
             signals.user_logged_in.receivers = []
@@ -100,7 +97,6 @@ class SignalTestCase(TestCase):
             with self.settings(AUTH_USER_MODEL='auth_tests.MinimalUser'):
                 apps.get_app_config('auth').ready()
             self.assertEqual(signals.user_logged_in.receivers, [])
-
             # last_login is a property whose value is None.
             self.assertIsNone(UserWithDisabledLastLoginField().last_login)
             with self.settings(AUTH_USER_MODEL='auth_tests.UserWithDisabledLastLoginField'):
@@ -110,5 +106,6 @@ class SignalTestCase(TestCase):
             with self.settings(AUTH_USER_MODEL='auth.User'):
                 apps.get_app_config('auth').ready()
             self.assertEqual(len(signals.user_logged_in.receivers), 1)
+
         finally:
             signals.user_logged_in.receivers = last_login_receivers

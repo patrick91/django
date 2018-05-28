@@ -1,1 +1,1 @@
-import DoesNotExist  # noqa
+import DoesNotExist # noqa

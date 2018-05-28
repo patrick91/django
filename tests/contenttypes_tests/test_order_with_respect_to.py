@@ -5,7 +5,7 @@ from django.test import TestCase
 from .models import Answer, Post, Question
 
 
-class OrderWithRespectToGFKTests(BaseOrderWithRespectToTests, TestCase):
+class OrderWithRespectToGFKTests(BaseOrderWithRespectToTests,TestCase):
     Answer = Answer
     Post = Post
     Question = Question

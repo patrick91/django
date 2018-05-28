@@ -33,7 +33,7 @@ class TagCollection(Tag):
 class Entry(models.Model):
     name = models.CharField(max_length=10)
     topics = models.ManyToManyField(Tag)
-    related = models.ManyToManyField(Tag, related_name="similar")
+    related = models.ManyToManyField(Tag, related_name='similar')
 
     def __str__(self):
         return self.name
@@ -81,9 +81,9 @@ class BadModelWithSplit(models.Model):
 
 
 class RegressionModelSplit(BadModelWithSplit):
-    """
+    '''
     Model with a split method should not cause an error in add_lazy_relation
-    """
+    '''
     others = models.ManyToManyField('self')
 
 

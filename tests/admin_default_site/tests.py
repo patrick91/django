@@ -9,10 +9,9 @@ from django.test import SimpleTestCase, override_settings
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
-    'django.contrib.staticfiles',
+    'django.contrib.staticfiles'
 ])
 class CustomAdminSiteTests(SimpleTestCase):
-
     def setUp(self):
         # Reset admin.site since it may have already been instantiated by
         # another test app.

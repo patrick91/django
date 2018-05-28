@@ -1,5 +1,5 @@
 def register(*models, site=None):
-    """
+    '''
     Register the given model(s) classes and wrapped ModelAdmin class with
     admin site:
 
@@ -8,7 +8,7 @@ def register(*models, site=None):
         pass
 
     The `site` kwarg is an admin site to use instead of the default admin site.
-    """
+    '''
     from django.contrib.admin import ModelAdmin
     from django.contrib.admin.sites import site as default_site, AdminSite
 
@@ -27,4 +27,5 @@ def register(*models, site=None):
         admin_site.register(models, admin_class=admin_class)
 
         return admin_class
+
     return _model_admin_wrapper

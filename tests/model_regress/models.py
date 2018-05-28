@@ -1,9 +1,6 @@
 from django.db import models
 
-CHOICES = (
-    (1, 'first'),
-    (2, 'second'),
-)
+CHOICES = ((1, 'first'), (2, 'second'))
 
 
 class Article(models.Model):

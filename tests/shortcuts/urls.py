@@ -12,5 +12,5 @@ urlpatterns = [
     url(r'^render/multiple_templates/$', views.render_view_with_multiple_templates),
     url(r'^render/content_type/$', views.render_view_with_content_type),
     url(r'^render/status/$', views.render_view_with_status),
-    url(r'^render/using/$', views.render_view_with_using),
+    url(r'^render/using/$', views.render_view_with_using)
 ]

@@ -9,8 +9,5 @@ register = Library()
 
 @register.simple_tag
 def static(path):
-    warnings.warn(
-        '{% load admin_static %} is deprecated in favor of {% load static %}.',
-        RemovedInDjango30Warning,
-    )
+    warnings.warn('{% load admin_static %} is deprecated in favor of {% load static %}.', RemovedInDjango30Warning)
     return _static(path)

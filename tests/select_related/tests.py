@@ -2,18 +2,27 @@ from django.core.exceptions import FieldError
 from django.test import SimpleTestCase, TestCase
 
 from .models import (
-    Bookmark, Domain, Family, Genus, HybridSpecies, Kingdom, Klass, Order,
-    Phylum, Pizza, Species, TaggedItem,
+    Bookmark,
+    Domain,
+    Family,
+    Genus,
+    HybridSpecies,
+    Kingdom,
+    Klass,
+    Order,
+    Phylum,
+    Pizza,
+    Species,
+    TaggedItem
 )
 
 
 class SelectRelatedTests(TestCase):
-
     @classmethod
     def create_tree(cls, stringtree):
-        """
+        '''
         Helper to create a complete tree.
-        """
+        '''
         names = stringtree.split()
         models = [Domain, Kingdom, Phylum, Klass, Order, Family, Genus, Species]
         assert len(names) == len(models), (names, models)
@@ -31,79 +40,63 @@ class SelectRelatedTests(TestCase):
 
     @classmethod
     def setUpTestData(cls):
-        cls.create_tree("Eukaryota Animalia Anthropoda Insecta Diptera Drosophilidae Drosophila melanogaster")
-        cls.create_tree("Eukaryota Animalia Chordata Mammalia Primates Hominidae Homo sapiens")
-        cls.create_tree("Eukaryota Plantae Magnoliophyta Magnoliopsida Fabales Fabaceae Pisum sativum")
-        cls.create_tree("Eukaryota Fungi Basidiomycota Homobasidiomycatae Agaricales Amanitacae Amanita muscaria")
+        cls.create_tree('Eukaryota Animalia Anthropoda Insecta Diptera Drosophilidae Drosophila melanogaster')
+        cls.create_tree('Eukaryota Animalia Chordata Mammalia Primates Hominidae Homo sapiens')
+        cls.create_tree('Eukaryota Plantae Magnoliophyta Magnoliopsida Fabales Fabaceae Pisum sativum')
+        cls.create_tree('Eukaryota Fungi Basidiomycota Homobasidiomycatae Agaricales Amanitacae Amanita muscaria')
 
     def test_access_fks_without_select_related(self):
         """
         Normally, accessing FKs doesn't fill in related objects
         """
         with self.assertNumQueries(8):
-            fly = Species.objects.get(name="melanogaster")
+            fly = Species.objects.get(name='melanogaster')
             domain = fly.genus.family.order.klass.phylum.kingdom.domain
             self.assertEqual(domain.name, 'Eukaryota')
 
     def test_access_fks_with_select_related(self):
-        """
+        '''
         A select_related() call will fill in those related objects without any
         extra queries
-        """
+        '''
         with self.assertNumQueries(1):
-            person = (
-                Species.objects
-                .select_related('genus__family__order__klass__phylum__kingdom__domain')
-                .get(name="sapiens")
-            )
+            person = Species.objects.select_related('genus__family__order__klass__phylum__kingdom__domain').get(name='sapiens')
             domain = person.genus.family.order.klass.phylum.kingdom.domain
             self.assertEqual(domain.name, 'Eukaryota')
 
     def test_list_without_select_related(self):
-        """
+        '''
         select_related() also of course applies to entire lists, not just
         items. This test verifies the expected behavior without select_related.
-        """
+        '''
         with self.assertNumQueries(9):
             world = Species.objects.all()
             families = [o.genus.family.name for o in world]
-            self.assertEqual(sorted(families), [
-                'Amanitacae',
-                'Drosophilidae',
-                'Fabaceae',
-                'Hominidae',
-            ])
+            self.assertEqual(sorted(families), ['Amanitacae', 'Drosophilidae', 'Fabaceae', 'Hominidae'])
 
     def test_list_with_select_related(self):
-        """
+        '''
         select_related() also of course applies to entire lists, not just
         items. This test verifies the expected behavior with select_related.
-        """
+        '''
         with self.assertNumQueries(1):
             world = Species.objects.all().select_related()
             families = [o.genus.family.name for o in world]
-            self.assertEqual(sorted(families), [
-                'Amanitacae',
-                'Drosophilidae',
-                'Fabaceae',
-                'Hominidae',
-            ])
+            self.assertEqual(sorted(families), ['Amanitacae', 'Drosophilidae', 'Fabaceae', 'Hominidae'])
 
     def test_list_with_depth(self):
-        """
+        '''
         Passing a relationship field lookup specifier to select_related() will
         stop the descent at a particular level. This can be used on lists as
         well.
-        """
+        '''
         with self.assertNumQueries(5):
             world = Species.objects.all().select_related('genus__family')
             orders = [o.genus.family.order.name for o in world]
             self.assertEqual(sorted(orders), ['Agaricales', 'Diptera', 'Fabales', 'Primates'])
 
     def test_select_related_with_extra(self):
-        s = (Species.objects.all()
-             .select_related()
-             .extra(select={'a': 'select_related_species.id + 10'})[0])
+        s = Species.objects.all().select_related().extra(select={'a': 'select_related_species.id + 10'})[0]
         self.assertEqual(s.id + 10, s.a)
 
     def test_certain_fields(self):
@@ -125,16 +118,15 @@ class SelectRelatedTests(TestCase):
         'genus.family' models, leading to the same number of queries as before.
         """
         with self.assertNumQueries(2):
-            world = Species.objects.filter(genus__name='Amanita')\
-                .select_related('genus__family')
+            world = Species.objects.filter(genus__name='Amanita').select_related('genus__family')
             orders = [o.genus.family.order.name for o in world]
             self.assertEqual(orders, ['Agaricales'])
 
     def test_field_traversal(self):
         with self.assertNumQueries(1):
-            s = (Species.objects.all()
-                 .select_related('genus__family__order')
-                 .order_by('id')[0:1].get().genus.family.order.name)
+            s = Species.objects.all().select_related('genus__family__order').order_by('id')[
+                0:1
+            ].get().genus.family.order.name
             self.assertEqual(s, 'Diptera')
 
     def test_none_clears_list(self):
@@ -160,27 +152,27 @@ class SelectRelatedTests(TestCase):
             self.assertEqual(species.genus.species_set.first().name, 'melanogaster')
 
     def test_select_related_after_values(self):
-        """
+        '''
         Running select_related() after calling values() raises a TypeError
-        """
-        message = "Cannot call select_related() after .values() or .values_list()"
+        '''
+        message = 'Cannot call select_related() after .values() or .values_list()'
         with self.assertRaisesMessage(TypeError, message):
             list(Species.objects.values('name').select_related('genus'))
 
     def test_select_related_after_values_list(self):
-        """
+        '''
         Running select_related() after calling values_list() raises a TypeError
-        """
-        message = "Cannot call select_related() after .values() or .values_list()"
+        '''
+        message = 'Cannot call select_related() after .values() or .values_list()'
         with self.assertRaisesMessage(TypeError, message):
             list(Species.objects.values_list('name').select_related('genus'))
 
 
 class SelectRelatedValidationTests(SimpleTestCase):
-    """
+    '''
     select_related() should thrown an error on fields that do not exist and
     non-relational fields.
-    """
+    '''
     non_relational_error = "Non-relational field given in select_related: '%s'. Choices are: %s"
     invalid_error = "Invalid field name(s) given in select_related: '%s'. Choices are: %s"
 

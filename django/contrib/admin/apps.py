@@ -5,11 +5,11 @@ from django.utils.translation import gettext_lazy as _
 
 
 class SimpleAdminConfig(AppConfig):
-    """Simple AppConfig which does not do automatic discovery."""
+    '''Simple AppConfig which does not do automatic discovery.'''
 
     default_site = 'django.contrib.admin.sites.AdminSite'
     name = 'django.contrib.admin'
-    verbose_name = _("Administration")
+    verbose_name = _('Administration')
 
     def ready(self):
         checks.register(check_dependencies, checks.Tags.admin)
@@ -17,7 +17,7 @@ class SimpleAdminConfig(AppConfig):
 
 
 class AdminConfig(SimpleAdminConfig):
-    """The default AppConfig for admin which does autodiscovery."""
+    '''The default AppConfig for admin which does autodiscovery.'''
 
     def ready(self):
         super().ready()

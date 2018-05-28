@@ -10,7 +10,6 @@ from .models import DurationModel, NullDurationModel
 
 
 class TestSaveLoad(TestCase):
-
     def test_simple_roundtrip(self):
         duration = datetime.timedelta(microseconds=8999999999999999)
         DurationModel.objects.create(field=duration)
@@ -30,26 +29,22 @@ class TestSaveLoad(TestCase):
 
 
 class TestQuerying(TestCase):
-
     @classmethod
     def setUpTestData(cls):
         cls.objs = [
             DurationModel.objects.create(field=datetime.timedelta(days=1)),
             DurationModel.objects.create(field=datetime.timedelta(seconds=1)),
-            DurationModel.objects.create(field=datetime.timedelta(seconds=-1)),
+            DurationModel.objects.create(field=datetime.timedelta(seconds=-1))
         ]
 
     def test_exact(self):
-        self.assertSequenceEqual(
-            DurationModel.objects.filter(field=datetime.timedelta(days=1)),
-            [self.objs[0]]
-        )
+        self.assertSequenceEqual(DurationModel.objects.filter(field=datetime.timedelta(days=1)), [self.objs[0]])
 
     def test_gt(self):
-        self.assertSequenceEqual(
-            DurationModel.objects.filter(field__gt=datetime.timedelta(days=0)),
-            [self.objs[0], self.objs[1]]
-        )
+        self.assertSequenceEqual(DurationModel.objects.filter(field__gt=datetime.timedelta(days=0)), [
+            self.objs[0],
+            self.objs[1]
+        ])
 
 
 class TestSerialization(SimpleTestCase):
@@ -66,17 +61,15 @@ class TestSerialization(SimpleTestCase):
 
 
 class TestValidation(SimpleTestCase):
-
     def test_invalid_string(self):
         field = models.DurationField()
         with self.assertRaises(exceptions.ValidationError) as cm:
             field.clean('not a datetime', None)
         self.assertEqual(cm.exception.code, 'invalid')
-        self.assertEqual(
-            cm.exception.message % cm.exception.params,
-            "'not a datetime' value has an invalid format. "
-            "It must be in [DD] [HH:[MM:]]ss[.uuuuuu] format."
-        )
+        self.assertEqual(cm.exception.message \
+        % \
+        cm.exception.params, "'not a datetime' value has an invalid format. "
+            "It must be in [DD] [HH:[MM:]]ss[.uuuuuu] format.")
 
 
 class TestFormField(SimpleTestCase):

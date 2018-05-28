@@ -1,8 +1,6 @@
 from urllib.parse import quote
 
-from django.contrib.contenttypes.fields import (
-    GenericForeignKey, GenericRelation,
-)
+from django.contrib.contenttypes.fields import GenericForeignKey, GenericRelation
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.sites.models import SiteManager
 from django.db import models
@@ -56,10 +54,10 @@ class ProxyModel(ConcreteModel):
 
 
 class FooWithoutUrl(models.Model):
-    """
+    '''
     Fake model not defining ``get_absolute_url`` for
     ContentTypesTests.test_shortcut_view_without_get_absolute_url()
-    """
+    '''
     name = models.CharField(max_length=30, unique=True)
 
     def __str__(self):
@@ -67,22 +65,22 @@ class FooWithoutUrl(models.Model):
 
 
 class FooWithUrl(FooWithoutUrl):
-    """
+    '''
     Fake model defining ``get_absolute_url`` for
     ContentTypesTests.test_shortcut_view().
-    """
+    '''
 
     def get_absolute_url(self):
-        return "/users/%s/" % quote(self.name)
+        return '/users/%s/' % quote(self.name)
 
 
 class FooWithBrokenAbsoluteUrl(FooWithoutUrl):
-    """
+    '''
     Fake model defining a ``get_absolute_url`` method containing an error
-    """
+    '''
 
     def get_absolute_url(self):
-        return "/users/%s/" % self.unknown_field
+        return '/users/%s/' % self.unknown_field
 
 
 class Question(models.Model):
@@ -104,7 +102,7 @@ class Answer(models.Model):
 
 
 class Post(models.Model):
-    """An ordered tag on an item."""
+    '''An ordered tag on an item.'''
     title = models.CharField(max_length=200)
     content_type = models.ForeignKey(ContentType, models.CASCADE, null=True)
     object_id = models.PositiveIntegerField(null=True)

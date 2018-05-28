@@ -6,7 +6,6 @@ from ..utils import TestObj, setup
 
 
 class IfTagTests(SimpleTestCase):
-
     @setup({'if-tag01': '{% if foo %}yes{% else %}no{% endif %}'})
     def test_if_tag01(self):
         output = self.engine.render_to_string('if-tag01', {'foo': True})
@@ -78,7 +77,7 @@ class IfTagTests(SimpleTestCase):
         output = self.engine.render_to_string('if-tag-filter01', {'foo': 'abcde'})
         self.assertEqual(output, 'yes')
 
-    @setup({'if-tag-filter02': '{% if foo|upper == \'ABC\' %}yes{% else %}no{% endif %}'})
+    @setup({'if-tag-filter02': "{% if foo|upper == 'ABC' %}yes{% else %}no{% endif %}"})
     def test_if_tag_filter02(self):
         output = self.engine.render_to_string('if-tag-filter02')
         self.assertEqual(output, 'no')
@@ -104,7 +103,7 @@ class IfTagTests(SimpleTestCase):
         output = self.engine.render_to_string('if-tag-eq04', {'foo': 1, 'bar': 2})
         self.assertEqual(output, 'no')
 
-    @setup({'if-tag-eq05': '{% if foo == \'\' %}yes{% else %}no{% endif %}'})
+    @setup({'if-tag-eq05': "{% if foo == '' %}yes{% else %}no{% endif %}"})
     def test_if_tag_eq05(self):
         output = self.engine.render_to_string('if-tag-eq05')
         self.assertEqual(output, 'no')
@@ -281,9 +280,9 @@ class IfTagTests(SimpleTestCase):
 
     @setup({'if-tag-or09': '{% if foo or bar or baz %}yes{% else %}no{% endif %}'})
     def test_if_tag_or09(self):
-        """
+        '''
         multiple ORs
-        """
+        '''
         output = self.engine.render_to_string('if-tag-or09', {'baz': True})
         self.assertEqual(output, 'yes')
 
@@ -517,24 +516,24 @@ class IfTagTests(SimpleTestCase):
 
     @setup({'if-tag-shortcircuit01': '{% if x.is_true or x.is_bad %}yes{% else %}no{% endif %}'})
     def test_if_tag_shortcircuit01(self):
-        """
+        '''
         If evaluations are shortcircuited where possible
-        """
+        '''
         output = self.engine.render_to_string('if-tag-shortcircuit01', {'x': TestObj()})
         self.assertEqual(output, 'yes')
 
     @setup({'if-tag-shortcircuit02': '{% if x.is_false and x.is_bad %}yes{% else %}no{% endif %}'})
     def test_if_tag_shortcircuit02(self):
-        """
+        '''
         The is_bad() function should not be evaluated. If it is, an
         exception is raised.
-        """
+        '''
         output = self.engine.render_to_string('if-tag-shortcircuit02', {'x': TestObj()})
         self.assertEqual(output, 'no')
 
     @setup({'if-tag-badarg01': '{% if x|default_if_none:y %}yes{% endif %}'})
     def test_if_tag_badarg01(self):
-        """Nonexistent args"""
+        '''Nonexistent args'''
         output = self.engine.render_to_string('if-tag-badarg01')
         self.assertEqual(output, '')
 

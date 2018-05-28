@@ -7,11 +7,11 @@ from django.views.decorators.csrf import csrf_exempt
 
 
 def regular(request):
-    return HttpResponse(b"regular content")
+    return HttpResponse(b'regular content')
 
 
 def streaming(request):
-    return StreamingHttpResponse([b"streaming", b" ", b"content"])
+    return StreamingHttpResponse([b'streaming', b' ', b'content'])
 
 
 def in_transaction(request):

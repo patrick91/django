@@ -9,21 +9,17 @@ from .base import CommandError
 
 
 def popen_wrapper(args, stdout_encoding='utf-8'):
-    """
+    '''
     Friendly wrapper around Popen.
 
     Return stdout output, stderr output, and OS status code.
-    """
+    '''
     try:
         p = Popen(args, shell=False, stdout=PIPE, stderr=PIPE, close_fds=os.name != 'nt')
     except OSError as err:
-        raise CommandError('Error executing %s' % args[0]) from err
+        raise CommandError('Error executing %s' % args[0])
     output, errors = p.communicate()
-    return (
-        output.decode(stdout_encoding),
-        errors.decode(DEFAULT_LOCALE_ENCODING, errors='replace'),
-        p.returncode
-    )
+    return output.decode(stdout_encoding), errors.decode(DEFAULT_LOCALE_ENCODING, errors='replace'), p.returncode
 
 
 def handle_extensions(extensions):
@@ -74,20 +70,20 @@ def find_command(cmd, path=None, pathext=None):
 
 
 def get_random_secret_key():
-    """
+    '''
     Return a 50 character random string usable as a SECRET_KEY setting value.
-    """
+    '''
     chars = 'abcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*(-_=+)'
     return get_random_string(50, chars)
 
 
 def parse_apps_and_model_labels(labels):
-    """
+    '''
     Parse a list of "app_label.ModelName" or "app_label" strings into actual
     objects and return a two-element tuple:
         (set of model classes, set of app_configs).
     Raise a CommandError if some specified models or apps don't exist.
-    """
+    '''
     apps = set()
     models = set()
 

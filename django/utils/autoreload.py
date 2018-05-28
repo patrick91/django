@@ -44,7 +44,7 @@ from django.core.signals import request_finished
 # This import does nothing, but it's necessary to avoid some race conditions
 # in the threading module. See http://code.djangoproject.com/ticket/2330 .
 try:
-    import threading  # NOQA
+    import threading # NOQA
 except ImportError:
     pass
 
@@ -71,7 +71,7 @@ FILE_MODIFIED = 1
 I18N_MODIFIED = 2
 
 _mtimes = {}
-_win = (sys.platform == "win32")
+_win = sys.platform == 'win32'
 
 _exception = None
 _error_files = []
@@ -80,9 +80,9 @@ _cached_filenames = []
 
 
 def gen_filenames(only_new=False):
-    """
+    '''
     Return a list of filenames referenced in sys.modules and translation files.
-    """
+    '''
     # N.B. ``list(...)`` is needed, because this runs in parallel with
     # application code which might be mutating ``sys.modules``, and this will
     # fail with RuntimeError: cannot mutate dictionary while iterating
@@ -97,21 +97,16 @@ def gen_filenames(only_new=False):
             return _cached_filenames + clean_files(_error_files)
 
     new_modules = module_values - _cached_modules
-    new_filenames = clean_files(
-        [filename.__file__ for filename in new_modules
-         if hasattr(filename, '__file__')])
+    new_filenames = clean_files([filename.__file__ for filename in new_modules if hasattr(filename, '__file__')])
 
     if not _cached_filenames and settings.USE_I18N:
         # Add the names of the .mo files that can be generated
         # by compilemessages management command to the list of files watched.
-        basedirs = [os.path.join(os.path.dirname(os.path.dirname(__file__)),
-                                 'conf', 'locale'),
-                    'locale']
+        basedirs = [os.path.join(os.path.dirname(os.path.dirname(__file__)), 'conf', 'locale'), 'locale']
         for app_config in reversed(list(apps.get_app_configs())):
             basedirs.append(os.path.join(app_config.path, 'locale'))
         basedirs.extend(settings.LOCALE_PATHS)
-        basedirs = [os.path.abspath(basedir) for basedir in basedirs
-                    if os.path.isdir(basedir)]
+        basedirs = [os.path.abspath(basedir) for basedir in basedirs if os.path.isdir(basedir)]
         for basedir in basedirs:
             for dirpath, dirnames, locale_filenames in os.walk(basedir):
                 for filename in locale_filenames:
@@ -131,10 +126,10 @@ def clean_files(filelist):
     for filename in filelist:
         if not filename:
             continue
-        if filename.endswith(".pyc") or filename.endswith(".pyo"):
+        if filename.endswith('.pyc') or filename.endswith('.pyo'):
             filename = filename[:-1]
-        if filename.endswith("$py.class"):
-            filename = filename[:-9] + ".py"
+        if filename.endswith('$py.class'):
+            filename = filename[:-9] + '.py'
         if os.path.exists(filename):
             filenames.append(filename)
     return filenames
@@ -150,10 +145,11 @@ def reset_translations():
 
 
 def inotify_code_changed():
-    """
+    '''
     Check for changed code using inotify. After being called
     it blocks until a change event has been fired.
-    """
+    '''
+
     class EventHandler(pyinotify.ProcessEvent):
         modified_code = None
 
@@ -171,29 +167,26 @@ def inotify_code_changed():
             # No need to update watches when request serves files.
             # (sender is supposed to be a django.core.handlers.BaseHandler subclass)
             return
-        mask = (
-            pyinotify.IN_MODIFY |
-            pyinotify.IN_DELETE |
-            pyinotify.IN_ATTRIB |
-            pyinotify.IN_MOVED_FROM |
-            pyinotify.IN_MOVED_TO |
-            pyinotify.IN_CREATE |
-            pyinotify.IN_DELETE_SELF |
-            pyinotify.IN_MOVE_SELF
-        )
+        mask = pyinotify.IN_MODIFY | pyinotify.IN_DELETE | pyinotify.IN_ATTRIB | pyinotify.IN_MOVED_FROM \
+        | \
+        pyinotify.IN_MOVED_TO \
+        | \
+        pyinotify.IN_CREATE \
+        | \
+        pyinotify.IN_DELETE_SELF \
+        | \
+        pyinotify.IN_MOVE_SELF
         for path in gen_filenames(only_new=True):
             wm.add_watch(path, mask)
 
     # New modules may get imported when a request is processed.
     request_finished.connect(update_watch)
-
     # Block until an event happens.
     update_watch()
     notifier.check_events(timeout=None)
     notifier.read_events()
     notifier.process_events()
     notifier.stop()
-
     # If we are here the code must have changed.
     return EventHandler.modified_code
 
@@ -237,7 +230,7 @@ def check_errors(fn):
             if filename not in _error_files:
                 _error_files.append(filename)
 
-            raise
+            raise 
 
     return wrapper
 
@@ -273,7 +266,7 @@ def reloader_thread():
     while RUN_RELOADER:
         change = fn()
         if change == FILE_MODIFIED:
-            sys.exit(3)  # force reload
+            sys.exit(3) # force reload
         elif change == I18N_MODIFIED:
             reset_translations()
         time.sleep(1)
@@ -289,14 +282,14 @@ def restart_with_reloader():
             args += sys.argv[1:]
         else:
             args += sys.argv
-        new_environ = {**os.environ, 'RUN_MAIN': 'true'}
+        new_environ = {: os.environ, 'RUN_MAIN': 'true'}
         exit_code = subprocess.call(args, env=new_environ)
         if exit_code != 3:
             return exit_code
 
 
 def python_reloader(main_func, args, kwargs):
-    if os.environ.get("RUN_MAIN") == "true":
+    if os.environ.get('RUN_MAIN') == 'true':
         _thread.start_new_thread(main_func, args, kwargs)
         try:
             reloader_thread()

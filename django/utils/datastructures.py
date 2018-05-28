@@ -3,10 +3,10 @@ from collections import OrderedDict
 
 
 class OrderedSet:
-    """
+    '''
     A set which keeps the ordering of the inserted items.
     Currently backs onto OrderedDict.
-    """
+    '''
 
     def __init__(self, iterable=None):
         self.dict = OrderedDict.fromkeys(iterable or ())
@@ -62,11 +62,12 @@ class MultiValueDict(dict):
     which returns a list for every key, even though most Web forms submit
     single name-value pairs.
     """
+
     def __init__(self, key_to_list_mapping=()):
         super().__init__(key_to_list_mapping)
 
     def __repr__(self):
-        return "<%s: %s>" % (self.__class__.__name__, super().__repr__())
+        return '<%s: %s>' % (self.__class__.__name__, super().__repr__())
 
     def __getitem__(self, key):
         """
@@ -86,21 +87,17 @@ class MultiValueDict(dict):
         super().__setitem__(key, [value])
 
     def __copy__(self):
-        return self.__class__([
-            (k, v[:])
-            for k, v in self.lists()
-        ])
+        return self.__class__([(k, v[:]) for (k, v) in self.lists()])
 
     def __deepcopy__(self, memo):
         result = self.__class__()
         memo[id(self)] = result
         for key, value in dict.items(self):
-            dict.__setitem__(result, copy.deepcopy(key, memo),
-                             copy.deepcopy(value, memo))
+            dict.__setitem__(result, copy.deepcopy(key, memo), copy.deepcopy(value, memo))
         return result
 
     def __getstate__(self):
-        return {**self.__dict__, '_data': {k: self._getlist(k) for k in self}}
+        return {: self.__dict__, '_data': {k: self._getlist(k) for k in self}}
 
     def __setstate__(self, obj_dict):
         data = obj_dict.pop('_data', {})
@@ -122,12 +119,12 @@ class MultiValueDict(dict):
         return val
 
     def _getlist(self, key, default=None, force_list=False):
-        """
+        '''
         Return a list of values for the key.
 
         Used internally to manipulate values list. If force_list is True,
         return a new copy of values.
-        """
+        '''
         try:
             values = super().__getitem__(key)
         except KeyError:
@@ -136,8 +133,7 @@ class MultiValueDict(dict):
             return default
         else:
             if force_list:
-                values = list(values) if values is not None else None
-            return values
+                values = list(values) if values is not None else Nonereturn values
 
     def getlist(self, key, default=None):
         """
@@ -152,8 +148,8 @@ class MultiValueDict(dict):
     def setdefault(self, key, default=None):
         if key not in self:
             self[key] = default
-            # Do not return default here because __setitem__() may store
-            # another value -- QueryDict.__setitem__() does. Look it up.
+        # Do not return default here because __setitem__() may store
+        # another value -- QueryDict.__setitem__() does. Look it up.
         return self[key]
 
     def setlistdefault(self, key, default_list=None):
@@ -161,39 +157,39 @@ class MultiValueDict(dict):
             if default_list is None:
                 default_list = []
             self.setlist(key, default_list)
-            # Do not return default_list here because setlist() may store
-            # another value -- QueryDict.setlist() does. Look it up.
+        # Do not return default_list here because setlist() may store
+        # another value -- QueryDict.setlist() does. Look it up.
         return self._getlist(key)
 
     def appendlist(self, key, value):
-        """Append an item to the internal list associated with key."""
+        '''Append an item to the internal list associated with key.'''
         self.setlistdefault(key).append(value)
 
     def items(self):
-        """
+        '''
         Yield (key, value) pairs, where value is the last item in the list
         associated with the key.
-        """
+        '''
         for key in self:
-            yield key, self[key]
+            yield (key, self[key])
 
     def lists(self):
-        """Yield (key, list) pairs."""
+        '''Yield (key, list) pairs.'''
         return iter(super().items())
 
     def values(self):
-        """Yield the last value on every key list."""
+        '''Yield the last value on every key list.'''
         for key in self:
             yield self[key]
 
     def copy(self):
-        """Return a shallow copy of this object."""
+        '''Return a shallow copy of this object.'''
         return copy.copy(self)
 
     def update(self, *args, **kwargs):
-        """Extend rather than replace existing key lists."""
+        '''Extend rather than replace existing key lists.'''
         if len(args) > 1:
-            raise TypeError("update expected at most 1 arguments, got %d" % len(args))
+            raise TypeError('update expected at most 1 arguments, got %d' % len(args))
         if args:
             other_dict = args[0]
             if isinstance(other_dict, MultiValueDict):
@@ -204,17 +200,17 @@ class MultiValueDict(dict):
                     for key, value in other_dict.items():
                         self.setlistdefault(key).append(value)
                 except TypeError:
-                    raise ValueError("MultiValueDict.update() takes either a MultiValueDict or dictionary")
+                    raise ValueError('MultiValueDict.update() takes either a MultiValueDict or dictionary')
         for key, value in kwargs.items():
             self.setlistdefault(key).append(value)
 
     def dict(self):
-        """Return current object as a dict with singular values."""
+        '''Return current object as a dict with singular values.'''
         return {key: self[key] for key in self}
 
 
 class ImmutableList(tuple):
-    """
+    '''
     A tuple-like object that raises useful errors when it is asked to mutate.
 
     Example::
@@ -224,7 +220,7 @@ class ImmutableList(tuple):
         Traceback (most recent call last):
             ...
         AttributeError: You cannot mutate this.
-    """
+    '''
 
     def __new__(cls, *args, warning='ImmutableList object is immutable.', **kwargs):
         self = tuple.__new__(cls, *args, **kwargs)
@@ -254,25 +250,26 @@ class ImmutableList(tuple):
 
 
 class DictWrapper(dict):
-    """
+    '''
     Wrap accesses to a dictionary so that certain values (those starting with
     the specified prefix) are passed through a function before being returned.
     The prefix is removed before looking up the real value.
 
     Used by the SQL construction code to ensure that values are correctly
     quoted before being used.
-    """
+    '''
+
     def __init__(self, data, func, prefix):
         super().__init__(data)
         self.func = func
         self.prefix = prefix
 
     def __getitem__(self, key):
-        """
+        '''
         Retrieve the real value after stripping the prefix string (if
         present). If the prefix is present, pass the value through self.func
         before returning, otherwise return the raw value.
-        """
+        '''
         use_func = key.startswith(self.prefix)
         if use_func:
             key = key[len(self.prefix):]

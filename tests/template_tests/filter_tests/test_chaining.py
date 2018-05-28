@@ -5,9 +5,9 @@ from ..utils import setup
 
 
 class ChainingTests(SimpleTestCase):
-    """
+    '''
     Chaining safeness-preserving filters should not alter the safe status.
-    """
+    '''
 
     @setup({'chaining01': '{{ a|capfirst|center:"7" }}.{{ b|capfirst|center:"7" }}'})
     def test_chaining01(self):
@@ -15,8 +15,7 @@ class ChainingTests(SimpleTestCase):
         self.assertEqual(output, ' A &lt; b . A < b ')
 
     @setup({
-        'chaining02':
-        '{% autoescape off %}{{ a|capfirst|center:"7" }}.{{ b|capfirst|center:"7" }}{% endautoescape %}'
+        'chaining02': '{% autoescape off %}{{ a|capfirst|center:"7" }}.{{ b|capfirst|center:"7" }}{% endautoescape %}'
     })
     def test_chaining02(self):
         output = self.engine.render_to_string('chaining02', {'a': 'a < b', 'b': mark_safe('a < b')})
@@ -28,9 +27,7 @@ class ChainingTests(SimpleTestCase):
         output = self.engine.render_to_string('chaining03', {'a': 'a < b', 'b': mark_safe('a < b')})
         self.assertEqual(output, 'A &lt; .A < ')
 
-    @setup({
-        'chaining04': '{% autoescape off %}{{ a|cut:"b"|capfirst }}.{{ b|cut:"b"|capfirst }}{% endautoescape %}'
-    })
+    @setup({'chaining04': '{% autoescape off %}{{ a|cut:"b"|capfirst }}.{{ b|cut:"b"|capfirst }}{% endautoescape %}'})
     def test_chaining04(self):
         output = self.engine.render_to_string('chaining04', {'a': 'a < b', 'b': mark_safe('a < b')})
         self.assertEqual(output, 'A < .A < ')
@@ -80,10 +77,10 @@ class ChainingTests(SimpleTestCase):
 
     @setup({'chaining13': '{{ a|safe|force_escape }}'})
     def test_chaining13(self):
-        output = self.engine.render_to_string('chaining13', {"a": "a < b"})
+        output = self.engine.render_to_string('chaining13', {'a': 'a < b'})
         self.assertEqual(output, 'a &lt; b')
 
     @setup({'chaining14': '{% autoescape off %}{{ a|safe|force_escape }}{% endautoescape %}'})
     def test_chaining14(self):
-        output = self.engine.render_to_string('chaining14', {"a": "a < b"})
+        output = self.engine.render_to_string('chaining14', {'a': 'a < b'})
         self.assertEqual(output, 'a &lt; b')

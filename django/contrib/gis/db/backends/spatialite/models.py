@@ -1,6 +1,6 @@
-"""
+'''
  The GeometryColumns and SpatialRefSys models for the SpatiaLite backend.
-"""
+'''
 from django.contrib.gis.db.backends.base.models import SpatialRefSysMixin
 from django.db import models
 
@@ -23,27 +23,28 @@ class SpatialiteGeometryColumns(models.Model):
 
     @classmethod
     def table_name_col(cls):
-        """
+        '''
         Return the name of the metadata column used to store the feature table
         name.
-        """
+        '''
         return 'f_table_name'
 
     @classmethod
     def geom_col_name(cls):
-        """
+        '''
         Return the name of the metadata column used to store the feature
         geometry column.
-        """
+        '''
         return 'f_geometry_column'
 
     def __str__(self):
-        return "%s.%s - %dD %s field (SRID: %d)" % \
-               (self.f_table_name, self.f_geometry_column,
-                self.coord_dimension, self.type, self.srid)
+        return \
+            '%s.%s - %dD %s field (SRID: %d)' \
+            % \
+            (self.f_table_name, self.f_geometry_column, self.coord_dimension, self.type, self.srid)
 
 
-class SpatialiteSpatialRefSys(models.Model, SpatialRefSysMixin):
+class SpatialiteSpatialRefSys(models.Model,SpatialRefSysMixin):
     """
     The 'spatial_ref_sys' table from SpatiaLite.
     """

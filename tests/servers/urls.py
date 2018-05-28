@@ -9,5 +9,5 @@ urlpatterns = [
     url(r'^environ_view/$', views.environ_view),
     url(r'^subview_calling_view/$', views.subview_calling_view),
     url(r'^subview/$', views.subview),
-    url(r'^check_model_instance_from_subview/$', views.check_model_instance_from_subview),
+    url(r'^check_model_instance_from_subview/$', views.check_model_instance_from_subview)
 ]

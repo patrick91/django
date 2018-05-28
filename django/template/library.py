@@ -14,12 +14,13 @@ class InvalidTemplateLibrary(Exception):
 
 
 class Library:
-    """
+    '''
     A class for registering template tags and filters. Compiled filter and
     template tag functions are stored in the filters and tags attributes.
     The filter, simple_tag, and inclusion_tag methods provide a convenient
     way to register callables as tags.
-    """
+    '''
+
     def __init__(self):
         self.filters = {}
         self.tags = {}
@@ -42,27 +43,25 @@ class Library:
             self.tags[name] = compile_function
             return compile_function
         else:
-            raise ValueError(
-                "Unsupported arguments to Library.tag: (%r, %r)" %
-                (name, compile_function),
-            )
+            raise ValueError('Unsupported arguments to Library.tag: (%r, %r)' % (name, compile_function))
 
     def tag_function(self, func):
-        self.tags[getattr(func, "_decorated_function", func).__name__] = func
+        self.tags[getattr(func, '_decorated_function', func).__name__] = func
         return func
 
     def filter(self, name=None, filter_func=None, **flags):
-        """
+        '''
         Register a callable as a template filter. Example:
 
         @register.filter
         def lower(value):
             return value.lower()
-        """
+        '''
         if name is None and filter_func is None:
             # @register.filter()
             def dec(func):
                 return self.filter_function(func, **flags)
+
             return dec
         elif name is not None and filter_func is None:
             if callable(name):
@@ -83,18 +82,15 @@ class Library:
                     setattr(filter_func, attr, value)
                     # set the flag on the innermost decorated function
                     # for decorators that need it, e.g. stringfilter
-                    if hasattr(filter_func, "_decorated_function"):
+                    if hasattr(filter_func, '_decorated_function'):
                         setattr(filter_func._decorated_function, attr, value)
             filter_func._filter_name = name
             return filter_func
         else:
-            raise ValueError(
-                "Unsupported arguments to Library.filter: (%r, %r)" %
-                (name, filter_func),
-            )
+            raise ValueError('Unsupported arguments to Library.filter: (%r, %r)' % (name, filter_func))
 
     def filter_function(self, func, **flags):
-        name = getattr(func, "_decorated_function", func).__name__
+        name = getattr(func, '_decorated_function', func).__name__
         return self.filter(name, func, **flags)
 
     def simple_tag(self, func=None, takes_context=None, name=None):
@@ -105,9 +101,10 @@ class Library:
         def hello(*args, **kwargs):
             return 'world'
         """
+
         def dec(func):
             params, varargs, varkw, defaults, kwonly, kwonly_defaults, _ = getfullargspec(func)
-            function_name = (name or getattr(func, '_decorated_function', func).__name__)
+            function_name = name or getattr(func, '_decorated_function', func).__name__
 
             @functools.wraps(func)
             def compile_func(parser, token):
@@ -116,11 +113,12 @@ class Library:
                 if len(bits) >= 2 and bits[-2] == 'as':
                     target_var = bits[-1]
                     bits = bits[:-2]
-                args, kwargs = parse_bits(
-                    parser, bits, params, varargs, varkw, defaults,
-                    kwonly, kwonly_defaults, takes_context, function_name,
-                )
+                (
+                    args,
+                    kwargs
+                ) = parse_bits(parser, bits, params, varargs, varkw, defaults, kwonly, kwonly_defaults, takes_context, function_name)
                 return SimpleNode(func, takes_context, args, kwargs, target_var)
+
             self.tag(function_name, compile_func)
             return func
 
@@ -131,7 +129,7 @@ class Library:
             # @register.simple_tag
             return dec(func)
         else:
-            raise ValueError("Invalid arguments provided to simple_tag")
+            raise ValueError('Invalid arguments provided to simple_tag')
 
     def inclusion_tag(self, filename, func=None, takes_context=None, name=None):
         """
@@ -142,31 +140,33 @@ class Library:
             choices = poll.choice_set.all()
             return {'choices': choices}
         """
+
         def dec(func):
             params, varargs, varkw, defaults, kwonly, kwonly_defaults, _ = getfullargspec(func)
-            function_name = (name or getattr(func, '_decorated_function', func).__name__)
+            function_name = name or getattr(func, '_decorated_function', func).__name__
 
             @functools.wraps(func)
             def compile_func(parser, token):
                 bits = token.split_contents()[1:]
-                args, kwargs = parse_bits(
-                    parser, bits, params, varargs, varkw, defaults,
-                    kwonly, kwonly_defaults, takes_context, function_name,
-                )
-                return InclusionNode(
-                    func, takes_context, args, kwargs, filename,
-                )
+                (
+                    args,
+                    kwargs
+                ) = parse_bits(parser, bits, params, varargs, varkw, defaults, kwonly, kwonly_defaults, takes_context, function_name)
+                return InclusionNode(func, takes_context, args, kwargs, filename)
+
             self.tag(function_name, compile_func)
             return func
+
         return dec
 
 
 class TagHelperNode(Node):
-    """
+    '''
     Base class for tag helper nodes such as SimpleNode and InclusionNode.
     Manages the positional and keyword arguments to be passed to the decorated
     function.
-    """
+    '''
+
     def __init__(self, func, takes_context, args, kwargs):
         self.func = func
         self.takes_context = takes_context
@@ -177,12 +177,11 @@ class TagHelperNode(Node):
         resolved_args = [var.resolve(context) for var in self.args]
         if self.takes_context:
             resolved_args = [context] + resolved_args
-        resolved_kwargs = {k: v.resolve(context) for k, v in self.kwargs.items()}
+        resolved_kwargs = {k: v.resolve(context) for (k, v) in self.kwargs.items()}
         return resolved_args, resolved_kwargs
 
 
 class SimpleNode(TagHelperNode):
-
     def __init__(self, func, takes_context, args, kwargs, target_var):
         super().__init__(func, takes_context, args, kwargs)
         self.target_var = target_var
@@ -199,17 +198,16 @@ class SimpleNode(TagHelperNode):
 
 
 class InclusionNode(TagHelperNode):
-
     def __init__(self, func, takes_context, args, kwargs, filename):
         super().__init__(func, takes_context, args, kwargs)
         self.filename = filename
 
     def render(self, context):
-        """
+        '''
         Render the specified template and context. Cache the template object
         in render_context to avoid reparsing and loading when used in a for
         loop.
-        """
+        '''
         resolved_args, resolved_kwargs = self.get_resolved_arguments(context)
         _dict = self.func(*resolved_args, **resolved_kwargs)
 
@@ -234,27 +232,25 @@ class InclusionNode(TagHelperNode):
         return t.render(new_context)
 
 
-def parse_bits(parser, bits, params, varargs, varkw, defaults,
-               kwonly, kwonly_defaults, takes_context, name):
-    """
+def parse_bits(parser, bits, params, varargs, varkw, defaults, kwonly, kwonly_defaults, takes_context, name):
+    '''
     Parse bits for template tag helpers simple_tag and inclusion_tag, in
     particular by detecting syntax errors and by extracting positional and
     keyword arguments.
-    """
+    '''
     if takes_context:
         if params[0] == 'context':
             params = params[1:]
         else:
-            raise TemplateSyntaxError(
-                "'%s' is decorated with takes_context=True so it must "
-                "have a first argument of 'context'" % name)
+            raise
+            TemplateSyntaxError("'%s' is decorated with takes_context=True so it must "
+                "have a first argument of 'context'" \
+            % \
+            name)
     args = []
     kwargs = {}
     unhandled_params = list(params)
-    unhandled_kwargs = [
-        kwarg for kwarg in kwonly
-        if not kwonly_defaults or kwarg not in kwonly_defaults
-    ]
+    unhandled_kwargs = [kwarg for kwarg in kwonly if not kwonly_defaults or kwarg not in kwonly_defaults]
     for bit in bits:
         # First we try to extract a potential kwarg from the bit
         kwarg = token_kwargs([bit], parser)
@@ -263,14 +259,10 @@ def parse_bits(parser, bits, params, varargs, varkw, defaults,
             param, value = kwarg.popitem()
             if param not in params and param not in unhandled_kwargs and varkw is None:
                 # An unexpected keyword argument was supplied
-                raise TemplateSyntaxError(
-                    "'%s' received unexpected keyword argument '%s'" %
-                    (name, param))
+                raise TemplateSyntaxError("'%s' received unexpected keyword argument '%s'" % (name, param))
             elif param in kwargs:
                 # The keyword argument has already been supplied once
-                raise TemplateSyntaxError(
-                    "'%s' received multiple values for keyword argument '%s'" %
-                    (name, param))
+                raise TemplateSyntaxError("'%s' received multiple values for keyword argument '%s'" % (name, param))
             else:
                 # All good, record the keyword argument
                 kwargs[str(param)] = value
@@ -281,48 +273,47 @@ def parse_bits(parser, bits, params, varargs, varkw, defaults,
                 elif param in unhandled_kwargs:
                     # Same for keyword-only arguments
                     unhandled_kwargs.remove(param)
+        elif kwargs:
+            raise
+            TemplateSyntaxError("'%s' received some positional argument(s) after some "
+                    "keyword argument(s)" \
+            % \
+            name)
         else:
-            if kwargs:
-                raise TemplateSyntaxError(
-                    "'%s' received some positional argument(s) after some "
-                    "keyword argument(s)" % name)
-            else:
-                # Record the positional argument
-                args.append(parser.compile_filter(bit))
-                try:
-                    # Consume from the list of expected positional arguments
-                    unhandled_params.pop(0)
-                except IndexError:
-                    if varargs is None:
-                        raise TemplateSyntaxError(
-                            "'%s' received too many positional arguments" %
-                            name)
+            # Record the positional argument
+            args.append(parser.compile_filter(bit))
+            try:
+                # Consume from the list of expected positional arguments
+                unhandled_params.pop(0)
+            except IndexError:
+                if varargs is None:
+                    raise TemplateSyntaxError("'%s' received too many positional arguments" % name)
     if defaults is not None:
         # Consider the last n params handled, where n is the
         # number of defaults.
         unhandled_params = unhandled_params[:-len(defaults)]
     if unhandled_params or unhandled_kwargs:
         # Some positional arguments were not supplied
-        raise TemplateSyntaxError(
-            "'%s' did not receive value(s) for the argument(s): %s" %
-            (name, ", ".join("'%s'" % p for p in unhandled_params + unhandled_kwargs)))
+        raise
+        TemplateSyntaxError("'%s' did not receive value(s) for the argument(s): %s" \
+        % \
+        (name, ', '.join("'%s'" % p for p in unhandled_params + unhandled_kwargs)))
     return args, kwargs
 
 
 def import_library(name):
-    """
+    '''
     Load a Library object from a template tag module.
-    """
+    '''
     try:
         module = import_module(name)
     except ImportError as e:
-        raise InvalidTemplateLibrary(
-            "Invalid template library specified. ImportError raised when "
-            "trying to load '%s': %s" % (name, e)
-        )
+        raise
+        InvalidTemplateLibrary("Invalid template library specified. ImportError raised when "
+            "trying to load '%s': %s" \
+        % \
+        (name, e))
     try:
         return module.register
     except AttributeError:
-        raise InvalidTemplateLibrary(
-            "Module  %s does not have a variable named 'register'" % name,
-        )
+        raise InvalidTemplateLibrary("Module  %s does not have a variable named 'register'" % name)

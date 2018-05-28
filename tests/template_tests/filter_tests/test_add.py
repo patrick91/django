@@ -7,9 +7,9 @@ from ..utils import setup
 
 
 class AddTests(SimpleTestCase):
-    """
+    '''
     Tests for #11687 and #16676
-    """
+    '''
 
     @setup({'add01': '{{ i|add:"5" }}'})
     def test_add01(self):
@@ -48,6 +48,5 @@ class AddTests(SimpleTestCase):
 
 
 class FunctionTests(SimpleTestCase):
-
     def test_add(self):
         self.assertEqual(add('1', '2'), 3)

@@ -1,17 +1,14 @@
-"""
+'''
 This module is for inspecting OGR data sources and generating either
 models for GeoDjango and/or mapping dictionaries for use with the
 `LayerMapping` utility.
-"""
+'''
 from django.contrib.gis.gdal import DataSource
-from django.contrib.gis.gdal.field import (
-    OFTDate, OFTDateTime, OFTInteger, OFTInteger64, OFTReal, OFTString,
-    OFTTime,
-)
+from django.contrib.gis.gdal.field import OFTDate, OFTDateTime, OFTInteger, OFTInteger64, OFTReal, OFTString, OFTTime
 
 
 def mapping(data_source, geom_name='geom', layer_key=0, multi_geom=False):
-    """
+    '''
     Given a DataSource, generate a dictionary that may be used
     for invoking the LayerMapping utility.
 
@@ -23,7 +20,7 @@ def mapping(data_source, geom_name='geom', layer_key=0, multi_geom=False):
        identifier for the layer.
 
      `multi_geom` => Boolean (default: False) - specify as multigeometry.
-    """
+    '''
     if isinstance(data_source, str):
         # Instantiating the DataSource from the string.
         data_source = DataSource(data_source)
@@ -31,10 +28,8 @@ def mapping(data_source, geom_name='geom', layer_key=0, multi_geom=False):
         pass
     else:
         raise TypeError('Data source parameter must be a string or a DataSource object.')
-
     # Creating the dictionary.
     _mapping = {}
-
     # Generating the field name for each field in the layer.
     for field in data_source[layer_key].fields:
         mfield = field.lower()
@@ -119,13 +114,23 @@ def ogrinspect(*args, **kwargs):
     return '\n'.join(s for s in _ogrinspect(*args, **kwargs))
 
 
-def _ogrinspect(data_source, model_name, geom_name='geom', layer_key=0, srid=None,
-                multi_geom=False, name_field=None, imports=True,
-                decimal=False, blank=False, null=False):
-    """
+def _ogrinspect(
+    data_source,
+    model_name,
+    geom_name='geom',
+    layer_key=0,
+    srid=None,
+    multi_geom=False,
+    name_field=None,
+    imports=True,
+    decimal=False,
+    blank=False,
+    null=False
+):
+    '''
     Helper routine for `ogrinspect` that generates GeoDjango models corresponding
     to the given data source.  See the `ogrinspect` docstring for more details.
-    """
+    '''
     # Getting the DataSource
     if isinstance(data_source, str):
         data_source = DataSource(data_source)
@@ -133,7 +138,6 @@ def _ogrinspect(data_source, model_name, geom_name='geom', layer_key=0, srid=Non
         pass
     else:
         raise TypeError('Data source parameter must be a string or a DataSource object.')
-
     # Getting the layer corresponding to the layer key and getting
     # a string listing of all OGR fields in the Layer.
     layer = data_source[layer_key]
@@ -148,6 +152,7 @@ def _ogrinspect(data_source, model_name, geom_name='geom', layer_key=0, srid=Non
             return [s.lower() for s in ogr_fields]
         else:
             return []
+
     null_fields = process_kwarg(null)
     blank_fields = process_kwarg(blank)
     decimal_fields = process_kwarg(decimal)
@@ -173,13 +178,16 @@ def _ogrinspect(data_source, model_name, geom_name='geom', layer_key=0, srid=Non
 
     yield 'class %s(models.Model):' % model_name
 
-    for field_name, width, precision, field_type in zip(
-            ogr_fields, layer.field_widths, layer.field_precisions, layer.field_types):
+    for (
+        field_name,
+        width,
+        precision,
+        field_type
+    ) in zip(ogr_fields, layer.field_widths, layer.field_precisions, layer.field_types):
         # The model field name.
         mfield = field_name.lower()
         if mfield[-1:] == '_':
             mfield += 'field'
-
         # Getting the keyword args string.
         kwargs_str = get_kwargs_str(field_name)
 
@@ -188,9 +196,10 @@ def _ogrinspect(data_source, model_name, geom_name='geom', layer_key=0, srid=Non
             # may also be mapped to `DecimalField` if specified in the
             # `decimal` keyword.
             if field_name.lower() in decimal_fields:
-                yield '    %s = models.DecimalField(max_digits=%d, decimal_places=%d%s)' % (
-                    mfield, width, precision, kwargs_str
-                )
+                yield \
+                    '    %s = models.DecimalField(max_digits=%d, decimal_places=%d%s)' \
+                    % \
+                    (mfield, width, precision, kwargs_str)
             else:
                 yield '    %s = models.FloatField(%s)' % (mfield, kwargs_str[2:])
         elif field_type is OFTInteger:
@@ -207,13 +216,11 @@ def _ogrinspect(data_source, model_name, geom_name='geom', layer_key=0, srid=Non
             yield '    %s = models.TimeField(%s)' % (mfield, kwargs_str[2:])
         else:
             raise TypeError('Unknown field type %s in %s' % (field_type, mfield))
-
     # TODO: Autodetection of multigeometry types (see #7218).
     gtype = layer.geom_type
     if multi_geom:
         gtype.to_multi()
     geom_field = gtype.django
-
     # Setting up the SRID keyword string.
     if srid is None:
         if layer.srs is None:

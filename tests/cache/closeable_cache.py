@@ -8,5 +8,5 @@ class CloseHookMixin:
         self.closed = True
 
 
-class CacheClass(CloseHookMixin, LocMemCache):
+class CacheClass(CloseHookMixin,LocMemCache):
     pass

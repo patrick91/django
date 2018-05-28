@@ -7,7 +7,7 @@ from ..utils import setup
 class LoadTagTests(SimpleTestCase):
     libraries = {
         'subpackage.echo': 'template_tests.templatetags.subpackage.echo',
-        'testtags': 'template_tests.templatetags.testtags',
+        'testtags': 'template_tests.templatetags.testtags'
     }
 
     @setup({'load01': '{% load testtags subpackage.echo %}{% echo test %} {% echo2 "test" %}'})
@@ -26,14 +26,20 @@ class LoadTagTests(SimpleTestCase):
         output = self.engine.render_to_string('load03')
         self.assertEqual(output, 'this that theother')
 
-    @setup({'load04': '{% load echo other_echo from testtags %}'
-                      '{% echo this that theother %} {% other_echo and another thing %}'})
+    @setup({
+        'load04':
+            '{% load echo other_echo from testtags %}'
+                      '{% echo this that theother %} {% other_echo and another thing %}'
+    })
     def test_load04(self):
         output = self.engine.render_to_string('load04')
         self.assertEqual(output, 'this that theother and another thing')
 
-    @setup({'load05': '{% load echo upper from testtags %}'
-                      '{% echo this that theother %} {{ statement|upper }}'})
+    @setup({
+        'load05':
+            '{% load echo upper from testtags %}'
+                      '{% echo this that theother %} {{ statement|upper }}'
+    })
     def test_load05(self):
         output = self.engine.render_to_string('load05', {'statement': 'not shouting'})
         self.assertEqual(output, 'this that theother NOT SHOUTING')

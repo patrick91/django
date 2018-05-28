@@ -1,8 +1,6 @@
 import uuid
 
-from django.contrib.contenttypes.fields import (
-    GenericForeignKey, GenericRelation,
-)
+from django.contrib.contenttypes.fields import GenericForeignKey, GenericRelation
 from django.contrib.contenttypes.models import ContentType
 from django.db import models
 from django.db.models.query import ModelIterable, QuerySet
@@ -12,8 +10,7 @@ from django.utils.functional import cached_property
 class Author(models.Model):
     name = models.CharField(max_length=50, unique=True)
     first_book = models.ForeignKey('Book', models.CASCADE, related_name='first_time_authors')
-    favorite_authors = models.ManyToManyField(
-        'self', through='FavoriteAuthors', symmetrical=False, related_name='favors_me')
+    favorite_authors = models.ManyToManyField('self', through='FavoriteAuthors', symmetrical=False, related_name='favors_me')
 
     def __str__(self):
         return self.name
@@ -60,17 +57,11 @@ class Book(models.Model):
 class BookWithYear(Book):
     book = models.OneToOneField(Book, models.CASCADE, parent_link=True)
     published_year = models.IntegerField()
-    aged_authors = models.ManyToManyField(
-        AuthorWithAge, related_name='books_with_year')
+    aged_authors = models.ManyToManyField(AuthorWithAge, related_name='books_with_year')
 
 
 class Bio(models.Model):
-    author = models.OneToOneField(
-        Author,
-        models.CASCADE,
-        primary_key=True,
-        to_field='name',
-    )
+    author = models.OneToOneField(Author, models.CASCADE, primary_key=True, to_field='name')
     books = models.ManyToManyField(Book, blank=True)
 
 
@@ -123,7 +114,7 @@ class Teacher(models.Model):
     objects_custom = TeacherQuerySet.as_manager()
 
     def __str__(self):
-        return "%s (%s)" % (self.name, ", ".join(q.name for q in self.qualifications.all()))
+        return '%s (%s)' % (self.name, ', '.join(q.name for q in self.qualifications.all()))
 
     class Meta:
         ordering = ['id']
@@ -141,27 +132,13 @@ class Department(models.Model):
 
 class TaggedItem(models.Model):
     tag = models.SlugField()
-    content_type = models.ForeignKey(
-        ContentType,
-        models.CASCADE,
-        related_name="taggeditem_set2",
-    )
+    content_type = models.ForeignKey(ContentType, models.CASCADE, related_name='taggeditem_set2')
     object_id = models.PositiveIntegerField()
     content_object = GenericForeignKey('content_type', 'object_id')
-    created_by_ct = models.ForeignKey(
-        ContentType,
-        models.SET_NULL,
-        null=True,
-        related_name='taggeditem_set3',
-    )
+    created_by_ct = models.ForeignKey(ContentType, models.SET_NULL, null=True, related_name='taggeditem_set3')
     created_by_fkey = models.PositiveIntegerField(null=True)
-    created_by = GenericForeignKey('created_by_ct', 'created_by_fkey',)
-    favorite_ct = models.ForeignKey(
-        ContentType,
-        models.SET_NULL,
-        null=True,
-        related_name='taggeditem_set4',
-    )
+    created_by = GenericForeignKey('created_by_ct', 'created_by_fkey')
+    favorite_ct = models.ForeignKey(ContentType, models.SET_NULL, null=True, related_name='taggeditem_set4')
     favorite_fkey = models.CharField(max_length=64, null=True)
     favorite = GenericForeignKey('favorite_ct', 'favorite_fkey')
 
@@ -175,10 +152,7 @@ class TaggedItem(models.Model):
 class Bookmark(models.Model):
     url = models.URLField()
     tags = GenericRelation(TaggedItem, related_query_name='bookmarks')
-    favorite_tags = GenericRelation(TaggedItem,
-                                    content_type_field='favorite_ct',
-                                    object_id_field='favorite_fkey',
-                                    related_query_name='favorite_bookmarks')
+    favorite_tags = GenericRelation(TaggedItem, content_type_field='favorite_ct', object_id_field='favorite_fkey', related_query_name='favorite_bookmarks')
 
     class Meta:
         ordering = ['id']
@@ -186,11 +160,10 @@ class Bookmark(models.Model):
 
 class Comment(models.Model):
     comment = models.TextField()
-
     # Content-object field
     content_type = models.ForeignKey(ContentType, models.CASCADE)
     object_pk = models.TextField()
-    content_object = GenericForeignKey(ct_field="content_type", fk_field="object_pk")
+    content_object = GenericForeignKey(ct_field='content_type', fk_field='object_pk')
 
     class Meta:
         ordering = ['id']
@@ -257,7 +230,7 @@ class LessonEntry(models.Model):
     name2 = models.CharField(max_length=200)
 
     def __str__(self):
-        return "%s %s" % (self.name1, self.name2)
+        return '%s %s' % (self.name1, self.name2)
 
 
 class WordEntry(models.Model):
@@ -265,7 +238,7 @@ class WordEntry(models.Model):
     name = models.CharField(max_length=200)
 
     def __str__(self):
-        return "%s (%s)" % (self.name, self.id)
+        return '%s (%s)' % (self.name, self.id)
 
 
 # Ticket #21410: Regression when related_name="+"

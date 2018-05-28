@@ -4,8 +4,7 @@ from django.test import SimpleTestCase
 from . import FormFieldAssertionsMixin
 
 
-class URLFieldTest(FormFieldAssertionsMixin, SimpleTestCase):
-
+class URLFieldTest(FormFieldAssertionsMixin,SimpleTestCase):
     def test_urlfield_1(self):
         f = URLField()
         self.assertWidgetRendersTo(f, '<input type="url" name="f" id="id_f" required>')
@@ -45,14 +44,8 @@ class URLFieldTest(FormFieldAssertionsMixin, SimpleTestCase):
         with self.assertRaisesMessage(ValidationError, "'Enter a valid URL.'"):
             f.clean('http://inv-.-alid.com')
         self.assertEqual('http://valid-----hyphens.com', f.clean('http://valid-----hyphens.com'))
-        self.assertEqual(
-            'http://some.idn.xyz\xe4\xf6\xfc\xdfabc.domain.com:123/blah',
-            f.clean('http://some.idn.xyzäöüßabc.domain.com:123/blah')
-        )
-        self.assertEqual(
-            'http://www.example.com/s/http://code.djangoproject.com/ticket/13804',
-            f.clean('www.example.com/s/http://code.djangoproject.com/ticket/13804')
-        )
+        self.assertEqual('http://some.idn.xyz\xe4\xf6\xfc\xdfabc.domain.com:123/blah', f.clean('http://some.idn.xyzäöüßabc.domain.com:123/blah'))
+        self.assertEqual('http://www.example.com/s/http://code.djangoproject.com/ticket/13804', f.clean('www.example.com/s/http://code.djangoproject.com/ticket/13804'))
         with self.assertRaisesMessage(ValidationError, "'Enter a valid URL.'"):
             f.clean('[a')
         with self.assertRaisesMessage(ValidationError, "'Enter a valid URL.'"):
@@ -62,12 +55,11 @@ class URLFieldTest(FormFieldAssertionsMixin, SimpleTestCase):
         f = URLField()
         # hangs "forever" if catastrophic backtracking in ticket:#11198 not fixed
         with self.assertRaisesMessage(ValidationError, "'Enter a valid URL.'"):
-            f.clean('http://%s' % ("X" * 200,))
-
+            f.clean('http://%s' % ('X' * 200,))
         # a second test, to make sure the problem is really addressed, even on
         # domains that don't fail the domain label length check in the regex
         with self.assertRaisesMessage(ValidationError, "'Enter a valid URL.'"):
-            f.clean('http://%s' % ("X" * 60,))
+            f.clean('http://%s' % ('X' * 60,))
 
     def test_urlfield_2(self):
         f = URLField(required=False)
@@ -105,10 +97,7 @@ class URLFieldTest(FormFieldAssertionsMixin, SimpleTestCase):
         f = URLField()
         self.assertEqual('http://example.com', f.clean('http://example.com'))
         self.assertEqual('http://example.com/test', f.clean('http://example.com/test'))
-        self.assertEqual(
-            'http://example.com?some_param=some_value',
-            f.clean('http://example.com?some_param=some_value')
-        )
+        self.assertEqual('http://example.com?some_param=some_value', f.clean('http://example.com?some_param=some_value'))
 
     def test_urlfield_9(self):
         f = URLField()
@@ -124,7 +113,7 @@ class URLFieldTest(FormFieldAssertionsMixin, SimpleTestCase):
             'http://例え.テスト/',
             'http://مثال.آزمایشی/',
             'http://실례.테스트/',
-            'http://العربية.idn.icann.org/',
+            'http://العربية.idn.icann.org/'
         )
         for url in urls:
             with self.subTest(url=url):
@@ -132,12 +121,9 @@ class URLFieldTest(FormFieldAssertionsMixin, SimpleTestCase):
                 self.assertEqual(url, f.clean(url))
 
     def test_urlfield_10(self):
-        """URLField correctly validates IPv6 (#18779)."""
+        '''URLField correctly validates IPv6 (#18779).'''
         f = URLField()
-        urls = (
-            'http://[12:34::3a53]/',
-            'http://[a34:9238::]:8080/',
-        )
+        urls = ('http://[12:34::3a53]/', 'http://[a34:9238::]:8080/')
         for url in urls:
             with self.subTest(url=url):
                 self.assertEqual(url, f.clean(url))

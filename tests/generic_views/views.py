@@ -50,10 +50,7 @@ class PageDetail(generic.DetailView):
 
 class DictList(generic.ListView):
     """A ListView that doesn't use a model."""
-    queryset = [
-        {'first': 'John', 'last': 'Lennon'},
-        {'first': 'Yoko', 'last': 'Ono'}
-    ]
+    queryset = [{'first': 'John', 'last': 'Lennon'}, {'first': 'Yoko', 'last': 'Ono'}]
     template_name = 'generic_views/list.html'
 
 
@@ -103,7 +100,7 @@ class NaiveAuthorCreate(generic.CreateView):
     fields = '__all__'
 
 
-class TemplateResponseWithoutTemplate(generic.detail.SingleObjectTemplateResponseMixin, generic.View):
+class TemplateResponseWithoutTemplate(generic.detail.SingleObjectTemplateResponseMixin,generic.View):
     # we don't define the usual template_name here
 
     def __init__(self):
@@ -142,7 +139,7 @@ class NaiveAuthorUpdate(generic.UpdateView):
 
 
 class AuthorUpdate(generic.UpdateView):
-    get_form_called_count = 0  # Used to ensure get_form() is called once.
+    get_form_called_count = 0 # Used to ensure get_form() is called once.
     model = Author
     success_url = '/list/authors/'
     fields = '__all__'
@@ -191,31 +188,31 @@ class BookConfig:
     date_field = 'pubdate'
 
 
-class BookArchive(BookConfig, generic.ArchiveIndexView):
+class BookArchive(BookConfig,generic.ArchiveIndexView):
     pass
 
 
-class BookYearArchive(BookConfig, generic.YearArchiveView):
+class BookYearArchive(BookConfig,generic.YearArchiveView):
     pass
 
 
-class BookMonthArchive(BookConfig, generic.MonthArchiveView):
+class BookMonthArchive(BookConfig,generic.MonthArchiveView):
     pass
 
 
-class BookWeekArchive(BookConfig, generic.WeekArchiveView):
+class BookWeekArchive(BookConfig,generic.WeekArchiveView):
     pass
 
 
-class BookDayArchive(BookConfig, generic.DayArchiveView):
+class BookDayArchive(BookConfig,generic.DayArchiveView):
     pass
 
 
-class BookTodayArchive(BookConfig, generic.TodayArchiveView):
+class BookTodayArchive(BookConfig,generic.TodayArchiveView):
     pass
 
 
-class BookDetail(BookConfig, generic.DateDetailView):
+class BookDetail(BookConfig,generic.DateDetailView):
     pass
 
 
@@ -231,22 +228,19 @@ class BookDetailGetObjectCustomQueryset(BookDetail):
         return super().get_object(queryset=Book.objects.filter(pk=self.kwargs['pk']))
 
 
-class CustomMultipleObjectMixinView(generic.list.MultipleObjectMixin, generic.View):
-    queryset = [
-        {'name': 'John'},
-        {'name': 'Yoko'},
-    ]
+class CustomMultipleObjectMixinView(generic.list.MultipleObjectMixin,generic.View):
+    queryset = [{'name': 'John'}, {'name': 'Yoko'}]
 
     def get(self, request):
         self.object_list = self.get_queryset()
 
 
-class CustomContextView(generic.detail.SingleObjectMixin, generic.View):
+class CustomContextView(generic.detail.SingleObjectMixin,generic.View):
     model = Book
     object = Book(name='dummy')
 
     def get_object(self):
-        return Book(name="dummy")
+        return Book(name='dummy')
 
     def get_context_data(self, **kwargs):
         context = {'custom_key': 'custom_value'}
@@ -254,59 +248,59 @@ class CustomContextView(generic.detail.SingleObjectMixin, generic.View):
         return super().get_context_data(**context)
 
     def get_context_object_name(self, obj):
-        return "test_name"
+        return 'test_name'
 
 
-class CustomSingleObjectView(generic.detail.SingleObjectMixin, generic.View):
+class CustomSingleObjectView(generic.detail.SingleObjectMixin,generic.View):
     model = Book
-    object = Book(name="dummy")
+    object = Book(name='dummy')
 
 
 class BookSigningConfig:
     model = BookSigning
     date_field = 'event_date'
+
     # use the same templates as for books
 
     def get_template_names(self):
         return ['generic_views/book%s.html' % self.template_name_suffix]
 
 
-class BookSigningArchive(BookSigningConfig, generic.ArchiveIndexView):
+class BookSigningArchive(BookSigningConfig,generic.ArchiveIndexView):
     pass
 
 
-class BookSigningYearArchive(BookSigningConfig, generic.YearArchiveView):
+class BookSigningYearArchive(BookSigningConfig,generic.YearArchiveView):
     pass
 
 
-class BookSigningMonthArchive(BookSigningConfig, generic.MonthArchiveView):
+class BookSigningMonthArchive(BookSigningConfig,generic.MonthArchiveView):
     pass
 
 
-class BookSigningWeekArchive(BookSigningConfig, generic.WeekArchiveView):
+class BookSigningWeekArchive(BookSigningConfig,generic.WeekArchiveView):
     pass
 
 
-class BookSigningDayArchive(BookSigningConfig, generic.DayArchiveView):
+class BookSigningDayArchive(BookSigningConfig,generic.DayArchiveView):
     pass
 
 
-class BookSigningTodayArchive(BookSigningConfig, generic.TodayArchiveView):
+class BookSigningTodayArchive(BookSigningConfig,generic.TodayArchiveView):
     pass
 
 
-class BookSigningDetail(BookSigningConfig, generic.DateDetailView):
+class BookSigningDetail(BookSigningConfig,generic.DateDetailView):
     context_object_name = 'book'
 
 
 class NonModel:
-    id = "non_model_1"
+    id = 'non_model_1'
 
     _meta = None
 
 
 class NonModelDetail(generic.DetailView):
-
     template_name = 'generic_views/detail.html'
     model = NonModel
 

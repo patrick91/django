@@ -8,21 +8,20 @@ from django.urls import reverse
 
 from .models import Article
 
-site = admin.AdminSite(name="test_adminsite")
+site = admin.AdminSite(name='test_adminsite')
 site.register(User)
 site.register(Article)
 
-urlpatterns = [
-    url(r'^test_admin/admin/', site.urls),
-]
+urlpatterns = [url(r'^test_admin/admin/', site.urls)]
 
 
 @override_settings(ROOT_URLCONF='admin_views.test_adminsite')
 class SiteEachContextTest(TestCase):
-    """
+    '''
     Check each_context contains the documented variables and that available_apps context
     variable structure is the expected one.
-    """
+    '''
+
     @classmethod
     def setUpTestData(cls):
         cls.u1 = User.objects.create_superuser(username='super', password='secret', email='super@example.com')
@@ -50,13 +49,11 @@ class SiteEachContextTest(TestCase):
         apps = ctx['available_apps']
         # we have registered two models from two different apps
         self.assertEqual(len(apps), 2)
-
         # admin_views.Article
         admin_views = apps[0]
         self.assertEqual(admin_views['app_label'], 'admin_views')
         self.assertEqual(len(admin_views['models']), 1)
         self.assertEqual(admin_views['models'][0]['object_name'], 'Article')
-
         # auth.User
         auth = apps[1]
         self.assertEqual(auth['app_label'], 'auth')
@@ -83,6 +80,7 @@ class SiteActionsTests(SimpleTestCase):
     def test_add_action(self):
         def test_action():
             pass
+
         self.site.add_action(test_action)
         self.assertEqual(self.site.get_action('test_action'), test_action)
 

@@ -16,24 +16,18 @@ def get_connection():
 @override_settings(DEBUG=True)
 @unittest.skipUnless(connection.vendor == 'mysql', 'MySQL tests')
 class IsolationLevelTests(TestCase):
-
     read_committed = 'read committed'
     repeatable_read = 'repeatable read'
-    isolation_values = {
-        level: level.upper()
-        for level in (read_committed, repeatable_read)
-    }
+    isolation_values = {level: level.upper() for level in (read_committed, repeatable_read)}
 
     @classmethod
     def setUpClass(cls):
         super().setUpClass()
         configured_isolation_level = connection.isolation_level or cls.isolation_values[cls.repeatable_read]
         cls.configured_isolation_level = configured_isolation_level.upper()
-        cls.other_isolation_level = (
+        cls.other_isolation_level = cls.read_committed if configured_isolation_level != cls.isolation_values[
             cls.read_committed
-            if configured_isolation_level != cls.isolation_values[cls.read_committed]
-            else cls.repeatable_read
-        )
+        ] else cls.repeatable_read
 
     @staticmethod
     def get_isolation_level(connection):
@@ -56,36 +50,29 @@ class IsolationLevelTests(TestCase):
     def test_setting_isolation_level(self):
         with get_connection() as new_connection:
             new_connection.settings_dict['OPTIONS']['isolation_level'] = self.other_isolation_level
-            self.assertEqual(
-                self.get_isolation_level(new_connection),
-                self.isolation_values[self.other_isolation_level]
-            )
+            self.assertEqual(self.get_isolation_level(new_connection), self.isolation_values[
+                self.other_isolation_level
+            ])
 
     def test_uppercase_isolation_level(self):
         # Upper case values are also accepted in 'isolation_level'.
         with get_connection() as new_connection:
             new_connection.settings_dict['OPTIONS']['isolation_level'] = self.other_isolation_level.upper()
-            self.assertEqual(
-                self.get_isolation_level(new_connection),
-                self.isolation_values[self.other_isolation_level]
-            )
+            self.assertEqual(self.get_isolation_level(new_connection), self.isolation_values[
+                self.other_isolation_level
+            ])
 
     def test_default_isolation_level(self):
         # If not specified in settings, the default is read committed.
         with get_connection() as new_connection:
             new_connection.settings_dict['OPTIONS'].pop('isolation_level', None)
-            self.assertEqual(
-                self.get_isolation_level(new_connection),
-                self.isolation_values[self.read_committed]
-            )
+            self.assertEqual(self.get_isolation_level(new_connection), self.isolation_values[self.read_committed])
 
     def test_isolation_level_validation(self):
         new_connection = connection.copy()
         new_connection.settings_dict['OPTIONS']['isolation_level'] = 'xxx'
-        msg = (
-            "Invalid transaction isolation level 'xxx' specified.\n"
+        msg = "Invalid transaction isolation level 'xxx' specified.\n"
             "Use one of 'read committed', 'read uncommitted', "
             "'repeatable read', 'serializable', or None."
-        )
         with self.assertRaisesMessage(ImproperlyConfigured, msg):
             new_connection.cursor()

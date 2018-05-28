@@ -2,8 +2,18 @@ from django.db.models import FloatField, IntegerField
 from django.db.models.aggregates import Aggregate
 
 __all__ = [
-    'CovarPop', 'Corr', 'RegrAvgX', 'RegrAvgY', 'RegrCount', 'RegrIntercept',
-    'RegrR2', 'RegrSlope', 'RegrSXX', 'RegrSXY', 'RegrSYY', 'StatAggregate',
+    'CovarPop',
+    'Corr',
+    'RegrAvgX',
+    'RegrAvgY',
+    'RegrCount',
+    'RegrIntercept',
+    'RegrR2',
+    'RegrSlope',
+    'RegrSXX',
+    'RegrSXY',
+    'RegrSYY',
+    'StatAggregate'
 ]
 
 

@@ -5,7 +5,7 @@ class Poll(models.Model):
     question = models.CharField(max_length=200)
 
     def __str__(self):
-        return "Q: %s " % self.question
+        return 'Q: %s ' % self.question
 
 
 class Choice(models.Model):
@@ -13,10 +13,10 @@ class Choice(models.Model):
     choice = models.CharField(max_length=200)
 
     def __str__(self):
-        return "Choice: %s in poll %s" % (self.choice, self.poll)
+        return 'Choice: %s in poll %s' % (self.choice, self.poll)
+
 
 # A set of models with an inner one pointing to two outer ones.
-
 
 class OuterA(models.Model):
     pass

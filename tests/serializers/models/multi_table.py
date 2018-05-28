@@ -12,7 +12,7 @@ class Parent(models.Model):
     objects = ParentManager()
 
     def natural_key(self):
-        return (self.parent_data,)
+        return self.parent_data,
 
 
 class Child(Parent):

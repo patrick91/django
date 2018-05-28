@@ -9,7 +9,6 @@ from .models import Artist, Author, Book, Page
 
 @override_settings(ROOT_URLCONF='generic_views.urls')
 class ListViewTests(TestCase):
-
     @classmethod
     def setUpTestData(cls):
         cls.artist1 = Artist.objects.create(name='Rene Magritte')
@@ -17,12 +16,8 @@ class ListViewTests(TestCase):
         cls.author2 = Author.objects.create(name='Scott Rosenberg', slug='scott-rosenberg')
         cls.book1 = Book.objects.create(name='2066', slug='2066', pages=800, pubdate=datetime.date(2008, 10, 1))
         cls.book1.authors.add(cls.author1)
-        cls.book2 = Book.objects.create(
-            name='Dreaming in Code', slug='dreaming-in-code', pages=300, pubdate=datetime.date(2006, 5, 1)
-        )
-        cls.page1 = Page.objects.create(
-            content='I was once bitten by a moose.', template='generic_views/page_template.html'
-        )
+        cls.book2 = Book.objects.create(name='Dreaming in Code', slug='dreaming-in-code', pages=300, pubdate=datetime.date(2006, 5, 1))
+        cls.page1 = Page.objects.create(content='I was once bitten by a moose.', template='generic_views/page_template.html')
 
     def test_items(self):
         res = self.client.get('/list/dict/')
@@ -134,16 +129,13 @@ class ListViewTests(TestCase):
         res = self.client.get('/list/authors/paginated-orphaned/')
         self.assertEqual(res.status_code, 200)
         self.assertEqual(res.context['page_obj'].number, 1)
-        res = self.client.get(
-            '/list/authors/paginated-orphaned/', {'page': 'last'})
+        res = self.client.get('/list/authors/paginated-orphaned/', {'page': 'last'})
         self.assertEqual(res.status_code, 200)
         self.assertEqual(res.context['page_obj'].number, 3)
-        res = self.client.get(
-            '/list/authors/paginated-orphaned/', {'page': '3'})
+        res = self.client.get('/list/authors/paginated-orphaned/', {'page': '3'})
         self.assertEqual(res.status_code, 200)
         self.assertEqual(res.context['page_obj'].number, 3)
-        res = self.client.get(
-            '/list/authors/paginated-orphaned/', {'page': '4'})
+        res = self.client.get('/list/authors/paginated-orphaned/', {'page': '4'})
         self.assertEqual(res.status_code, 404)
 
     def test_paginated_non_queryset(self):
@@ -200,18 +192,14 @@ class ListViewTests(TestCase):
         self.assertTemplateUsed(res, 'generic_views/author_list.html')
 
     def test_missing_items(self):
-        msg = (
-            'AuthorList is missing a QuerySet. Define AuthorList.model, '
+        msg = 'AuthorList is missing a QuerySet. Define AuthorList.model, '
             'AuthorList.queryset, or override AuthorList.get_queryset().'
-        )
         with self.assertRaisesMessage(ImproperlyConfigured, msg):
             self.client.get('/list/authors/invalid/')
 
     def test_invalid_get_queryset(self):
-        msg = (
-            "AuthorListGetQuerysetReturnsNone requires either a 'template_name' "
+        msg = "AuthorListGetQuerysetReturnsNone requires either a 'template_name' "
             "attribute or a get_queryset() method that returns a QuerySet."
-        )
         with self.assertRaisesMessage(ImproperlyConfigured, msg):
             self.client.get('/list/authors/get_queryset/')
 
@@ -226,7 +214,7 @@ class ListViewTests(TestCase):
             self.client.get('/list/authors/notempty/paginated/')
 
     def test_explicitly_ordered_list_view(self):
-        Book.objects.create(name="Zebras for Dummies", pages=800, pubdate=datetime.date(2006, 9, 1))
+        Book.objects.create(name='Zebras for Dummies', pages=800, pubdate=datetime.date(2006, 9, 1))
         res = self.client.get('/list/books/sorted/')
         self.assertEqual(res.status_code, 200)
         self.assertEqual(res.context['object_list'][0].name, '2066')
@@ -246,7 +234,7 @@ class ListViewTests(TestCase):
         self._make_authors(1)
         res = self.client.get('/list/authors/paginated/2/')
         self.assertEqual(res.status_code, 404)
-        self.assertEqual(res.context.get('reason'), "Invalid page (2): That page contains no results")
+        self.assertEqual(res.context.get('reason'), 'Invalid page (2): That page contains no results')
 
     def _make_authors(self, n):
         Author.objects.all().delete()

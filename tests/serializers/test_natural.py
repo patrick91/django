@@ -14,50 +14,36 @@ def natural_key_serializer_test(self, format):
     # Create all the objects defined in the test data
     with connection.constraint_checks_disabled():
         objects = [
-            NaturalKeyAnchor.objects.create(id=1100, data="Natural Key Anghor"),
+            NaturalKeyAnchor.objects.create(id=1100, data='Natural Key Anghor'),
             FKDataNaturalKey.objects.create(id=1101, data_id=1100),
-            FKDataNaturalKey.objects.create(id=1102, data_id=None),
+            FKDataNaturalKey.objects.create(id=1102, data_id=None)
         ]
     # Serialize the test database
     serialized_data = serializers.serialize(format, objects, indent=2, use_natural_foreign_keys=True)
 
     for obj in serializers.deserialize(format, serialized_data):
         obj.save()
-
     # Assert that the deserialized data is the same
     # as the original source
     for obj in objects:
         instance = obj.__class__.objects.get(id=obj.pk)
-        self.assertEqual(
-            obj.data, instance.data,
-            "Objects with PK=%d not equal; expected '%s' (%s), got '%s' (%s)" % (
-                obj.pk, obj.data, type(obj.data), instance, type(instance.data),
-            )
-        )
+        self.assertEqual(obj.data, instance.data, "Objects with PK=%d not equal; expected '%s' (%s), got '%s' (%s)" \
+        % \
+        (obj.pk, obj.data, type(obj.data), instance, type(instance.data)))
 
 
 def natural_key_test(self, format):
-    book1 = {
-        'data': '978-1590597255',
-        'title': 'The Definitive Guide to Django: Web Development Done Right',
-    }
+    book1 = {'data': '978-1590597255', 'title': 'The Definitive Guide to Django: Web Development Done Right'}
     book2 = {'data': '978-1590599969', 'title': 'Practical Django Projects'}
-
     # Create the books.
     adrian = NaturalKeyAnchor.objects.create(**book1)
     james = NaturalKeyAnchor.objects.create(**book2)
-
     # Serialize the books.
-    string_data = serializers.serialize(
-        format, NaturalKeyAnchor.objects.all(), indent=2,
-        use_natural_foreign_keys=True, use_natural_primary_keys=True,
-    )
-
+    string_data = serializers.serialize(format, NaturalKeyAnchor.objects.all(), indent=2, use_natural_foreign_keys=True, use_natural_primary_keys=True)
     # Delete one book (to prove that the natural key generation will only
     # restore the primary keys of books found in the database via the
     # get_natural_key manager method).
     james.delete()
-
     # Deserialize and test.
     books = list(serializers.deserialize(format, string_data))
     self.assertEqual(len(books), 2)
@@ -76,11 +62,12 @@ def natural_pk_mti_test(self, format):
     """
     child_1 = Child.objects.create(parent_data='1', child_data='1')
     child_2 = Child.objects.create(parent_data='2', child_data='2')
-    string_data = serializers.serialize(
-        format,
-        [child_1.parent_ptr, child_2.parent_ptr, child_2, child_1],
-        use_natural_foreign_keys=True, use_natural_primary_keys=True,
-    )
+    string_data = serializers.serialize(format, [
+        child_1.parent_ptr,
+        child_2.parent_ptr,
+        child_2,
+        child_1
+    ], use_natural_foreign_keys=True, use_natural_primary_keys=True)
     child_1.delete()
     child_2.delete()
     for obj in serializers.deserialize(format, string_data):

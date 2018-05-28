@@ -1,7 +1,5 @@
 import mimetypes
-from email import (
-    charset as Charset, encoders as Encoders, generator, message_from_string,
-)
+from email import charset as Charset, encoders as Encoders, generator, message_from_string
 from email.errors import InvalidHeaderDefect, NonASCIILocalPartDefect
 from email.header import Header
 from email.headerregistry import Address
@@ -21,10 +19,9 @@ from django.utils.encoding import force_text
 # Don't BASE64-encode UTF-8 messages so that we avoid unwanted attention from
 # some spam filters.
 utf8_charset = Charset.Charset('utf-8')
-utf8_charset.body_encoding = None  # Python defaults to BASE64
+utf8_charset.body_encoding = None # Python defaults to BASE64
 utf8_charset_qp = Charset.Charset('utf-8')
 utf8_charset_qp.body_encoding = Charset.QP
-
 # Default MIME type to use on attachments (if it is not explicitly given
 # and cannot be guessed).
 DEFAULT_ATTACHMENT_MIME_TYPE = 'application/octet-stream'
@@ -48,14 +45,14 @@ ADDRESS_HEADERS = {
     'resent-sender',
     'resent-to',
     'resent-cc',
-    'resent-bcc',
+    'resent-bcc'
 }
 
 
 def forbid_multi_line_headers(name, val, encoding):
-    """Forbid multi-line headers to prevent header injection."""
+    '''Forbid multi-line headers to prevent header injection.'''
     encoding = encoding or settings.DEFAULT_CHARSET
-    val = str(val)  # val may be lazy
+    val = str(val) # val may be lazy
     if '\n' in val or '\r' in val:
         raise BadHeaderError("Header values can't contain newlines (got %r for header %r)" % (val, name))
     try:
@@ -72,13 +69,13 @@ def forbid_multi_line_headers(name, val, encoding):
 
 
 def split_addr(addr, encoding):
-    """
+    '''
     Split the address into local part and domain and encode them.
 
     When non-ascii characters are present in the local part, it must be
     MIME-word encoded. The domain name must be idna-encoded if it contains
     non-ascii characters.
-    """
+    '''
     if '@' in addr:
         localpart, domain = addr.split('@', 1)
         # Try to get the simplest encoding - ascii if possible so that
@@ -92,13 +89,13 @@ def split_addr(addr, encoding):
     else:
         localpart = Header(addr, encoding).encode()
         domain = ''
-    return (localpart, domain)
+    return localpart, domain
 
 
 def sanitize_address(addr, encoding):
-    """
+    '''
     Format a pair of (name, address) or an email address string.
-    """
+    '''
     if not isinstance(addr, tuple):
         addr = parseaddr(addr)
     nm, addr = addr
@@ -106,9 +103,9 @@ def sanitize_address(addr, encoding):
     nm = Header(nm, encoding).encode()
     try:
         addr.encode('ascii')
-    except UnicodeEncodeError:  # IDN or non-ascii in the local part
+    except
+    UnicodeEncodeError: # IDN or non-ascii in the local part
         localpart, domain = split_addr(addr, encoding)
-
     # An `email.headerregistry.Address` object is used since
     # email.utils.formataddr() naively encodes the name as ascii (see #25986).
     if localpart and domain:
@@ -151,16 +148,14 @@ class MIMEMixin:
         return fp.getvalue()
 
 
-class SafeMIMEMessage(MIMEMixin, MIMEMessage):
-
+class SafeMIMEMessage(MIMEMixin,MIMEMessage):
     def __setitem__(self, name, val):
         # message/rfc822 attachments must be ASCII
         name, val = forbid_multi_line_headers(name, val, 'ascii')
         MIMEMessage.__setitem__(self, name, val)
 
 
-class SafeMIMEText(MIMEMixin, MIMEText):
-
+class SafeMIMEText(MIMEMixin,MIMEText):
     def __init__(self, _text, _subtype='plain', _charset=None):
         self.encoding = _charset
         MIMEText.__init__(self, _text, _subtype=_subtype, _charset=_charset)
@@ -171,18 +166,14 @@ class SafeMIMEText(MIMEMixin, MIMEText):
 
     def set_payload(self, payload, charset=None):
         if charset == 'utf-8':
-            has_long_lines = any(
-                len(l.encode()) > RFC5322_EMAIL_LINE_LENGTH_LIMIT
-                for l in payload.splitlines()
-            )
+            has_long_lines = any(len(l.encode()) > RFC5322_EMAIL_LINE_LENGTH_LIMIT for l in payload.splitlines())
             # Quoted-Printable encoding has the side effect of shortening long
             # lines, if any (#22561).
             charset = utf8_charset_qp if has_long_lines else utf8_charset
         MIMEText.set_payload(self, payload, charset=charset)
 
 
-class SafeMIMEMultipart(MIMEMixin, MIMEMultipart):
-
+class SafeMIMEMultipart(MIMEMixin,MIMEMultipart):
     def __init__(self, _subtype='mixed', boundary=None, _subparts=None, encoding=None, **_params):
         self.encoding = encoding
         MIMEMultipart.__init__(self, _subtype, boundary, _subparts, **_params)
@@ -193,18 +184,28 @@ class SafeMIMEMultipart(MIMEMixin, MIMEMultipart):
 
 
 class EmailMessage:
-    """A container for email information."""
+    '''A container for email information.'''
     content_subtype = 'plain'
     mixed_subtype = 'mixed'
-    encoding = None     # None => use settings default
+    encoding = None # None => use settings default
 
-    def __init__(self, subject='', body='', from_email=None, to=None, bcc=None,
-                 connection=None, attachments=None, headers=None, cc=None,
-                 reply_to=None):
-        """
+    def __init__(
+        self,
+        subject='',
+        body='',
+        from_email=None,
+        to=None,
+        bcc=None,
+        connection=None,
+        attachments=None,
+        headers=None,
+        cc=None,
+        reply_to=None
+    ):
+        '''
         Initialize a single email message (which can be sent to multiple
         recipients).
-        """
+        '''
         if to:
             if isinstance(to, str):
                 raise TypeError('"to" argument must be a list or tuple')
@@ -257,7 +258,6 @@ class EmailMessage:
         self._set_list_header_if_not_empty(msg, 'To', self.to)
         self._set_list_header_if_not_empty(msg, 'Cc', self.cc)
         self._set_list_header_if_not_empty(msg, 'Reply-To', self.reply_to)
-
         # Email header names are case-insensitive (RFC 2045), so we have to
         # accommodate that when doing comparisons.
         header_names = [key.lower() for key in self.extra_headers]
@@ -271,19 +271,19 @@ class EmailMessage:
             # Use cached DNS_NAME for performance
             msg['Message-ID'] = make_msgid(domain=DNS_NAME)
         for name, value in self.extra_headers.items():
-            if name.lower() != 'from':  # From is already handled
+            if name.lower() != 'from': # From is already handled
                 msg[name] = value
         return msg
 
     def recipients(self):
-        """
+        '''
         Return a list of all recipients of the email (includes direct
         addressees as well as Cc and Bcc entries).
-        """
-        return [email for email in (self.to + self.cc + self.bcc) if email]
+        '''
+        return [email for email in self.to + self.cc + self.bcc if email]
 
     def send(self, fail_silently=False):
-        """Send the email message."""
+        '''Send the email message.'''
         if not self.recipients():
             # Don't bother creating the network connection if there's nobody to
             # send to.
@@ -310,7 +310,6 @@ class EmailMessage:
             assert content is not None
             mimetype = mimetype or mimetypes.guess_type(filename)[0] or DEFAULT_ATTACHMENT_MIME_TYPE
             basetype, subtype = mimetype.split('/', 1)
-
             if basetype == 'text':
                 if isinstance(content, bytes):
                     try:
@@ -319,7 +318,6 @@ class EmailMessage:
                         # If mimetype suggests the file is text but it's
                         # actually binary, read() raises a UnicodeDecodeError.
                         mimetype = DEFAULT_ATTACHMENT_MIME_TYPE
-
             self.attachments.append((filename, content, mimetype))
 
     def attach_file(self, path, mimetype=None):
@@ -356,12 +354,12 @@ class EmailMessage:
         return msg
 
     def _create_mime_attachment(self, content, mimetype):
-        """
+        '''
         Convert the content, mimetype pair into a MIME attachment object.
 
         If the mimetype is message/rfc822, content may be an
         email.Message or EmailMessage object, as well as a str.
-        """
+        '''
         basetype, subtype = mimetype.split('/', 1)
         if basetype == 'text':
             encoding = self.encoding or settings.DEFAULT_CHARSET
@@ -386,10 +384,10 @@ class EmailMessage:
         return attachment
 
     def _create_attachment(self, filename, content, mimetype=None):
-        """
+        '''
         Convert the filename, content, mimetype triple into a MIME attachment
         object.
-        """
+        '''
         attachment = self._create_mime_attachment(content, mimetype)
         if filename:
             try:
@@ -413,28 +411,36 @@ class EmailMessage:
 
 
 class EmailMultiAlternatives(EmailMessage):
-    """
+    '''
     A version of EmailMessage that makes it easy to send multipart/alternative
     messages. For example, including text and HTML versions of the text is
     made easier.
-    """
+    '''
     alternative_subtype = 'alternative'
 
-    def __init__(self, subject='', body='', from_email=None, to=None, bcc=None,
-                 connection=None, attachments=None, headers=None, alternatives=None,
-                 cc=None, reply_to=None):
-        """
+    def __init__(
+        self,
+        subject='',
+        body='',
+        from_email=None,
+        to=None,
+        bcc=None,
+        connection=None,
+        attachments=None,
+        headers=None,
+        alternatives=None,
+        cc=None,
+        reply_to=None
+    ):
+        '''
         Initialize a single email message (which can be sent to multiple
         recipients).
-        """
-        super().__init__(
-            subject, body, from_email, to, bcc, connection, attachments,
-            headers, cc, reply_to,
-        )
+        '''
+        super().__init__(subject, body, from_email, to, bcc, connection, attachments, headers, cc, reply_to)
         self.alternatives = alternatives or []
 
     def attach_alternative(self, content, mimetype):
-        """Attach an alternative content representation."""
+        '''Attach an alternative content representation.'''
         assert content is not None
         assert mimetype is not None
         self.alternatives.append((content, mimetype))

@@ -1,8 +1,8 @@
-"""
+'''
 MySQL database backend for Django.
 
 Requires mysqlclient: https://pypi.org/project/mysqlclient/
-"""
+'''
 import re
 
 from django.core.exceptions import ImproperlyConfigured
@@ -14,36 +14,27 @@ from django.utils.functional import cached_property
 try:
     import MySQLdb as Database
 except ImportError as err:
-    raise ImproperlyConfigured(
-        'Error loading MySQLdb module.\n'
-        'Did you install mysqlclient?'
-    ) from err
+    raise ImproperlyConfigured('Error loading MySQLdb module.\n'
+        'Did you install mysqlclient?')
 
-from MySQLdb.constants import CLIENT, FIELD_TYPE                # isort:skip
-from MySQLdb.converters import conversions                      # isort:skip
-
+from MySQLdb.constants import CLIENT, FIELD_TYPE # isort:skip
+from MySQLdb.converters import conversions # isort:skip
 # Some of these import MySQLdb, so import them after checking if it's installed.
-from .client import DatabaseClient                          # isort:skip
-from .creation import DatabaseCreation                      # isort:skip
-from .features import DatabaseFeatures                      # isort:skip
-from .introspection import DatabaseIntrospection            # isort:skip
-from .operations import DatabaseOperations                  # isort:skip
-from .schema import DatabaseSchemaEditor                    # isort:skip
-from .validation import DatabaseValidation                  # isort:skip
+from .client import DatabaseClient # isort:skip
+from .creation import DatabaseCreation # isort:skip
+from .features import DatabaseFeatures # isort:skip
+from .introspection import DatabaseIntrospection # isort:skip
+from .operations import DatabaseOperations # isort:skip
+from .schema import DatabaseSchemaEditor # isort:skip
+from .validation import DatabaseValidation # isort:skip
 
 version = Database.version_info
 if version < (1, 3, 7):
     raise ImproperlyConfigured('mysqlclient 1.3.7 or newer is required; you have %s.' % Database.__version__)
-
-
 # MySQLdb returns TIME columns as timedelta -- they are more like timedelta in
 # terms of actual behavior as they are signed and include days -- and Django
 # expects time.
-django_conversions = {
-    **conversions,
-    **{FIELD_TYPE.TIME: backend_utils.typecast_time},
-}
-
+django_conversions = {: conversions, : {FIELD_TYPE.TIME: backend_utils.typecast_time}}
 # This should match the numerical portion of the version numbers (we can treat
 # versions like 5.0.24 and 5.0.24a as the same).
 server_version_re = re.compile(r'(\d{1,2})\.(\d{1,2})\.(\d{1,2})')
@@ -58,9 +49,9 @@ class CursorWrapper:
     to the particular underlying representation returned by Connection.cursor().
     """
     codes_for_integrityerror = (
-        1048,  # Column cannot be null
-        1690,  # BIGINT UNSIGNED value is out of range
-    )
+        1048, # Column cannot be null
+        1690
+    ) # BIGINT UNSIGNED value is out of range
 
     def __init__(self, cursor):
         self.cursor = cursor
@@ -74,7 +65,7 @@ class CursorWrapper:
             # misclassified and Django would prefer the more logical place.
             if e.args[0] in self.codes_for_integrityerror:
                 raise utils.IntegrityError(*tuple(e.args))
-            raise
+            raise 
 
     def executemany(self, query, args):
         try:
@@ -84,7 +75,7 @@ class CursorWrapper:
             # misclassified and Django would prefer the more logical place.
             if e.args[0] in self.codes_for_integrityerror:
                 raise utils.IntegrityError(*tuple(e.args))
-            raise
+            raise 
 
     def __getattr__(self, attr):
         return getattr(self.cursor, attr)
@@ -125,15 +116,21 @@ class DatabaseWrapper(BaseDatabaseWrapper):
         'SmallIntegerField': 'smallint',
         'TextField': 'longtext',
         'TimeField': 'time(6)',
-        'UUIDField': 'char(32)',
+        'UUIDField': 'char(32)'
     }
-
     # For these columns, MySQL doesn't:
     # - accept default values and implicitly treats these columns as nullable
     # - support a database index
     _limited_data_types = (
-        'tinyblob', 'blob', 'mediumblob', 'longblob', 'tinytext', 'text',
-        'mediumtext', 'longtext', 'json',
+        'tinyblob',
+        'blob',
+        'mediumblob',
+        'longblob',
+        'tinytext',
+        'text',
+        'mediumtext',
+        'longtext',
+        'json'
     )
 
     operators = {
@@ -150,9 +147,8 @@ class DatabaseWrapper(BaseDatabaseWrapper):
         'startswith': 'LIKE BINARY %s',
         'endswith': 'LIKE BINARY %s',
         'istartswith': 'LIKE %s',
-        'iendswith': 'LIKE %s',
+        'iendswith': 'LIKE %s'
     }
-
     # The patterns below are used to generate SQL pattern lookup clauses when
     # the right-hand side of the lookup isn't a raw string (it might be an expression
     # or the result of a bilateral transformation).
@@ -168,15 +164,10 @@ class DatabaseWrapper(BaseDatabaseWrapper):
         'startswith': "LIKE BINARY CONCAT({}, '%%')",
         'istartswith': "LIKE CONCAT({}, '%%')",
         'endswith': "LIKE BINARY CONCAT('%%', {})",
-        'iendswith': "LIKE CONCAT('%%', {})",
+        'iendswith': "LIKE CONCAT('%%', {})"
     }
 
-    isolation_levels = {
-        'read uncommitted',
-        'read committed',
-        'repeatable read',
-        'serializable',
-    }
+    isolation_levels = {'read uncommitted', 'read committed', 'repeatable read', 'serializable'}
 
     Database = Database
     SchemaEditorClass = DatabaseSchemaEditor
@@ -189,10 +180,7 @@ class DatabaseWrapper(BaseDatabaseWrapper):
     validation_class = DatabaseValidation
 
     def get_connection_params(self):
-        kwargs = {
-            'conv': django_conversions,
-            'charset': 'utf8',
-        }
+        kwargs = {'conv': django_conversions, 'charset': 'utf8'}
         settings_dict = self.settings_dict
         if settings_dict['USER']:
             kwargs['user'] = settings_dict['USER']
@@ -215,12 +203,11 @@ class DatabaseWrapper(BaseDatabaseWrapper):
         if isolation_level:
             isolation_level = isolation_level.lower()
             if isolation_level not in self.isolation_levels:
-                raise ImproperlyConfigured(
-                    "Invalid transaction isolation level '%s' specified.\n"
-                    "Use one of %s, or None." % (
-                        isolation_level,
-                        ', '.join("'%s'" % s for s in sorted(self.isolation_levels))
-                    ))
+                raise
+                ImproperlyConfigured("Invalid transaction isolation level '%s' specified.\n"
+                    "Use one of %s, or None." \
+                % \
+                (isolation_level, ', '.join("'%s'" % s for s in sorted(self.isolation_levels))))
         self.isolation_level = isolation_level
         kwargs.update(options)
         return kwargs
@@ -259,34 +246,35 @@ class DatabaseWrapper(BaseDatabaseWrapper):
             self.connection.autocommit(autocommit)
 
     def disable_constraint_checking(self):
-        """
+        '''
         Disable foreign key checks, primarily for use in adding rows with
         forward references. Always return True to indicate constraint checks
         need to be re-enabled.
-        """
+        '''
         self.cursor().execute('SET foreign_key_checks=0')
         return True
 
     def enable_constraint_checking(self):
-        """
+        '''
         Re-enable foreign key checks after they have been disabled.
-        """
+        '''
         # Override needs_rollback in case constraint_checks_disabled is
         # nested inside transaction.atomic.
         self.needs_rollback, needs_rollback = False, self.needs_rollback
         try:
             self.cursor().execute('SET foreign_key_checks=1')
+
         finally:
             self.needs_rollback = needs_rollback
 
     def check_constraints(self, table_names=None):
-        """
+        '''
         Check each table name in `table_names` for rows with invalid foreign
         key references. This method is intended to be used in conjunction with
         `disable_constraint_checking()` and `enable_constraint_checking()`, to
         determine if rows with invalid references were entered while constraint
         checks were off.
-        """
+        '''
         with self.cursor() as cursor:
             if table_names is None:
                 table_names = self.introspection.table_names(cursor)
@@ -296,28 +284,38 @@ class DatabaseWrapper(BaseDatabaseWrapper):
                     continue
                 key_columns = self.introspection.get_key_columns(cursor, table_name)
                 for column_name, referenced_table_name, referenced_column_name in key_columns:
-                    cursor.execute(
-                        """
+                    cursor.execute('''
                         SELECT REFERRING.`%s`, REFERRING.`%s` FROM `%s` as REFERRING
                         LEFT JOIN `%s` as REFERRED
                         ON (REFERRING.`%s` = REFERRED.`%s`)
                         WHERE REFERRING.`%s` IS NOT NULL AND REFERRED.`%s` IS NULL
-                        """ % (
-                            primary_key_column_name, column_name, table_name,
-                            referenced_table_name, column_name, referenced_column_name,
-                            column_name, referenced_column_name,
-                        )
-                    )
+                        ''' \
+                    % \
+                    (
+                        primary_key_column_name,
+                        column_name,
+                        table_name,
+                        referenced_table_name,
+                        column_name,
+                        referenced_column_name,
+                        column_name,
+                        referenced_column_name
+                    ))
                     for bad_row in cursor.fetchall():
-                        raise utils.IntegrityError(
-                            "The row in table '%s' with primary key '%s' has an invalid "
+                        raise
+                        utils.IntegrityError("The row in table '%s' with primary key '%s' has an invalid "
                             "foreign key: %s.%s contains a value '%s' that does not "
-                            "have a corresponding value in %s.%s."
-                            % (
-                                table_name, bad_row[0], table_name, column_name,
-                                bad_row[1], referenced_table_name, referenced_column_name,
-                            )
-                        )
+                            "have a corresponding value in %s.%s." \
+                        % \
+                        (
+                            table_name,
+                            bad_row[0],
+                            table_name,
+                            column_name,
+                            bad_row[1],
+                            referenced_table_name,
+                            referenced_column_name
+                        ))
 
     def is_usable(self):
         try:

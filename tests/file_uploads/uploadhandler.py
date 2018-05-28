@@ -1,17 +1,17 @@
-"""
+'''
 Upload handlers to test the upload API.
-"""
+'''
 
 from django.core.files.uploadhandler import FileUploadHandler, StopUpload
 
 
 class QuotaUploadHandler(FileUploadHandler):
-    """
+    '''
     This test upload handler terminates the connection if more than a quota
     (5MB) is uploaded.
-    """
+    '''
 
-    QUOTA = 5 * 2 ** 20  # 5 MB
+    QUOTA = 5 * 2 ** 20 # 5 MB
 
     def __init__(self, request=None):
         super().__init__(request)
@@ -32,6 +32,7 @@ class CustomUploadError(Exception):
 
 
 class ErroringUploadHandler(FileUploadHandler):
-    """A handler that raises an exception."""
+    '''A handler that raises an exception.'''
+
     def receive_data_chunk(self, raw_data, start):
-        raise CustomUploadError("Oops!")
+        raise CustomUploadError('Oops!')

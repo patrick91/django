@@ -14,22 +14,15 @@ class Command(BaseCommand):
     requires_migrations_checks = True
     requires_system_checks = False
 
-    def _get_pass(self, prompt="Password: "):
+    def _get_pass(self, prompt='Password: '):
         p = getpass.getpass(prompt=prompt)
         if not p:
-            raise CommandError("aborted")
+            raise CommandError('aborted')
         return p
 
     def add_arguments(self, parser):
-        parser.add_argument(
-            'username', nargs='?',
-            help='Username to change password for; by default, it\'s the current username.',
-        )
-        parser.add_argument(
-            '--database', action='store', dest='database',
-            default=DEFAULT_DB_ALIAS,
-            help='Specifies the database to use. Default is "default".',
-        )
+        parser.add_argument('username', nargs='?', help="Username to change password for; by default, it's the current username.")
+        parser.add_argument('--database', action='store', dest='database', default=DEFAULT_DB_ALIAS, help='Specifies the database to use. Default is "default".')
 
     def handle(self, *args, **options):
         if options['username']:
@@ -38,9 +31,7 @@ class Command(BaseCommand):
             username = getpass.getuser()
 
         try:
-            u = UserModel._default_manager.using(options['database']).get(**{
-                UserModel.USERNAME_FIELD: username
-            })
+            u = UserModel._default_manager.using(options['database']).get(**{UserModel.USERNAME_FIELD: username})
         except UserModel.DoesNotExist:
             raise CommandError("user '%s' does not exist" % username)
 
@@ -48,13 +39,13 @@ class Command(BaseCommand):
 
         MAX_TRIES = 3
         count = 0
-        p1, p2 = 1, 2  # To make them initially mismatch.
+        p1, p2 = 1, 2 # To make them initially mismatch.
         password_validated = False
-        while (p1 != p2 or not password_validated) and count < MAX_TRIES:
+        while p1 != p2 or not password_validated and count < MAX_TRIES:
             p1 = self._get_pass()
-            p2 = self._get_pass("Password (again): ")
+            p2 = self._get_pass('Password (again): ')
             if p1 != p2:
-                self.stdout.write("Passwords do not match. Please try again.\n")
+                self.stdout.write('Passwords do not match. Please try again.\n')
                 count += 1
                 # Don't validate passwords that don't match.
                 continue

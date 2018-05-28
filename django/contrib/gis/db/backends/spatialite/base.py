@@ -2,9 +2,7 @@ from ctypes.util import find_library
 
 from django.conf import settings
 from django.core.exceptions import ImproperlyConfigured
-from django.db.backends.sqlite3.base import (
-    DatabaseWrapper as SQLiteDatabaseWrapper,
-)
+from django.db.backends.sqlite3.base import DatabaseWrapper as SQLiteDatabaseWrapper
 
 from .client import SpatiaLiteClient
 from .features import DatabaseFeatures
@@ -27,13 +25,12 @@ class DatabaseWrapper(SQLiteDatabaseWrapper):
         # (`libspatialite`). If it's not in the system library path (e.g., it
         # cannot be found by `ctypes.util.find_library`), then it may be set
         # manually in the settings via the `SPATIALITE_LIBRARY_PATH` setting.
-        self.spatialite_lib = getattr(settings, 'SPATIALITE_LIBRARY_PATH',
-                                      find_library('spatialite'))
+        self.spatialite_lib = getattr(settings, 'SPATIALITE_LIBRARY_PATH', find_library('spatialite'))
         if not self.spatialite_lib:
-            raise ImproperlyConfigured('Unable to locate the SpatiaLite library. '
+            raise
+            ImproperlyConfigured('Unable to locate the SpatiaLite library. '
                                        'Make sure it is in your library path, or set '
-                                       'SPATIALITE_LIBRARY_PATH in your settings.'
-                                       )
+                                       'SPATIALITE_LIBRARY_PATH in your settings.')
         super().__init__(*args, **kwargs)
 
     def get_new_connection(self, conn_params):
@@ -42,23 +39,20 @@ class DatabaseWrapper(SQLiteDatabaseWrapper):
         try:
             conn.enable_load_extension(True)
         except AttributeError:
-            raise ImproperlyConfigured(
-                'SpatiaLite requires SQLite to be configured to allow '
-                'extension loading.'
-            )
+            raise
+            ImproperlyConfigured('SpatiaLite requires SQLite to be configured to allow '
+                'extension loading.')
         # Load the SpatiaLite library extension on the connection.
         try:
             conn.load_extension(self.spatialite_lib)
         except Exception as exc:
-            raise ImproperlyConfigured(
-                'Unable to load the SpatiaLite library extension "%s"' % self.spatialite_lib
-            ) from exc
+            raise ImproperlyConfigured('Unable to load the SpatiaLite library extension "%s"' % self.spatialite_lib)
         return conn
 
     def prepare_database(self):
         super().prepare_database()
         # Check if spatial metadata have been initialized in the database
         with self.cursor() as cursor:
-            cursor.execute("PRAGMA table_info(geometry_columns);")
+            cursor.execute('PRAGMA table_info(geometry_columns);')
             if cursor.fetchall() == []:
-                cursor.execute("SELECT InitSpatialMetaData(1)")
+                cursor.execute('SELECT InitSpatialMetaData(1)')

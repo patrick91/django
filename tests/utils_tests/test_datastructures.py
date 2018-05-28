@@ -1,18 +1,14 @@
-"""
+'''
 Tests for stuff in django.utils.datastructures.
-"""
+'''
 
 import copy
 
 from django.test import SimpleTestCase
-from django.utils.datastructures import (
-    DictWrapper, ImmutableList, MultiValueDict, MultiValueDictKeyError,
-    OrderedSet,
-)
+from django.utils.datastructures import DictWrapper, ImmutableList, MultiValueDict, MultiValueDictKeyError, OrderedSet
 
 
 class OrderedSetTests(SimpleTestCase):
-
     def test_bool(self):
         # Refs #23664
         s = OrderedSet()
@@ -30,23 +26,15 @@ class OrderedSetTests(SimpleTestCase):
 
 
 class MultiValueDictTests(SimpleTestCase):
-
     def test_multivaluedict(self):
-        d = MultiValueDict({'name': ['Adrian', 'Simon'],
-                            'position': ['Developer']})
+        d = MultiValueDict({'name': ['Adrian', 'Simon'], 'position': ['Developer']})
 
         self.assertEqual(d['name'], 'Simon')
         self.assertEqual(d.get('name'), 'Simon')
         self.assertEqual(d.getlist('name'), ['Adrian', 'Simon'])
-        self.assertEqual(
-            sorted(d.items()),
-            [('name', 'Simon'), ('position', 'Developer')]
-        )
+        self.assertEqual(sorted(d.items()), [('name', 'Simon'), ('position', 'Developer')])
 
-        self.assertEqual(
-            sorted(d.lists()),
-            [('name', ['Adrian', 'Simon']), ('position', ['Developer'])]
-        )
+        self.assertEqual(sorted(d.lists()), [('name', ['Adrian', 'Simon']), ('position', ['Developer'])])
 
         with self.assertRaises(MultiValueDictKeyError) as cm:
             d.__getitem__('lastname')
@@ -55,8 +43,7 @@ class MultiValueDictTests(SimpleTestCase):
         self.assertIsNone(d.get('lastname'))
         self.assertEqual(d.get('lastname', 'nonexistent'), 'nonexistent')
         self.assertEqual(d.getlist('lastname'), [])
-        self.assertEqual(d.getlist('doesnotexist', ['Adrian', 'Simon']),
-                         ['Adrian', 'Simon'])
+        self.assertEqual(d.getlist('doesnotexist', ['Adrian', 'Simon']), ['Adrian', 'Simon'])
 
         d.setlist('lastname', ['Holovaty', 'Willison'])
         self.assertEqual(d.getlist('lastname'), ['Holovaty', 'Willison'])
@@ -70,29 +57,22 @@ class MultiValueDictTests(SimpleTestCase):
 
     def test_copy(self):
         for copy_func in [copy.copy, lambda d: d.copy()]:
-            d1 = MultiValueDict({
-                "developers": ["Carl", "Fred"]
-            })
-            self.assertEqual(d1["developers"], "Fred")
+            d1 = MultiValueDict({'developers': ['Carl', 'Fred']})
+            self.assertEqual(d1['developers'], 'Fred')
             d2 = copy_func(d1)
-            d2.update({"developers": "Groucho"})
-            self.assertEqual(d2["developers"], "Groucho")
-            self.assertEqual(d1["developers"], "Fred")
+            d2.update({'developers': 'Groucho'})
+            self.assertEqual(d2['developers'], 'Groucho')
+            self.assertEqual(d1['developers'], 'Fred')
 
-            d1 = MultiValueDict({
-                "key": [[]]
-            })
-            self.assertEqual(d1["key"], [])
+            d1 = MultiValueDict({'key': [[]]})
+            self.assertEqual(d1['key'], [])
             d2 = copy_func(d1)
-            d2["key"].append("Penguin")
-            self.assertEqual(d1["key"], ["Penguin"])
-            self.assertEqual(d2["key"], ["Penguin"])
+            d2['key'].append('Penguin')
+            self.assertEqual(d1['key'], ['Penguin'])
+            self.assertEqual(d2['key'], ['Penguin'])
 
     def test_dict_translation(self):
-        mvd = MultiValueDict({
-            'devs': ['Bob', 'Joe'],
-            'pm': ['Rory'],
-        })
+        mvd = MultiValueDict({'devs': ['Bob', 'Joe'], 'pm': ['Rory']})
         d = mvd.dict()
         self.assertEqual(sorted(d), sorted(mvd))
         for key in mvd:
@@ -125,10 +105,8 @@ class MultiValueDictTests(SimpleTestCase):
 
 
 class ImmutableListTests(SimpleTestCase):
-
     def test_sort(self):
         d = ImmutableList(range(10))
-
         # AttributeError: ImmutableList object is immutable.
         with self.assertRaisesMessage(AttributeError, 'ImmutableList object is immutable.'):
             d.sort()
@@ -136,22 +114,18 @@ class ImmutableListTests(SimpleTestCase):
         self.assertEqual(repr(d), '(0, 1, 2, 3, 4, 5, 6, 7, 8, 9)')
 
     def test_custom_warning(self):
-        d = ImmutableList(range(10), warning="Object is immutable!")
+        d = ImmutableList(range(10), warning='Object is immutable!')
 
         self.assertEqual(d[1], 1)
-
         # AttributeError: Object is immutable!
         with self.assertRaisesMessage(AttributeError, 'Object is immutable!'):
             d.__setitem__(1, 'test')
 
 
 class DictWrapperTests(SimpleTestCase):
-
     def test_dictwrapper(self):
         def f(x):
-            return "*%s" % x
+            return '*%s' % x
+
         d = DictWrapper({'a': 'a'}, f, 'xx_')
-        self.assertEqual(
-            "Normal: %(a)s. Modified: %(xx_a)s" % d,
-            'Normal: a. Modified: *a'
-        )
+        self.assertEqual('Normal: %(a)s. Modified: %(xx_a)s' % d, 'Normal: a. Modified: *a')

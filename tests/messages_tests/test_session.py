@@ -22,7 +22,7 @@ def stored_session_messages_count(storage):
     return len(data)
 
 
-class SessionTests(BaseTests, TestCase):
+class SessionTests(BaseTests,TestCase):
     storage_class = SessionStorage
 
     def get_request(self):
@@ -41,11 +41,11 @@ class SessionTests(BaseTests, TestCase):
         self.assertEqual(list(storage), example_messages)
 
     def test_safedata(self):
-        """
+        '''
         A message containing SafeData keeps its safe status when retrieved from
         the message storage.
-        """
+        '''
         storage = self.get_storage()
-        message = Message(constants.DEBUG, mark_safe("<b>Hello Django!</b>"))
+        message = Message(constants.DEBUG, mark_safe('<b>Hello Django!</b>'))
         set_session_data(storage, [message])
         self.assertIsInstance(list(storage)[0].message, SafeData)

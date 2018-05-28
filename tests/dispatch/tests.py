@@ -15,7 +15,7 @@ if sys.platform.startswith('java'):
         # effects of that.
         gc.collect()
         time.sleep(0.1)
-elif hasattr(sys, "pypy_version_info"):
+elif hasattr(sys, 'pypy_version_info'):
     def garbage_collect():
         # Collecting weakreferences can take two collections on PyPy.
         gc.collect()
@@ -37,16 +37,15 @@ class Callable:
         return val
 
 
-a_signal = Signal(providing_args=["val"])
-b_signal = Signal(providing_args=["val"])
-c_signal = Signal(providing_args=["val"])
-d_signal = Signal(providing_args=["val"], use_caching=True)
+a_signal = Signal(providing_args=['val'])
+b_signal = Signal(providing_args=['val'])
+c_signal = Signal(providing_args=['val'])
+d_signal = Signal(providing_args=['val'], use_caching=True)
 
 
 class DispatcherTests(SimpleTestCase):
-
     def assertTestIsClean(self, signal):
-        """Assert that everything has been cleaned up automatically"""
+        '''Assert that everything has been cleaned up automatically'''
         # Note that dead weakref cleanup happens as side effect of using
         # the signal's receivers through the signals API. So, first do a
         # call to an API method to force cleanup.
@@ -100,7 +99,7 @@ class DispatcherTests(SimpleTestCase):
         a_signal.connect(a.a, sender=self)
         del a
         garbage_collect()
-        result = a_signal.send(sender=self, val="test")
+        result = a_signal.send(sender=self, val='test')
         self.assertEqual(result, [])
         self.assertTestIsClean(a_signal)
 
@@ -109,8 +108,10 @@ class DispatcherTests(SimpleTestCase):
         Make sure signal caching sender receivers don't prevent garbage
         collection of senders.
         """
+
         class sender:
             pass
+
         wref = weakref.ref(sender)
         d_signal.connect(receiver_1_arg)
         d_signal.send(sender, val='garbage')
@@ -118,6 +119,7 @@ class DispatcherTests(SimpleTestCase):
         garbage_collect()
         try:
             self.assertIsNone(wref())
+
         finally:
             # Disconnect after reference check since it flushes the tested cache.
             d_signal.disconnect(receiver_1_arg)
@@ -130,7 +132,7 @@ class DispatcherTests(SimpleTestCase):
         a_signal.connect(a)
         a_signal.connect(a)
         a_signal.connect(a)
-        result = a_signal.send(sender=self, val="test")
+        result = a_signal.send(sender=self, val='test')
         self.assertEqual(len(result), 1)
         self.assertEqual(len(a_signal.receivers), 1)
         del a
@@ -145,10 +147,10 @@ class DispatcherTests(SimpleTestCase):
         def uid_based_receiver_2(**kwargs):
             pass
 
-        a_signal.connect(uid_based_receiver_1, dispatch_uid="uid")
-        a_signal.connect(uid_based_receiver_2, dispatch_uid="uid")
+        a_signal.connect(uid_based_receiver_1, dispatch_uid='uid')
+        a_signal.connect(uid_based_receiver_2, dispatch_uid='uid')
         self.assertEqual(len(a_signal.receivers), 1)
-        a_signal.disconnect(dispatch_uid="uid")
+        a_signal.disconnect(dispatch_uid='uid')
         self.assertTestIsClean(a_signal)
 
     def test_send_robust_success(self):
@@ -172,8 +174,9 @@ class DispatcherTests(SimpleTestCase):
     def test_send_robust_fail(self):
         def fails(val, **kwargs):
             raise ValueError('this')
+
         a_signal.connect(fails)
-        result = a_signal.send_robust(sender=self, val="test")
+        result = a_signal.send_robust(sender=self, val='test')
         err = result[0][1]
         self.assertIsInstance(err, ValueError)
         self.assertEqual(err.args, ('this',))
@@ -218,11 +221,11 @@ class DispatcherTests(SimpleTestCase):
 
 
 class ReceiverTestCase(SimpleTestCase):
-
     def test_receiver_single_signal(self):
         @receiver(a_signal)
         def f(val, **kwargs):
             self.state = val
+
         self.state = False
         a_signal.send(sender=self, val=True)
         self.assertTrue(self.state)
@@ -231,6 +234,7 @@ class ReceiverTestCase(SimpleTestCase):
         @receiver([a_signal, b_signal, c_signal])
         def f(val, **kwargs):
             self.state.append(val)
+
         self.state = []
         a_signal.send(sender=self, val='a')
         c_signal.send(sender=self, val='c')

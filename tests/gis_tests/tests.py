@@ -13,9 +13,7 @@ except ImportError:
 if HAS_POSTGRES:
     class FakeConnection:
         def __init__(self):
-            self.settings_dict = {
-                'NAME': 'test',
-            }
+            self.settings_dict = {'NAME': 'test'}
 
     class FakePostGISOperations(PostGISOperations):
         def __init__(self, version=None):
@@ -34,11 +32,11 @@ if HAS_POSTGRES:
                 raise NotImplementedError('This function was not expected to be called')
 
 
-@unittest.skipUnless(HAS_POSTGRES, "The psycopg2 driver is needed for these tests")
+@unittest.skipUnless(HAS_POSTGRES, 'The psycopg2 driver is needed for these tests')
 class TestPostGISVersionCheck(unittest.TestCase):
-    """
+    '''
     The PostGIS version check parses correctly the version numbers
-    """
+    '''
 
     def test_get_version(self):
         expect = '1.0.0'
@@ -65,11 +63,7 @@ class TestPostGISVersionCheck(unittest.TestCase):
         self.assertEqual(expect, actual)
 
     def test_valid_version_numbers(self):
-        versions = [
-            ('1.3.0', 1, 3, 0),
-            ('2.1.1', 2, 1, 1),
-            ('2.2.0dev', 2, 2, 0),
-        ]
+        versions = [('1.3.0', 1, 3, 0), ('2.1.1', 2, 1, 1), ('2.2.0dev', 2, 2, 0)]
 
         for version in versions:
             with self.subTest(version=version):
@@ -83,11 +77,11 @@ class TestPostGISVersionCheck(unittest.TestCase):
             ops.spatial_version
 
     def test_version_dependent_funcs(self):
-        """
+        '''
         Resolve names of functions renamed and deprecated in PostGIS 2.2.0
         depending on PostGIS version.
         Remove when dropping support for PostGIS 2.1.
-        """
+        '''
         ops = FakePostGISOperations('2.2.0')
         self.assertEqual(ops.spatial_function_name('DistanceSphere'), 'ST_DistanceSphere')
         self.assertEqual(ops.spatial_function_name('DistanceSpheroid'), 'ST_DistanceSpheroid')

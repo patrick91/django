@@ -11,11 +11,12 @@ from django.urls import set_script_prefix
 from django.utils.encoding import repercent_broken_unicode
 from django.utils.functional import cached_property
 
-_slashes_re = re.compile(br'/+')
+_slashes_re = re.compile(b'/+')
 
 
 class LimitedStream:
-    """Wrap another stream to disallow reading it past a number of bytes."""
+    '''Wrap another stream to disallow reading it past a number of bytes.'''
+
     def __init__(self, stream, limit, buf_size=64 * 1024 * 1024):
         self.stream = stream
         self.remaining = limit
@@ -37,15 +38,14 @@ class LimitedStream:
             self.buffer = b''
         elif size < len(self.buffer):
             result = self.buffer[:size]
-            self.buffer = self.buffer[size:]
-        else:  # size >= len(self.buffer)
+            self.buffer = self.buffer[size:] # size >= len(self.buffer)
+        else:
             result = self.buffer + self._read_limited(size - len(self.buffer))
             self.buffer = b''
         return result
 
     def readline(self, size=None):
-        while b'\n' not in self.buffer and \
-              (size is None or len(self.buffer) < size):
+        while b'\n' not in self.buffer and size is None or len(self.buffer) < size:
             if size:
                 # since size is not None here, len(self.buffer) < size
                 chunk = self._read_limited(size - len(self.buffer))
@@ -74,8 +74,7 @@ class WSGIRequest(HttpRequest):
         # be careful to only replace the first slash in the path because of
         # http://test/something and http://test//something being different as
         # stated in http://www.ietf.org/rfc/rfc2396.txt
-        self.path = '%s/%s' % (script_name.rstrip('/'),
-                               path_info.replace('/', '', 1))
+        self.path = '%s/%s' % (script_name.rstrip('/'), path_info.replace('/', '', 1))
         self.META = environ
         self.META['PATH_INFO'] = path_info
         self.META['SCRIPT_NAME'] = script_name
@@ -170,7 +169,6 @@ def get_script_name(environ):
     """
     if settings.FORCE_SCRIPT_NAME is not None:
         return settings.FORCE_SCRIPT_NAME
-
     # If Apache's mod_rewrite had a whack at the URL, Apache set either
     # SCRIPT_URL or REDIRECT_URL to the full resource URL before applying any
     # rewrites. Unfortunately not every Web server (lighttpd!) passes this
@@ -192,11 +190,11 @@ def get_script_name(environ):
 
 
 def get_bytes_from_wsgi(environ, key, default):
-    """
+    '''
     Get a value from the WSGI environ dictionary as bytes.
 
     key and default should be strings.
-    """
+    '''
     value = environ.get(key, default)
     # Non-ASCII values in the WSGI environ are arbitrarily decoded with
     # ISO-8859-1. This is wrong for Django websites where UTF-8 is the default.
@@ -205,10 +203,10 @@ def get_bytes_from_wsgi(environ, key, default):
 
 
 def get_str_from_wsgi(environ, key, default):
-    """
+    '''
     Get a value from the WSGI environ dictionary as str.
 
     key and default should be str objects.
-    """
+    '''
     value = get_bytes_from_wsgi(environ, key, default)
     return value.decode(errors='replace')

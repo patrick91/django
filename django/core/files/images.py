@@ -1,8 +1,8 @@
-"""
+'''
 Utility functions for handling images.
 
 Requires Pillow as you might imagine.
-"""
+'''
 import struct
 import zlib
 
@@ -10,10 +10,11 @@ from django.core.files import File
 
 
 class ImageFile(File):
-    """
+    '''
     A mixin for use alongside django.core.files.base.File, which provides
     additional features for dealing with images.
-    """
+    '''
+
     @property
     def width(self):
         return self._get_image_dimensions()[0]
@@ -60,7 +61,7 @@ def get_image_dimensions(file_or_path, close=False):
             except zlib.error as e:
                 # ignore zlib complaining on truncated stream, just feed more
                 # data to parser (ticket #19457).
-                if e.args[0].startswith("Error -5"):
+                if e.args[0].startswith('Error -5'):
                     pass
                 else:
                     raise
@@ -72,7 +73,8 @@ def get_image_dimensions(file_or_path, close=False):
             if p.image:
                 return p.image.size
             chunk_size *= 2
-        return (None, None)
+        return None, None
+
     finally:
         if close:
             file.close()

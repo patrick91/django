@@ -1,18 +1,13 @@
-"""Tests for django.db.backends.utils"""
+'''Tests for django.db.backends.utils'''
 from decimal import Decimal, Rounded
 
 from django.db import connection
-from django.db.backends.utils import (
-    format_number, split_identifier, truncate_name,
-)
+from django.db.backends.utils import format_number, split_identifier, truncate_name
 from django.db.utils import NotSupportedError
-from django.test import (
-    SimpleTestCase, TransactionTestCase, skipIfDBFeature, skipUnlessDBFeature,
-)
+from django.test import SimpleTestCase, TransactionTestCase, skipIfDBFeature, skipUnlessDBFeature
 
 
 class TestUtils(SimpleTestCase):
-
     def test_truncate_name(self):
         self.assertEqual(truncate_name('some_table', 10), 'some_table')
         self.assertEqual(truncate_name('some_long_table', 10), 'some_la38a')

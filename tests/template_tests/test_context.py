@@ -1,26 +1,23 @@
 from django.http import HttpRequest
-from django.template import (
-    Context, Engine, RequestContext, Template, Variable, VariableDoesNotExist,
-)
+from django.template import Context, Engine, RequestContext, Template, Variable, VariableDoesNotExist
 from django.template.context import RenderContext
 from django.test import RequestFactory, SimpleTestCase
 
 
 class ContextTests(SimpleTestCase):
-
     def test_context(self):
-        c = Context({"a": 1, "b": "xyzzy"})
-        self.assertEqual(c["a"], 1)
+        c = Context({'a': 1, 'b': 'xyzzy'})
+        self.assertEqual(c['a'], 1)
         self.assertEqual(c.push(), {})
-        c["a"] = 2
-        self.assertEqual(c["a"], 2)
-        self.assertEqual(c.get("a"), 2)
-        self.assertEqual(c.pop(), {"a": 2})
-        self.assertEqual(c["a"], 1)
-        self.assertEqual(c.get("foo", 42), 42)
+        c['a'] = 2
+        self.assertEqual(c['a'], 2)
+        self.assertEqual(c.get('a'), 2)
+        self.assertEqual(c.pop(), {'a': 2})
+        self.assertEqual(c['a'], 1)
+        self.assertEqual(c.get('foo', 42), 42)
 
     def test_push_context_manager(self):
-        c = Context({"a": 1})
+        c = Context({'a': 1})
         with c.push():
             c['a'] = 2
             self.assertEqual(c['a'], 2)
@@ -31,7 +28,7 @@ class ContextTests(SimpleTestCase):
         self.assertEqual(c['a'], 1)
 
     def test_update_context_manager(self):
-        c = Context({"a": 1})
+        c = Context({'a': 1})
         with c.update({}):
             c['a'] = 2
             self.assertEqual(c['a'], 2)
@@ -57,29 +54,23 @@ class ContextTests(SimpleTestCase):
         c = Context({'a': 1})
         c.push(Context({'b': 2}))
         c.push(Context({'c': 3, 'd': {'z': '26'}}))
-        self.assertEqual(
-            c.dicts,
-            [
-                {'False': False, 'None': None, 'True': True},
-                {'a': 1},
-                {'b': 2},
-                {'c': 3, 'd': {'z': '26'}},
-            ]
-        )
+        self.assertEqual(c.dicts, [
+            {'False': False, 'None': None, 'True': True},
+            {'a': 1},
+            {'b': 2},
+            {'c': 3, 'd': {'z': '26'}}
+        ])
 
     def test_update_proper_layering(self):
         c = Context({'a': 1})
         c.update(Context({'b': 2}))
         c.update(Context({'c': 3, 'd': {'z': '26'}}))
-        self.assertEqual(
-            c.dicts,
-            [
-                {'False': False, 'None': None, 'True': True},
-                {'a': 1},
-                {'b': 2},
-                {'c': 3, 'd': {'z': '26'}},
-            ]
-        )
+        self.assertEqual(c.dicts, [
+            {'False': False, 'None': None, 'True': True},
+            {'a': 1},
+            {'b': 2},
+            {'c': 3, 'd': {'z': '26'}}
+        ])
 
     def test_setdefault(self):
         c = Context()
@@ -104,14 +95,10 @@ class ContextTests(SimpleTestCase):
         with self.assertRaises(VariableDoesNotExist):
             Variable('new').resolve(empty_context)
 
-        self.assertEqual(
-            Variable('new').resolve(Context({'new': 'foo'})),
-            'foo',
-        )
+        self.assertEqual(Variable('new').resolve(Context({'new': 'foo'})), 'foo')
 
     def test_render_context(self):
         test_context = RenderContext({'fruit': 'papaya'})
-
         # push() limits access to the topmost dict
         test_context.push()
 
@@ -129,29 +116,20 @@ class ContextTests(SimpleTestCase):
         a.update({'b': 4})
         a.update({'c': 8})
 
-        self.assertEqual(a.flatten(), {
-            'False': False, 'None': None, 'True': True,
-            'a': 2, 'b': 4, 'c': 8
-        })
+        self.assertEqual(a.flatten(), {'False': False, 'None': None, 'True': True, 'a': 2, 'b': 4, 'c': 8})
 
     def test_flatten_context_with_context(self):
-        """
+        '''
         Context.push() with a Context argument should work.
-        """
+        '''
         a = Context({'a': 2})
         a.push(Context({'z': '8'}))
-        self.assertEqual(a.flatten(), {
-            'False': False,
-            'None': None,
-            'True': True,
-            'a': 2,
-            'z': '8',
-        })
+        self.assertEqual(a.flatten(), {'False': False, 'None': None, 'True': True, 'a': 2, 'z': '8'})
 
     def test_context_comparable(self):
-        """
+        '''
         #21765 -- equality comparison should work
-        """
+        '''
 
         test_data = {'x': 'y', 'v': 'z', 'd': {'o': object, 'a': 'b'}}
 
@@ -160,16 +138,13 @@ class ContextTests(SimpleTestCase):
         a = Context()
         b = Context()
         self.assertEqual(a, b)
-
         # update only a
         a.update({'a': 1})
         self.assertNotEqual(a, b)
-
         # update both to check regression
         a.update({'c': 3})
         b.update({'c': 3})
         self.assertNotEqual(a, b)
-
         # make contexts equals again
         b.update({'a': 1})
         self.assertEqual(a, b)
@@ -191,9 +166,9 @@ class ContextTests(SimpleTestCase):
         self.assertEqual(empty_context.get('a'), 1)
 
     def test_set_upward_with_push(self):
-        """
+        '''
         The highest context which has the given key is used.
-        """
+        '''
         c = Context({'a': 1})
         c.push({'a': 2})
         c.set_upward('a', 3)
@@ -213,26 +188,21 @@ class ContextTests(SimpleTestCase):
 
 
 class RequestContextTests(SimpleTestCase):
-
     def test_include_only(self):
-        """
+        '''
         #15721 -- ``{% include %}`` and ``RequestContext`` should work
         together.
-        """
-        engine = Engine(loaders=[
-            ('django.template.loaders.locmem.Loader', {
-                'child': '{{ var|default:"none" }}',
-            }),
-        ])
+        '''
+        engine = Engine(loaders=[('django.template.loaders.locmem.Loader', {'child': '{{ var|default:"none" }}'})])
         request = RequestFactory().get('/')
         ctx = RequestContext(request, {'var': 'parent'})
         self.assertEqual(engine.from_string('{% include "child" %}').render(ctx), 'parent')
         self.assertEqual(engine.from_string('{% include "child" only %}').render(ctx), 'none')
 
     def test_stack_size(self):
-        """
+        '''
         #7116 -- Optimize RequetsContext construction
-        """
+        '''
         request = RequestFactory().get('/')
         ctx = RequestContext(request, {})
         # The stack should now contain 3 items:
@@ -242,15 +212,11 @@ class RequestContextTests(SimpleTestCase):
     def test_context_comparable(self):
         # Create an engine without any context processors.
         test_data = {'x': 'y', 'v': 'z', 'd': {'o': object, 'a': 'b'}}
-
         # test comparing RequestContext to prevent problems if somebody
         # adds __eq__ in the future
         request = RequestFactory().get('/')
 
-        self.assertEqual(
-            RequestContext(request, dict_=test_data),
-            RequestContext(request, dict_=test_data),
-        )
+        self.assertEqual(RequestContext(request, dict_=test_data), RequestContext(request, dict_=test_data))
 
     def test_modify_context_and_render(self):
         template = Template('{{ foo }}')

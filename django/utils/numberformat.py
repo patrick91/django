@@ -4,9 +4,8 @@ from django.conf import settings
 from django.utils.safestring import mark_safe
 
 
-def format(number, decimal_sep, decimal_pos=None, grouping=0, thousand_sep='',
-           force_grouping=False):
-    """
+def format(number, decimal_sep, decimal_pos=None, grouping=0, thousand_sep='', force_grouping=False):
+    '''
     Get a number (as a number or string), and return it as a string,
     using formats defined as arguments:
 
@@ -17,7 +16,7 @@ def format(number, decimal_sep, decimal_pos=None, grouping=0, thousand_sep='',
         of digit group sizes following the format used by the Python locale
         module in locale.localeconv() LC_NUMERIC grouping (e.g. (3, 2, 0)).
     * thousand_sep: Thousand separator symbol (for example ",")
-    """
+    '''
     use_grouping = settings.USE_L10N and settings.USE_THOUSAND_SEPARATOR
     use_grouping = use_grouping or force_grouping
     use_grouping = use_grouping and grouping != 0
@@ -41,7 +40,7 @@ def format(number, decimal_sep, decimal_pos=None, grouping=0, thousand_sep='',
     else:
         int_part, dec_part = str_number, ''
     if decimal_pos is not None:
-        dec_part = dec_part + ('0' * (decimal_pos - len(dec_part)))
+        dec_part = dec_part + '0' * decimal_pos - len(dec_part)
     dec_part = dec_part and decimal_sep + dec_part
     # grouping
     if use_grouping:

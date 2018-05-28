@@ -1,20 +1,18 @@
-"""
+'''
 Query subclasses which provide extra functionality beyond simple data retrieval.
-"""
+'''
 
 from django.core.exceptions import FieldError
 from django.db import connections
 from django.db.models.query_utils import Q
-from django.db.models.sql.constants import (
-    CURSOR, GET_ITERATOR_CHUNK_SIZE, NO_RESULTS,
-)
+from django.db.models.sql.constants import CURSOR, GET_ITERATOR_CHUNK_SIZE, NO_RESULTS
 from django.db.models.sql.query import Query
 
 __all__ = ['DeleteQuery', 'UpdateQuery', 'InsertQuery', 'AggregateQuery']
 
 
 class DeleteQuery(Query):
-    """A DELETE SQL query."""
+    '''A DELETE SQL query.'''
 
     compiler = 'SQLDeleteCompiler'
 
@@ -25,28 +23,27 @@ class DeleteQuery(Query):
         return cursor.rowcount if cursor else 0
 
     def delete_batch(self, pk_list, using):
-        """
+        '''
         Set up and execute delete queries for all the objects in pk_list.
 
         More than one physical query may be executed if there are a
         lot of values in pk_list.
-        """
+        '''
         # number of objects deleted
         num_deleted = 0
         field = self.get_meta().pk
         for offset in range(0, len(pk_list), GET_ITERATOR_CHUNK_SIZE):
             self.where = self.where_class()
-            self.add_q(Q(
-                **{field.attname + '__in': pk_list[offset:offset + GET_ITERATOR_CHUNK_SIZE]}))
+            self.add_q(Q(**{field.attname + '__in': pk_list[offset:offset + GET_ITERATOR_CHUNK_SIZE]}))
             num_deleted += self.do_query(self.get_meta().db_table, self.where, using=using)
         return num_deleted
 
     def delete_qs(self, query, using):
-        """
+        '''
         Delete the queryset in one SQL query (if possible). For simple queries
         this is done by copying the query.query.where to self.query, for
         complex queries by using subquery.
-        """
+        '''
         innerq = query.query
         # Make sure the inner query has at least one table in use.
         innerq.get_initial_alias()
@@ -66,9 +63,7 @@ class DeleteQuery(Query):
                 return self.delete_batch(values, using)
             else:
                 innerq.clear_select_clause()
-                innerq.select = [
-                    pk.get_col(self.get_initial_alias())
-                ]
+                innerq.select = [pk.get_col(self.get_initial_alias())]
                 values = innerq
             self.where = self.where_class()
             self.add_q(Q(pk__in=values))
@@ -77,7 +72,7 @@ class DeleteQuery(Query):
 
 
 class UpdateQuery(Query):
-    """An UPDATE SQL query."""
+    '''An UPDATE SQL query.'''
 
     compiler = 'SQLUpdateCompiler'
 
@@ -86,10 +81,10 @@ class UpdateQuery(Query):
         self._setup_query()
 
     def _setup_query(self):
-        """
+        '''
         Run on initialization and at the end of chaining. Any attributes that
         would normally be set in __init__() should go here instead.
-        """
+        '''
         self.values = []
         self.related_ids = None
         self.related_updates = {}
@@ -103,25 +98,26 @@ class UpdateQuery(Query):
         self.add_update_values(values)
         for offset in range(0, len(pk_list), GET_ITERATOR_CHUNK_SIZE):
             self.where = self.where_class()
-            self.add_q(Q(pk__in=pk_list[offset: offset + GET_ITERATOR_CHUNK_SIZE]))
+            self.add_q(Q(pk__in=pk_list[offset:offset + GET_ITERATOR_CHUNK_SIZE]))
             self.get_compiler(using).execute_sql(NO_RESULTS)
 
     def add_update_values(self, values):
-        """
+        '''
         Convert a dictionary of field name to value mappings into an update
         query. This is the entry point for the public update() method on
         querysets.
-        """
+        '''
         values_seq = []
         for name, val in values.items():
             field = self.get_meta().get_field(name)
-            direct = not (field.auto_created and not field.concrete) or not field.concrete
+            direct = not field.auto_created and not field.concrete or not field.concrete
             model = field.model._meta.concrete_model
-            if not direct or (field.is_relation and field.many_to_many):
-                raise FieldError(
-                    'Cannot update model field %r (only non-relations and '
-                    'foreign keys permitted).' % field
-                )
+            if not direct or field.is_relation and field.many_to_many:
+                raise
+                FieldError('Cannot update model field %r (only non-relations and '
+                    'foreign keys permitted).' \
+                % \
+                field)
             if model is not self.get_meta().concrete_model:
                 self.add_related_update(model, field, val)
                 continue
@@ -129,11 +125,11 @@ class UpdateQuery(Query):
         return self.add_update_fields(values_seq)
 
     def add_update_fields(self, values_seq):
-        """
+        '''
         Append a sequence of (field, model, value) triples to the internal list
         that will be used to generate the UPDATE query. Might be more usefully
         called add_update_targets() to hint at the extra information here.
-        """
+        '''
         for field, model, val in values_seq:
             if hasattr(val, 'resolve_expression'):
                 # Resolve expressions here so that annotations are no longer needed
@@ -141,19 +137,19 @@ class UpdateQuery(Query):
             self.values.append((field, model, val))
 
     def add_related_update(self, model, field, value):
-        """
+        '''
         Add (name, value) to an update query for an ancestor model.
 
         Update are coalesced so that only one update query per ancestor is run.
-        """
+        '''
         self.related_updates.setdefault(model, []).append((field, None, value))
 
     def get_related_updates(self):
-        """
+        '''
         Return a list of query objects: one for each update required to an
         ancestor model. Each query will have the same filtering conditions as
         the current query but will only update a single table.
-        """
+        '''
         if not self.related_updates:
             return []
         result = []
@@ -181,10 +177,10 @@ class InsertQuery(Query):
 
 
 class AggregateQuery(Query):
-    """
+    '''
     Take another query as a parameter to the FROM clause and only select the
     elements in the provided list.
-    """
+    '''
 
     compiler = 'SQLAggregateCompiler'
 

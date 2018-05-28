@@ -9,9 +9,7 @@
 
 import re
 import time as ttime
-from datetime import (
-    date as real_date, datetime as real_datetime, time as real_time,
-)
+from datetime import date as real_date, datetime as real_datetime, time as real_time
 
 
 class date(real_date):
@@ -25,9 +23,7 @@ class datetime(real_datetime):
 
     @classmethod
     def combine(cls, date, time):
-        return cls(date.year, date.month, date.day,
-                   time.hour, time.minute, time.second,
-                   time.microsecond, time.tzinfo)
+        return cls(date.year, date.month, date.day, time.hour, time.minute, time.second, time.microsecond, time.tzinfo)
 
     def date(self):
         return date(self.year, self.month, self.day)
@@ -38,14 +34,14 @@ class time(real_time):
 
 
 def new_date(d):
-    "Generate a safe date from a datetime.date object."
+    'Generate a safe date from a datetime.date object.'
     return date(d.year, d.month, d.day)
 
 
 def new_datetime(d):
-    """
+    '''
     Generate a safe datetime from a datetime.date or datetime.datetime object.
-    """
+    '''
     kw = [d.year, d.month, d.day]
     if isinstance(d, real_datetime):
         kw.extend([d.hour, d.minute, d.second, d.microsecond, d.tzinfo])
@@ -54,7 +50,7 @@ def new_datetime(d):
 
 # This library does not support strftime's "%s" or "%y" format strings.
 # Allowed if there's an even number of "%"s because they are escaped.
-_illegal_formatting = re.compile(r"((^|[^%])(%%)*%[sy])")
+_illegal_formatting = re.compile(r'((^|[^%])(%%)*%[sy])')
 
 
 def _findall(text, substr):
@@ -75,17 +71,16 @@ def strftime(dt, fmt):
         return super(type(dt), dt).strftime(fmt)
     illegal_formatting = _illegal_formatting.search(fmt)
     if illegal_formatting:
-        raise TypeError("strftime of dates before 1900 does not handle" + illegal_formatting.group(0))
+        raise TypeError('strftime of dates before 1900 does not handle' + illegal_formatting.group(0))
 
     year = dt.year
     # For every non-leap year century, advance by
     # 6 years to get into the 28-year repeat cycle
     delta = 2000 - year
-    off = 6 * (delta // 100 + delta // 400)
+    off = 6 * delta // 100 + delta // 400
     year = year + off
-
     # Move to around the year 2000
-    year = year + ((2000 - year) // 28) * 28
+    year = year + 2000 - year // 28 * 28
     timetuple = dt.timetuple()
     s1 = ttime.strftime(fmt, (year,) + timetuple[1:])
     sites1 = _findall(s1, str(year))
@@ -99,7 +94,7 @@ def strftime(dt, fmt):
             sites.append(site)
 
     s = s1
-    syear = "%04d" % (dt.year,)
+    syear = '%04d' % (dt.year,)
     for site in sites:
         s = s[:site] + syear + s[site + 4:]
     return s

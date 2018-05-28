@@ -2,11 +2,11 @@ from ctypes import c_void_p
 
 
 class CPointerBase:
-    """
+    '''
     Base class for objects that have a pointer access property
     that controls access to the underlying C pointer.
-    """
-    _ptr = None  # Initially the pointer is NULL.
+    '''
+    _ptr = None # Initially the pointer is NULL.
     ptr_type = c_void_p
     destructor = None
     null_ptr_exception_class = AttributeError
@@ -23,16 +23,16 @@ class CPointerBase:
     def ptr(self, ptr):
         # Only allow the pointer to be set with pointers of the compatible
         # type or None (NULL).
-        if not (ptr is None or isinstance(ptr, self.ptr_type)):
+        if not ptr is None or isinstance(ptr, self.ptr_type):
             raise TypeError('Incompatible pointer type: %s.' % type(ptr))
         self._ptr = ptr
 
     def __del__(self):
-        """
+        '''
         Free the memory used by the C++ object.
-        """
+        '''
         if self.destructor and self._ptr:
             try:
                 self.destructor(self.ptr)
             except (AttributeError, TypeError):
-                pass  # Some part might already have been garbage collected
+                pass # Some part might already have been garbage collected

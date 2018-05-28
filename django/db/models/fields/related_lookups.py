@@ -1,7 +1,4 @@
-from django.db.models.lookups import (
-    Exact, GreaterThan, GreaterThanOrEqual, In, IsNull, LessThan,
-    LessThanOrEqual,
-)
+from django.db.models.lookups import Exact, GreaterThan, GreaterThanOrEqual, In, IsNull, LessThan, LessThanOrEqual
 
 
 class MultiColSource:
@@ -12,12 +9,10 @@ class MultiColSource:
         self.output_field = self.field
 
     def __repr__(self):
-        return "{}({}, {})".format(
-            self.__class__.__name__, self.alias, self.field)
+        return '{}({}, {})'.format(self.__class__.__name__, self.alias, self.field)
 
     def relabeled_clone(self, relabels):
-        return self.__class__(relabels.get(self.alias, self.alias),
-                              self.targets, self.sources, self.field)
+        return self.__class__(relabels.get(self.alias, self.alias), self.targets, self.sources, self.field)
 
     def get_lookup(self, lookup):
         return self.output_field.get_lookup(lookup)
@@ -36,10 +31,10 @@ def get_normalized_value(value, lhs):
             except AttributeError:
                 # A case like Restaurant.objects.filter(place=restaurant_instance),
                 # where place is a OneToOneField and the primary key of Restaurant.
-                return (value.pk,)
+                return value.pk,
         return tuple(value_list)
     if not isinstance(value, tuple):
-        return (value,)
+        return value,
     return value
 
 
@@ -77,26 +72,22 @@ class RelatedIn(In):
                         value_constraint.add(lookup, AND)
                     root_constraint.add(value_constraint, OR)
             else:
-                root_constraint.add(
-                    SubqueryConstraint(
-                        self.lhs.alias, [target.column for target in self.lhs.targets],
-                        [source.name for source in self.lhs.sources], self.rhs),
-                    AND)
+                root_constraint.add(SubqueryConstraint(self.lhs.alias, [
+                    target.column for target in self.lhs.targets
+                ], [source.name for source in self.lhs.sources], self.rhs), AND)
             return root_constraint.as_sql(compiler, connection)
-        else:
-            if (not getattr(self.rhs, 'has_select_fields', True) and
-                    not getattr(self.lhs.field.target_field, 'primary_key', False)):
-                self.rhs.clear_select_clause()
-                if (getattr(self.lhs.output_field, 'primary_key', False) and
-                        self.lhs.output_field.model == self.rhs.model):
-                    # A case like Restaurant.objects.filter(place__in=restaurant_qs),
-                    # where place is a OneToOneField and the primary key of
-                    # Restaurant.
-                    target_field = self.lhs.field.name
-                else:
-                    target_field = self.lhs.field.target_field.name
-                self.rhs.add_fields([target_field], True)
-            return super().as_sql(compiler, connection)
+        elif not getattr(self.rhs, 'has_select_fields', True) \
+        and \
+        not getattr(self.lhs.field.target_field, 'primary_key', False):
+            self.rhs.clear_select_clause()
+            if getattr(self.lhs.output_field, 'primary_key', False) and self.lhs.output_field.model == self.rhs.model:
+                # A case like Restaurant.objects.filter(place__in=restaurant_qs),
+                # where place is a OneToOneField and the primary key of
+                # Restaurant.
+                target_field = self.lhs.field.name
+            else:
+                target_field = self.lhs.field.target_field.name
+            self.rhs.add_fields([target_field], True)return super().as_sql(compiler, connection)
 
 
 class RelatedLookupMixin:
@@ -124,31 +115,30 @@ class RelatedLookupMixin:
             root_constraint = WhereNode()
             for target, source, val in zip(self.lhs.targets, self.lhs.sources, self.rhs):
                 lookup_class = target.get_lookup(self.lookup_name)
-                root_constraint.add(
-                    lookup_class(target.get_col(self.lhs.alias, source), val), AND)
+                root_constraint.add(lookup_class(target.get_col(self.lhs.alias, source), val), AND)
             return root_constraint.as_sql(compiler, connection)
         return super().as_sql(compiler, connection)
 
 
-class RelatedExact(RelatedLookupMixin, Exact):
+class RelatedExact(RelatedLookupMixin,Exact):
     pass
 
 
-class RelatedLessThan(RelatedLookupMixin, LessThan):
+class RelatedLessThan(RelatedLookupMixin,LessThan):
     pass
 
 
-class RelatedGreaterThan(RelatedLookupMixin, GreaterThan):
+class RelatedGreaterThan(RelatedLookupMixin,GreaterThan):
     pass
 
 
-class RelatedGreaterThanOrEqual(RelatedLookupMixin, GreaterThanOrEqual):
+class RelatedGreaterThanOrEqual(RelatedLookupMixin,GreaterThanOrEqual):
     pass
 
 
-class RelatedLessThanOrEqual(RelatedLookupMixin, LessThanOrEqual):
+class RelatedLessThanOrEqual(RelatedLookupMixin,LessThanOrEqual):
     pass
 
 
-class RelatedIsNull(RelatedLookupMixin, IsNull):
+class RelatedIsNull(RelatedLookupMixin,IsNull):
     pass

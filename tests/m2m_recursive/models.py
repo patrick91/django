@@ -1,4 +1,4 @@
-"""
+'''
 Many-to-many relationships between the same two tables
 
 In this example, a ``Person`` can have many friends, who are also ``Person``
@@ -14,7 +14,7 @@ non-symmetrical, and they are symmetrical by default.
 This test validates that the many-to-many table is created using a mangled name
 if there is a name clash, and tests that symmetry is preserved where
 appropriate.
-"""
+'''
 
 from django.db import models
 

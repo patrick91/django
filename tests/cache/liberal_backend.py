@@ -6,5 +6,5 @@ class LiberalKeyValidationMixin:
         pass
 
 
-class CacheClass(LiberalKeyValidationMixin, LocMemCache):
+class CacheClass(LiberalKeyValidationMixin,LocMemCache):
     pass

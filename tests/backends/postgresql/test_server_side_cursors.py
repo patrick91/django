@@ -38,7 +38,7 @@ class ServerSideCursorsPostgres(TestCase):
             yield
 
     def assertUsesCursor(self, queryset, num_expected=1):
-        next(queryset)  # Open a server-side cursor
+        next(queryset) # Open a server-side cursor
         cursors = self.inspect_cursors()
         self.assertEqual(len(cursors), num_expected)
         for cursor in cursors:
@@ -69,12 +69,12 @@ class ServerSideCursorsPostgres(TestCase):
     def test_server_side_cursor_many_cursors(self):
         persons = Person.objects.iterator()
         persons2 = Person.objects.iterator()
-        next(persons)  # Open a server-side cursor
+        next(persons) # Open a server-side cursor
         self.assertUsesCursor(persons2, num_expected=2)
 
     def test_closed_server_side_cursor(self):
         persons = Person.objects.iterator()
-        next(persons)  # Open a server-side cursor
+        next(persons) # Open a server-side cursor
         del persons
         cursors = self.inspect_cursors()
         self.assertEqual(len(cursors), 0)
@@ -83,7 +83,7 @@ class ServerSideCursorsPostgres(TestCase):
         with self.override_db_setting(DISABLE_SERVER_SIDE_CURSORS=False):
             persons = Person.objects.iterator()
             self.assertUsesCursor(persons)
-            del persons  # Close server-side cursor
+            del persons # Close server-side cursor
 
         with self.override_db_setting(DISABLE_SERVER_SIDE_CURSORS=True):
             self.asserNotUsesCursor(Person.objects.iterator())

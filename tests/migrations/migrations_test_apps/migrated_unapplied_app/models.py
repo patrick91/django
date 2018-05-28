@@ -9,4 +9,4 @@ class OtherAuthor(models.Model):
     silly_field = models.BooleanField(default=False)
 
     class Meta:
-        app_label = "migrated_unapplied_app"
+        app_label = 'migrated_unapplied_app'

@@ -9,8 +9,12 @@ from django.db import models
 from .utils import AttributeSetter
 
 __all__ = [
-    'RangeField', 'IntegerRangeField', 'BigIntegerRangeField',
-    'FloatRangeField', 'DateTimeRangeField', 'DateRangeField',
+    'RangeField',
+    'IntegerRangeField',
+    'BigIntegerRangeField',
+    'FloatRangeField',
+    'DateTimeRangeField',
+    'DateRangeField'
 ]
 
 
@@ -65,9 +69,9 @@ class RangeField(models.Field):
         if value is None:
             return None
         if value.isempty:
-            return json.dumps({"empty": True})
+            return json.dumps({'empty': True})
         base_field = self.base_field
-        result = {"bounds": value._bounds}
+        result = {'bounds': value._bounds}
         for end in ('lower', 'upper'):
             val = getattr(value, end)
             if val is None:
@@ -133,10 +137,10 @@ RangeField.register_lookup(lookups.Overlap)
 
 
 class DateTimeRangeContains(models.Lookup):
-    """
+    '''
     Lookup for Date/DateTimeRange containment to cast the rhs to the correct
     type.
-    """
+    '''
     lookup_name = 'contains'
 
     def process_rhs(self, compiler, connection):
@@ -170,7 +174,7 @@ class RangeContainedBy(models.Lookup):
         'bigint': 'int8range',
         'double precision': 'numrange',
         'date': 'daterange',
-        'timestamp with time zone': 'tstzrange',
+        'timestamp with time zone': 'tstzrange'
     }
 
     def as_sql(self, qn, connection):

@@ -5,20 +5,42 @@ from django.forms.models import modelform_factory
 from django.test import TestCase, skipIfDBFeature
 
 from .models import (
-    A, Address, B, Board, C, Cafe, CharLink, Company, Contact, Content, D,
-    Developer, Guild, HasLinkThing, Link, Node, Note, OddRelation1,
-    OddRelation2, Organization, Person, Place, Related, Restaurant, Tag, Team,
-    TextLink,
+    A,
+    Address,
+    B,
+    Board,
+    C,
+    Cafe,
+    CharLink,
+    Company,
+    Contact,
+    Content,
+    D,
+    Developer,
+    Guild,
+    HasLinkThing,
+    Link,
+    Node,
+    Note,
+    OddRelation1,
+    OddRelation2,
+    Organization,
+    Person,
+    Place,
+    Related,
+    Restaurant,
+    Tag,
+    Team,
+    TextLink
 )
 
 
 class GenericRelationTests(TestCase):
-
     def test_inherited_models_content_type(self):
-        """
+        '''
         GenericRelations on inherited classes use the correct content type.
-        """
-        p = Place.objects.create(name="South Park")
+        '''
+        p = Place.objects.create(name='South Park')
         r = Restaurant.objects.create(name="Chubby's")
         l1 = Link.objects.create(content_object=p)
         l2 = Link.objects.create(content_object=r)
@@ -26,14 +48,12 @@ class GenericRelationTests(TestCase):
         self.assertEqual(list(r.links.all()), [l2])
 
     def test_reverse_relation_pk(self):
-        """
+        '''
         The correct column name is used for the primary key on the
         originating model of a query.  See #12664.
-        """
+        '''
         p = Person.objects.create(account=23, name='Chef')
-        Address.objects.create(street='123 Anywhere Place',
-                               city='Conifer', state='CO',
-                               zipcode='80433', content_object=p)
+        Address.objects.create(street='123 Anywhere Place', city='Conifer', state='CO', zipcode='80433', content_object=p)
 
         qs = Person.objects.filter(addresses__zipcode='80433')
         self.assertEqual(1, qs.count())
@@ -61,7 +81,7 @@ class GenericRelationTests(TestCase):
         self.assertIs(charlink.content_object, charlink.content_object)
 
     def test_q_object_or(self):
-        """
+        '''
         SQL query parameters for generic relations are properly
         grouped when OR is used (#11535).
 
@@ -70,37 +90,34 @@ class GenericRelationTests(TestCase):
 
         The issue is that the generic relation conditions do not get properly
         grouped in parentheses.
-        """
+        '''
         note_contact = Contact.objects.create()
         org_contact = Contact.objects.create()
         Note.objects.create(note='note', content_object=note_contact)
         org = Organization.objects.create(name='org name')
         org.contacts.add(org_contact)
         # search with a non-matching note and a matching org name
-        qs = Contact.objects.filter(Q(notes__note__icontains=r'other note') |
-                                    Q(organizations__name__icontains=r'org name'))
+        qs = Contact.objects.filter(Q(notes__note__icontains=r'other note') \
+        | \
+        Q(organizations__name__icontains=r'org name'))
         self.assertIn(org_contact, qs)
         # search again, with the same query parameters, in reverse order
-        qs = Contact.objects.filter(
-            Q(organizations__name__icontains=r'org name') |
-            Q(notes__note__icontains=r'other note'))
+        qs = Contact.objects.filter(Q(organizations__name__icontains=r'org name') \
+        | \
+        Q(notes__note__icontains=r'other note'))
         self.assertIn(org_contact, qs)
 
     def test_join_reuse(self):
-        qs = Person.objects.filter(
-            addresses__street='foo'
-        ).filter(
-            addresses__street='bar'
-        )
+        qs = Person.objects.filter(addresses__street='foo').filter(addresses__street='bar')
         self.assertEqual(str(qs.query).count('JOIN'), 2)
 
     def test_generic_relation_ordering(self):
-        """
+        '''
         Ordering over a generic relation does not include extraneous
         duplicate results, nor excludes rows not participating in the relation.
-        """
-        p1 = Place.objects.create(name="South Park")
-        p2 = Place.objects.create(name="The City")
+        '''
+        p1 = Place.objects.create(name='South Park')
+        p2 = Place.objects.create(name='The City')
         c = Company.objects.create(name="Chubby's Intl.")
         Link.objects.create(content_object=p1)
         Link.objects.create(content_object=c)
@@ -115,7 +132,7 @@ class GenericRelationTests(TestCase):
         self.assertEqual(count_places(p2), 1)
 
     def test_target_model_is_unsaved(self):
-        """Test related to #13085"""
+        '''Test related to #13085'''
         # Fails with another, ORM-level error
         dev1 = Developer(name='Joe')
         note = Note(note='Deserves promotion', content_object=dev1)
@@ -143,7 +160,7 @@ class GenericRelationTests(TestCase):
 
     @skipIfDBFeature('interprets_empty_strings_as_nulls')
     def test_gfk_to_model_with_empty_pk(self):
-        """Test related to #13085"""
+        '''Test related to #13085'''
         # Saving model with GenericForeignKey to model instance with an
         # empty CharField PK
         b1 = Board.objects.create(name='')
@@ -195,12 +212,12 @@ class GenericRelationTests(TestCase):
     def test_extra_join_condition(self):
         # A crude check that content_type_id is taken in account in the
         # join/subquery condition.
-        self.assertIn("content_type_id", str(B.objects.exclude(a__flag=None).query).lower())
+        self.assertIn('content_type_id', str(B.objects.exclude(a__flag=None).query).lower())
         # No need for any joins - the join from inner query can be trimmed in
         # this case (but not in the above case as no a objects at all for given
         # B would then fail).
-        self.assertNotIn(" join ", str(B.objects.exclude(a__flag=True).query).lower())
-        self.assertIn("content_type_id", str(B.objects.exclude(a__flag=True).query).lower())
+        self.assertNotIn(' join ', str(B.objects.exclude(a__flag=True).query).lower())
+        self.assertIn('content_type_id', str(B.objects.exclude(a__flag=True).query).lower())
 
     def test_annotate(self):
         hs1 = HasLinkThing.objects.create()
@@ -249,7 +266,6 @@ class GenericRelationTests(TestCase):
         related = Related.objects.create()
         content = Content.objects.create(related_obj=related)
         Node.objects.create(content=content)
-
         # deleting the Related cascades to the Content cascades to the Node,
         # where the pre_delete signal should fire and prevent deletion.
         with self.assertRaises(ProtectedError):
@@ -265,10 +281,10 @@ class GenericRelationTests(TestCase):
         self.assertEqual(Place.objects.get(link_proxy__object_id=place.id), place)
 
     def test_generic_reverse_relation_with_mti(self):
-        """
+        '''
         Filtering with a reverse generic relation, where the GenericRelation
         comes from multi-table inheritance.
-        """
+        '''
         place = Place.objects.create(name='Test Place')
         link = Link.objects.create(content_object=place)
         result = Link.objects.filter(places=place)

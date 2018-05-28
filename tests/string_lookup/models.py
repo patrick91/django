@@ -6,24 +6,24 @@ class Foo(models.Model):
     friend = models.CharField(max_length=50, blank=True)
 
     def __str__(self):
-        return "Foo %s" % self.name
+        return 'Foo %s' % self.name
 
 
 class Bar(models.Model):
     name = models.CharField(max_length=50)
     normal = models.ForeignKey(Foo, models.CASCADE, related_name='normal_foo')
-    fwd = models.ForeignKey("Whiz", models.CASCADE)
-    back = models.ForeignKey("Foo", models.CASCADE)
+    fwd = models.ForeignKey('Whiz', models.CASCADE)
+    back = models.ForeignKey('Foo', models.CASCADE)
 
     def __str__(self):
-        return "Bar %s" % self.place.name
+        return 'Bar %s' % self.place.name
 
 
 class Whiz(models.Model):
     name = models.CharField(max_length=50)
 
     def __str__(self):
-        return "Whiz %s" % self.name
+        return 'Whiz %s' % self.name
 
 
 class Child(models.Model):
@@ -31,14 +31,14 @@ class Child(models.Model):
     name = models.CharField(max_length=50)
 
     def __str__(self):
-        return "Child %s" % self.name
+        return 'Child %s' % self.name
 
 
 class Base(models.Model):
     name = models.CharField(max_length=50)
 
     def __str__(self):
-        return "Base %s" % self.name
+        return 'Base %s' % self.name
 
 
 class Article(models.Model):
@@ -47,4 +47,4 @@ class Article(models.Model):
     submitted_from = models.GenericIPAddressField(blank=True, null=True)
 
     def __str__(self):
-        return "Article %s" % self.name
+        return 'Article %s' % self.name

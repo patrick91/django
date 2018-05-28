@@ -6,30 +6,28 @@ from wsgiref import simple_server
 
 # If data is too large, socket will choke, so write chunks no larger than 32MB
 # at a time. The rationale behind the 32MB can be found in #5596#comment:4.
-MAX_SOCKET_CHUNK_SIZE = 32 * 1024 * 1024  # 32 MB
+MAX_SOCKET_CHUNK_SIZE = 32 * 1024 * 1024 # 32 MB
 
 
 class ServerHandler(simple_server.ServerHandler):
-    error_status = "500 INTERNAL SERVER ERROR"
+    error_status = '500 INTERNAL SERVER ERROR'
 
     def write(self, data):
         """'write()' callable as specified by PEP 3333"""
 
-        assert isinstance(data, bytes), "write() argument must be bytestring"
+        assert isinstance(data, bytes), 'write() argument must be bytestring'
 
         if not self.status:
-            raise AssertionError("write() before start_response()")
-
+            raise AssertionError('write() before start_response()')
         elif not self.headers_sent:
             # Before the first output, send the stored headers
-            self.bytes_sent = len(data)    # make sure we know content-length
+            self.bytes_sent = len(data) # make sure we know content-length
             self.send_headers()
         else:
             self.bytes_sent += len(data)
-
         # XXX check Content-Length and truncate if too many bytes written?
         data = BytesIO(data)
-        for chunk in iter(lambda: data.read(MAX_SOCKET_CHUNK_SIZE), b''):
+        for chunk in iter(lambda : data.read(MAX_SOCKET_CHUNK_SIZE), b''):
             self._write(chunk)
             self._flush()
 
@@ -65,13 +63,13 @@ def wsgi_app_file_wrapper(environ, start_response):
 
 
 class WSGIFileWrapperTests(TestCase):
-    """
+    '''
     The wsgi.file_wrapper works for the builting server.
 
     Tests for #9659: wsgi.file_wrapper in the builtin server.
     We need to mock a couple of handlers and keep track of what
     gets called when using a couple kinds of WSGI apps.
-    """
+    '''
 
     def test_file_wrapper_uses_sendfile(self):
         env = {'SERVER_PROTOCOL': 'HTTP/1.0'}
@@ -91,10 +89,10 @@ class WSGIFileWrapperTests(TestCase):
 
 
 class WriteChunkCounterHandler(ServerHandler):
-    """
+    '''
     Server handler that counts the number of chunks written after headers were
     sent. Used to make sure large response body chunking works properly.
-    """
+    '''
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -115,7 +113,7 @@ class WriteChunkCounterHandler(ServerHandler):
 def send_big_data_app(environ, start_response):
     start_response('200 OK', [('Content-Type', 'text/plain')])
     # Return a blob of data that is 1.5 times the maximum chunk size.
-    return [b'x' * (MAX_SOCKET_CHUNK_SIZE + MAX_SOCKET_CHUNK_SIZE // 2)]
+    return [b'x' * MAX_SOCKET_CHUNK_SIZE + MAX_SOCKET_CHUNK_SIZE // 2]
 
 
 class ServerHandlerChunksProperly(TestCase):

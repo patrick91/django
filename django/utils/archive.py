@@ -1,4 +1,4 @@
-"""
+'''
 Based on "python-archive" -- https://pypi.org/project/python-archive/
 
 Copyright (c) 2010 Gary Wilson Jr. <gary.wilson@gmail.com> and contributors.
@@ -20,7 +20,7 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
-"""
+'''
 import os
 import shutil
 import stat
@@ -29,30 +29,31 @@ import zipfile
 
 
 class ArchiveException(Exception):
-    """
+    '''
     Base exception class for all archive errors.
-    """
+    '''
 
 
 class UnrecognizedArchiveFormat(ArchiveException):
-    """
+    '''
     Error raised when passed file is not a recognized archive format.
-    """
+    '''
 
 
 def extract(path, to_path=''):
-    """
+    '''
     Unpack the tar or zip file at the specified path to the directory
     specified by to_path.
-    """
+    '''
     with Archive(path) as archive:
         archive.extract(to_path)
 
 
 class Archive:
-    """
+    '''
     The external API class that encapsulates an archive implementation.
-    """
+    '''
+
     def __init__(self, file):
         self._archive = self._archive_cls(file)(file)
 
@@ -65,16 +66,14 @@ class Archive:
             try:
                 filename = file.name
             except AttributeError:
-                raise UnrecognizedArchiveFormat(
-                    "File object not a recognized archive format.")
+                raise UnrecognizedArchiveFormat('File object not a recognized archive format.')
         base, tail_ext = os.path.splitext(filename.lower())
         cls = extension_map.get(tail_ext)
         if not cls:
             base, ext = os.path.splitext(base)
             cls = extension_map.get(ext)
         if not cls:
-            raise UnrecognizedArchiveFormat(
-                "Path not a recognized archive format: %s" % filename)
+            raise UnrecognizedArchiveFormat('Path not a recognized archive format: %s' % filename)
         return cls
 
     def __enter__(self):
@@ -94,9 +93,10 @@ class Archive:
 
 
 class BaseArchive:
-    """
+    '''
     Base Archive class.  Implementations should inherit this class.
-    """
+    '''
+
     @staticmethod
     def _copy_permissions(mode, filename):
         """
@@ -110,7 +110,7 @@ class BaseArchive:
     def split_leading_dir(self, path):
         path = str(path)
         path = path.lstrip('/').lstrip('\\')
-        if '/' in path and (('\\' in path and path.find('/') < path.find('\\')) or '\\' not in path):
+        if '/' in path and '\\' in path and path.find('/') < path.find('\\') or '\\' not in path:
             return path.split('/', 1)
         elif '\\' in path:
             return path.split('\\', 1)
@@ -118,10 +118,10 @@ class BaseArchive:
             return path, ''
 
     def has_leading_dir(self, paths):
-        """
+        '''
         Return True if all the paths have the same leading path name
         (i.e., everything is in one subdirectory in an archive).
-        """
+        '''
         common_prefix = None
         for path in paths:
             prefix, rest = self.split_leading_dir(path)
@@ -141,7 +141,6 @@ class BaseArchive:
 
 
 class TarArchive(BaseArchive):
-
     def __init__(self, file):
         self._archive = tarfile.open(file)
 
@@ -165,13 +164,10 @@ class TarArchive(BaseArchive):
                 except (KeyError, AttributeError) as exc:
                     # Some corrupt tar files seem to produce this
                     # (specifically bad symlinks)
-                    print("In the tar file %s the member %s is invalid: %s" %
-                          (name, member.name, exc))
+                    print('In the tar file %s the member %s is invalid: %s' % (name, member.name, exc))
                 else:
-                    dirname = os.path.dirname(filename)
-                    if dirname and not os.path.exists(dirname):
-                        os.makedirs(dirname)
-                    with open(filename, 'wb') as outfile:
+                    dirname = os.path.dirname(filename)if dirname and not os.path.exists(dirname):
+                        os.makedirs(dirname)with open(filename, 'wb') as outfile:
                         shutil.copyfileobj(extracted, outfile)
                         self._copy_permissions(member.mode, filename)
                 finally:
@@ -183,7 +179,6 @@ class TarArchive(BaseArchive):
 
 
 class ZipArchive(BaseArchive):
-
     def __init__(self, file):
         self._archive = zipfile.ZipFile(file)
 
@@ -223,5 +218,5 @@ extension_map = {
     '.tar.gz': TarArchive,
     '.tgz': TarArchive,
     '.tz2': TarArchive,
-    '.zip': ZipArchive,
+    '.zip': ZipArchive
 }

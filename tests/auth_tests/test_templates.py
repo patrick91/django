@@ -2,8 +2,11 @@ from django.contrib.auth import authenticate
 from django.contrib.auth.models import User
 from django.contrib.auth.tokens import PasswordResetTokenGenerator
 from django.contrib.auth.views import (
-    PasswordChangeDoneView, PasswordChangeView, PasswordResetCompleteView,
-    PasswordResetDoneView, PasswordResetView,
+    PasswordChangeDoneView,
+    PasswordChangeView,
+    PasswordResetCompleteView,
+    PasswordResetDoneView,
+    PasswordResetView
 )
 from django.test import RequestFactory, TestCase, override_settings
 from django.urls import reverse
@@ -14,7 +17,6 @@ from .client import PasswordResetConfirmClient
 
 @override_settings(ROOT_URLCONF='auth_tests.urls')
 class AuthTemplateTests(TestCase):
-
     @classmethod
     def setUpTestData(cls):
         rf = RequestFactory()

@@ -12,16 +12,23 @@ from django.test import SimpleTestCase, override_settings, skipUnlessDBFeature
 from django.test.utils import Approximate
 
 from .models import (
-    Actor, Article, Author, AuthorProfile, BaseModel, Category, ComplexModel,
-    Movie, Player, ProxyBaseModel, ProxyProxyBaseModel, Score, Team,
+    Actor,
+    Article,
+    Author,
+    AuthorProfile,
+    BaseModel,
+    Category,
+    ComplexModel,
+    Movie,
+    Player,
+    ProxyBaseModel,
+    ProxyProxyBaseModel,
+    Score,
+    Team
 )
 
 
-@override_settings(
-    SERIALIZATION_MODULES={
-        "json2": "django.core.serializers.json",
-    }
-)
+@override_settings(SERIALIZATION_MODULES={'json2': 'django.core.serializers.json'})
 class SerializerRegistrationTests(SimpleTestCase):
     def setUp(self):
         self.old_serializers = serializers._serializers
@@ -31,7 +38,7 @@ class SerializerRegistrationTests(SimpleTestCase):
         serializers._serializers = self.old_serializers
 
     def test_register(self):
-        "Registering a new serializer populates the full registry. Refs #14823"
+        'Registering a new serializer populates the full registry. Refs #14823'
         serializers.register_serializer('json3', 'django.core.serializers.json')
 
         public_formats = serializers.get_public_serializer_formats()
@@ -51,14 +58,14 @@ class SerializerRegistrationTests(SimpleTestCase):
 
     def test_unregister_unknown_serializer(self):
         with self.assertRaises(SerializerDoesNotExist):
-            serializers.unregister_serializer("nonsense")
+            serializers.unregister_serializer('nonsense')
 
     def test_builtin_serializers(self):
-        "Requesting a list of serializer formats popuates the registry"
+        'Requesting a list of serializer formats popuates the registry'
         all_formats = set(serializers.get_serializer_formats())
         public_formats = set(serializers.get_public_serializer_formats())
 
-        self.assertIn('xml', all_formats),
+        (self.assertIn('xml', all_formats),)
         self.assertIn('xml', public_formats)
 
         self.assertIn('json2', all_formats)
@@ -72,55 +79,46 @@ class SerializerRegistrationTests(SimpleTestCase):
         #15889: get_serializer('nonsense') raises a SerializerDoesNotExist
         """
         with self.assertRaises(SerializerDoesNotExist):
-            serializers.get_serializer("nonsense")
+            serializers.get_serializer('nonsense')
 
         with self.assertRaises(KeyError):
-            serializers.get_serializer("nonsense")
-
+            serializers.get_serializer('nonsense')
         # SerializerDoesNotExist is instantiated with the nonexistent format
         with self.assertRaises(SerializerDoesNotExist) as cm:
-            serializers.get_serializer("nonsense")
-        self.assertEqual(cm.exception.args, ("nonsense",))
+            serializers.get_serializer('nonsense')
+        self.assertEqual(cm.exception.args, ('nonsense',))
 
     def test_get_unknown_deserializer(self):
         with self.assertRaises(SerializerDoesNotExist):
-            serializers.get_deserializer("nonsense")
+            serializers.get_deserializer('nonsense')
 
 
 class SerializersTestBase:
-    serializer_name = None  # Set by subclasses to the serialization format name
+    serializer_name = None # Set by subclasses to the serialization format name
 
     def setUp(self):
-        sports = Category.objects.create(name="Sports")
-        music = Category.objects.create(name="Music")
-        op_ed = Category.objects.create(name="Op-Ed")
+        sports = Category.objects.create(name='Sports')
+        music = Category.objects.create(name='Music')
+        op_ed = Category.objects.create(name='Op-Ed')
 
-        self.joe = Author.objects.create(name="Joe")
-        self.jane = Author.objects.create(name="Jane")
+        self.joe = Author.objects.create(name='Joe')
+        self.jane = Author.objects.create(name='Jane')
 
-        self.a1 = Article(
-            author=self.jane,
-            headline="Poker has no place on ESPN",
-            pub_date=datetime(2006, 6, 16, 11, 00)
-        )
+        self.a1 = Article(author=self.jane, headline='Poker has no place on ESPN', pub_date=datetime(2006, 6, 16, 11, 00))
         self.a1.save()
         self.a1.categories.set([sports, op_ed])
 
-        self.a2 = Article(
-            author=self.joe,
-            headline="Time to reform copyright",
-            pub_date=datetime(2006, 6, 16, 13, 00, 11, 345)
-        )
+        self.a2 = Article(author=self.joe, headline='Time to reform copyright', pub_date=datetime(2006, 6, 16, 13, 00, 11, 345))
         self.a2.save()
         self.a2.categories.set([music, op_ed])
 
     def test_serialize(self):
-        """Basic serialization works."""
+        '''Basic serialization works.'''
         serial_str = serializers.serialize(self.serializer_name, Article.objects.all())
         self.assertTrue(self._validate_output(serial_str))
 
     def test_serializer_roundtrip(self):
-        """Serialized content can be deserialized."""
+        '''Serialized content can be deserialized.'''
         serial_str = serializers.serialize(self.serializer_name, Article.objects.all())
         models = list(serializers.deserialize(self.serializer_name, serial_str))
         self.assertEqual(len(models), 2)
@@ -128,14 +126,11 @@ class SerializersTestBase:
     def test_serialize_to_stream(self):
         obj = ComplexModel(field1='first', field2='second', field3='third')
         obj.save_base(raw=True)
-
         # Serialize the test database to a stream
         for stream in (StringIO(), HttpResponse()):
             serializers.serialize(self.serializer_name, [obj], indent=2, stream=stream)
-
             # Serialize normally for a comparison
             string_data = serializers.serialize(self.serializer_name, [obj], indent=2)
-
             # The two are the same
             if isinstance(stream, StringIO):
                 self.assertEqual(string_data, stream.getvalue())
@@ -145,35 +140,29 @@ class SerializersTestBase:
     def test_serialize_specific_fields(self):
         obj = ComplexModel(field1='first', field2='second', field3='third')
         obj.save_base(raw=True)
-
         # Serialize then deserialize the test database
-        serialized_data = serializers.serialize(
-            self.serializer_name, [obj], indent=2, fields=('field1', 'field3')
-        )
+        serialized_data = serializers.serialize(self.serializer_name, [obj], indent=2, fields=('field1', 'field3'))
         result = next(serializers.deserialize(self.serializer_name, serialized_data))
-
         # The deserialized object contains data in only the serialized fields.
         self.assertEqual(result.object.field1, 'first')
         self.assertEqual(result.object.field2, '')
         self.assertEqual(result.object.field3, 'third')
 
     def test_altering_serialized_output(self):
-        """
+        '''
         The ability to create new objects by modifying serialized content.
-        """
-        old_headline = "Poker has no place on ESPN"
-        new_headline = "Poker has no place on television"
+        '''
+        old_headline = 'Poker has no place on ESPN'
+        new_headline = 'Poker has no place on television'
         serial_str = serializers.serialize(self.serializer_name, Article.objects.all())
         serial_str = serial_str.replace(old_headline, new_headline)
         models = list(serializers.deserialize(self.serializer_name, serial_str))
-
         # Prior to saving, old headline is in place
         self.assertTrue(Article.objects.filter(headline=old_headline))
         self.assertFalse(Article.objects.filter(headline=new_headline))
 
         for model in models:
             model.save()
-
         # After saving, new headline is in place
         self.assertTrue(Article.objects.filter(headline=new_headline))
         self.assertFalse(Article.objects.filter(headline=old_headline))
@@ -192,9 +181,9 @@ class SerializersTestBase:
             self.assertEqual(obj.object.pk, self.joe.pk)
 
     def test_serialize_field_subset(self):
-        """Output can be restricted to a subset of fields"""
+        '''Output can be restricted to a subset of fields'''
         valid_fields = ('headline', 'pub_date')
-        invalid_fields = ("author", "categories")
+        invalid_fields = ('author', 'categories')
         serial_str = serializers.serialize(self.serializer_name, Article.objects.all(), fields=valid_fields)
         for field_name in invalid_fields:
             self.assertFalse(self._get_field_values(serial_str, field_name))
@@ -203,8 +192,8 @@ class SerializersTestBase:
             self.assertTrue(self._get_field_values(serial_str, field_name))
 
     def test_serialize_unicode(self):
-        """Unicode makes the roundtrip intact"""
-        actor_name = "Za\u017c\u00f3\u0142\u0107"
+        '''Unicode makes the roundtrip intact'''
+        actor_name = 'Za\u017c\u00f3\u0142\u0107'
         movie_title = 'G\u0119\u015bl\u0105 ja\u017a\u0144'
         ac = Actor(name=actor_name)
         mv = Movie(title=movie_title, actor=ac)
@@ -212,8 +201,8 @@ class SerializersTestBase:
         mv.save()
 
         serial_str = serializers.serialize(self.serializer_name, [mv])
-        self.assertEqual(self._get_field_values(serial_str, "title")[0], movie_title)
-        self.assertEqual(self._get_field_values(serial_str, "actor")[0], actor_name)
+        self.assertEqual(self._get_field_values(serial_str, 'title')[0], movie_title)
+        self.assertEqual(self._get_field_values(serial_str, 'actor')[0], actor_name)
 
         obj_list = list(serializers.deserialize(self.serializer_name, serial_str))
         mv_obj = obj_list[0].object
@@ -221,19 +210,14 @@ class SerializersTestBase:
 
     def test_serialize_progressbar(self):
         fake_stdout = StringIO()
-        serializers.serialize(
-            self.serializer_name, Article.objects.all(),
-            progress_output=fake_stdout, object_count=Article.objects.count()
-        )
-        self.assertTrue(
-            fake_stdout.getvalue().endswith('[' + '.' * ProgressBar.progress_width + ']\n')
-        )
+        serializers.serialize(self.serializer_name, Article.objects.all(), progress_output=fake_stdout, object_count=Article.objects.count())
+        self.assertTrue(fake_stdout.getvalue().endswith('[' + '.' * ProgressBar.progress_width + ']\n'))
 
     def test_serialize_superfluous_queries(self):
-        """Ensure no superfluous queries are made when serializing ForeignKeys
+        '''Ensure no superfluous queries are made when serializing ForeignKeys
 
         #17602
-        """
+        '''
         ac = Actor(name='Actor name')
         ac.save()
         mv = Movie(title='Movie title', actor_id=ac.pk)
@@ -243,11 +227,11 @@ class SerializersTestBase:
             serializers.serialize(self.serializer_name, [mv])
 
     def test_serialize_with_null_pk(self):
-        """
+        '''
         Serialized data with no primary key results
         in a model instance with no id
-        """
-        category = Category(name="Reference")
+        '''
+        category = Category(name='Reference')
         serial_str = serializers.serialize(self.serializer_name, [category])
         pk_value = self._get_pk_values(serial_str)[0]
         self.assertFalse(pk_value)
@@ -256,7 +240,7 @@ class SerializersTestBase:
         self.assertIsNone(cat_obj.id)
 
     def test_float_serialization(self):
-        """Float values serialize and deserialize intact"""
+        '''Float values serialize and deserialize intact'''
         sc = Score(score=3.4)
         sc.save()
         serial_str = serializers.serialize(self.serializer_name, [sc])
@@ -271,15 +255,15 @@ class SerializersTestBase:
         self.assertIsInstance(deserial_objs[0].object, Author)
 
     def test_custom_field_serialization(self):
-        """Custom fields serialize and deserialize intact"""
-        team_str = "Spartak Moskva"
+        '''Custom fields serialize and deserialize intact'''
+        team_str = 'Spartak Moskva'
         player = Player()
-        player.name = "Soslan Djanaev"
+        player.name = 'Soslan Djanaev'
         player.rank = 1
         player.team = Team(team_str)
         player.save()
         serial_str = serializers.serialize(self.serializer_name, Player.objects.all())
-        team = self._get_field_values(serial_str, "team")
+        team = self._get_field_values(serial_str, 'team')
         self.assertTrue(team)
         self.assertEqual(team[0], team_str)
 
@@ -287,22 +271,19 @@ class SerializersTestBase:
         self.assertEqual(deserial_objs[0].object.team.to_string(), player.team.to_string())
 
     def test_pre_1000ad_date(self):
-        """Year values before 1000AD are properly formatted"""
+        '''Year values before 1000AD are properly formatted'''
         # Regression for #12524 -- dates before 1000AD get prefixed
         # 0's on the year
-        a = Article.objects.create(
-            author=self.jane,
-            headline="Nobody remembers the early years",
-            pub_date=datetime(1, 2, 3, 4, 5, 6))
+        a = Article.objects.create(author=self.jane, headline='Nobody remembers the early years', pub_date=datetime(1, 2, 3, 4, 5, 6))
 
         serial_str = serializers.serialize(self.serializer_name, [a])
-        date_values = self._get_field_values(serial_str, "pub_date")
-        self.assertEqual(date_values[0].replace('T', ' '), "0001-02-03 04:05:06")
+        date_values = self._get_field_values(serial_str, 'pub_date')
+        self.assertEqual(date_values[0].replace('T', ' '), '0001-02-03 04:05:06')
 
     def test_pkless_serialized_strings(self):
-        """
+        '''
         Serialized strings without PKs can be turned into models
-        """
+        '''
         deserial_objs = list(serializers.deserialize(self.serializer_name, self.pkless_str))
         for obj in deserial_objs:
             self.assertFalse(obj.object.id)
@@ -310,18 +291,20 @@ class SerializersTestBase:
         self.assertEqual(Category.objects.all().count(), 5)
 
     def test_deterministic_mapping_ordering(self):
-        """Mapping such as fields should be deterministically ordered. (#24558)"""
+        '''Mapping such as fields should be deterministically ordered. (#24558)'''
         output = serializers.serialize(self.serializer_name, [self.a1], indent=2)
         categories = self.a1.categories.values_list('pk', flat=True)
-        self.assertEqual(output, self.mapping_ordering_str % {
+        self.assertEqual(output, self.mapping_ordering_str \
+        % \
+        {
             'article_pk': self.a1.pk,
             'author_pk': self.a1.author_id,
             'first_category_pk': categories[0],
-            'second_category_pk': categories[1],
+            'second_category_pk': categories[1]
         })
 
     def test_deserialize_force_insert(self):
-        """Deserialized content can be saved with force_insert as a parameter."""
+        '''Deserialized content can be saved with force_insert as a parameter.'''
         serial_str = serializers.serialize(self.serializer_name, [self.a1])
         deserial_obj = list(serializers.deserialize(self.serializer_name, serial_str))[0]
         with mock.patch('django.db.models.Model') as mock_model:
@@ -334,15 +317,14 @@ class SerializersTestBase:
         base_objects = BaseModel.objects.all()
         proxy_objects = ProxyBaseModel.objects.all()
         proxy_proxy_objects = ProxyProxyBaseModel.objects.all()
-        base_data = serializers.serialize("json", base_objects)
-        proxy_data = serializers.serialize("json", proxy_objects)
-        proxy_proxy_data = serializers.serialize("json", proxy_proxy_objects)
+        base_data = serializers.serialize('json', base_objects)
+        proxy_data = serializers.serialize('json', proxy_objects)
+        proxy_proxy_data = serializers.serialize('json', proxy_proxy_objects)
         self.assertEqual(base_data, proxy_data.replace('proxy', ''))
         self.assertEqual(base_data, proxy_proxy_data.replace('proxy', ''))
 
 
 class SerializerAPITests(SimpleTestCase):
-
     def test_stream_class(self):
         class File:
             def __init__(self):
@@ -365,15 +347,14 @@ class SerializerAPITests(SimpleTestCase):
 
 
 class SerializersTransactionTestBase:
-
     available_apps = ['serializers']
 
     @skipUnlessDBFeature('supports_forward_references')
     def test_forward_refs(self):
-        """
+        '''
         Objects ids can be referenced before they are
         defined in the serialization data.
-        """
+        '''
         # The deserialization process needs to run in a transaction in order
         # to test forward reference handling.
         with transaction.atomic():
@@ -386,19 +367,18 @@ class SerializersTransactionTestBase:
             self.assertEqual(model_cls.objects.all().count(), 1)
         art_obj = Article.objects.all()[0]
         self.assertEqual(art_obj.categories.all().count(), 1)
-        self.assertEqual(art_obj.author.name, "Agnes")
+        self.assertEqual(art_obj.author.name, 'Agnes')
 
 
 def register_tests(test_class, method_name, test_func, exclude=()):
-    """
+    '''
     Dynamically create serializer tests to ensure that all registered
     serializers are automatically tested.
-    """
+    '''
     for format_ in serializers.get_serializer_formats():
         if format_ == 'geojson' or format_ in exclude:
             continue
-        decorated_func = skipIf(
-            isinstance(serializers.get_serializer(format_), serializers.BadSerializer),
-            'The Python library for the %s serializer is not installed.' % format_,
-        )(test_func)
+        decorated_func = skipIf(isinstance(serializers.get_serializer(format_), serializers.BadSerializer), 'The Python library for the %s serializer is not installed.' \
+        % \
+        format_)(test_func)
         setattr(test_class, method_name % format_, partialmethod(decorated_func, format_))

@@ -12,5 +12,5 @@ urlpatterns = [
     path('uncaught_exception/', views.uncaught_exception),
     path('permission_denied/', views.permission_denied),
     path('multi_part_parser_error/', views.multi_part_parser_error),
-    path('does_not_exist_raised/', views.does_not_exist_raised),
+    path('does_not_exist_raised/', views.does_not_exist_raised)
 ]

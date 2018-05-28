@@ -6,12 +6,8 @@ from io import StringIO
 from subprocess import Popen
 from unittest import mock
 
-from django.core.management import (
-    CommandError, call_command, execute_from_command_line,
-)
-from django.core.management.commands.makemessages import (
-    Command as MakeMessagesCommand,
-)
+from django.core.management import CommandError, call_command, execute_from_command_line
+from django.core.management.commands.makemessages import Command as MakeMessagesCommand
 from django.core.management.utils import find_command
 from django.test import SimpleTestCase, override_settings
 from django.test.utils import captured_stderr, captured_stdout
@@ -24,20 +20,18 @@ has_msgfmt = find_command('msgfmt')
 
 
 @unittest.skipUnless(has_msgfmt, 'msgfmt is mandatory for compilation tests')
-class MessageCompilationTests(RunInTmpDirMixin, SimpleTestCase):
-
+class MessageCompilationTests(RunInTmpDirMixin,SimpleTestCase):
     work_subdir = 'commands'
 
 
 class PoFileTests(MessageCompilationTests):
-
     LOCALE = 'es_AR'
     MO_FILE = 'locale/%s/LC_MESSAGES/django.mo' % LOCALE
 
     def test_bom_rejection(self):
         with self.assertRaises(CommandError) as cm:
             call_command('compilemessages', locale=[self.LOCALE], stdout=StringIO())
-        self.assertIn("file has a BOM (Byte Order Mark)", cm.exception.args[0])
+        self.assertIn('file has a BOM (Byte Order Mark)', cm.exception.args[0])
         self.assertFalse(os.path.exists(self.MO_FILE))
 
     def test_no_write_access(self):
@@ -49,7 +43,8 @@ class PoFileTests(MessageCompilationTests):
         try:
             call_command('compilemessages', locale=['en'], stderr=err_buffer, verbosity=0)
             err = err_buffer.getvalue()
-            self.assertIn("not writable location", err)
+            self.assertIn('not writable location', err)
+
         finally:
             os.chmod(mo_file_en, old_mode)
 
@@ -66,7 +61,6 @@ class PoFileContentsTests(MessageCompilationTests):
 
 
 class MultipleLocaleCompilationTests(MessageCompilationTests):
-
     MO_FILE_HR = None
     MO_FILE_FR = None
 
@@ -91,7 +85,6 @@ class MultipleLocaleCompilationTests(MessageCompilationTests):
 
 
 class ExcludedLocaleCompilationTests(MessageCompilationTests):
-
     work_subdir = 'exclude'
 
     MO_FILE = 'locale/%s/LC_MESSAGES/django.mo'
@@ -126,8 +119,7 @@ class ExcludedLocaleCompilationTests(MessageCompilationTests):
         self.assertFalse(os.path.exists(self.MO_FILE % 'it'))
 
     def test_multiple_locales_excluded_with_locale(self):
-        call_command('compilemessages', locale=['en', 'fr', 'it'], exclude=['fr', 'it'],
-                     stdout=StringIO())
+        call_command('compilemessages', locale=['en', 'fr', 'it'], exclude=['fr', 'it'], stdout=StringIO())
         self.assertTrue(os.path.exists(self.MO_FILE % 'en'))
         self.assertFalse(os.path.exists(self.MO_FILE % 'fr'))
         self.assertFalse(os.path.exists(self.MO_FILE % 'it'))
@@ -147,7 +139,7 @@ class CompilationErrorHandling(MessageCompilationTests):
         with mock.patch('django.core.management.utils.Popen', lambda *args, **kwargs: Popen(*args, env=env, **kwargs)):
             cmd = MakeMessagesCommand()
             if cmd.gettext_version < (0, 18, 3):
-                self.skipTest("python-brace-format is a recent gettext addition.")
+                self.skipTest('python-brace-format is a recent gettext addition.')
             with self.assertRaisesMessage(CommandError, "' cannot start a field name"):
                 call_command('compilemessages', locale=['ko'], verbosity=0)
 
@@ -159,10 +151,9 @@ class ProjectAndAppTests(MessageCompilationTests):
 
 
 class FuzzyTranslationTest(ProjectAndAppTests):
-
     def setUp(self):
         super().setUp()
-        gettext_module._translations = {}  # flush cache or test will be useless
+        gettext_module._translations = {} # flush cache or test will be useless
 
     def test_nofuzzy_compiling(self):
         with override_settings(LOCALE_PATHS=[os.path.join(self.test_dir, 'locale')]):
@@ -180,7 +171,6 @@ class FuzzyTranslationTest(ProjectAndAppTests):
 
 
 class AppCompilationTest(ProjectAndAppTests):
-
     def test_app_locale_compiled(self):
         call_command('compilemessages', locale=[self.LOCALE], stdout=StringIO())
         self.assertTrue(os.path.exists(self.PROJECT_MO_FILE))

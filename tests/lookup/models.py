@@ -1,8 +1,8 @@
-"""
+'''
 The lookup API
 
 This demonstrates features of the database API.
-"""
+'''
 
 from django.db import models
 from django.db.models.lookups import IsNull
@@ -77,7 +77,7 @@ class Game(models.Model):
     away = models.CharField(max_length=100)
 
     def __str__(self):
-        return "%s at %s" % (self.away, self.home)
+        return '%s at %s' % (self.away, self.home)
 
 
 class Player(models.Model):

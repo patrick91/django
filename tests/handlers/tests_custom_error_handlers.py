@@ -24,9 +24,7 @@ def permission_denied_view(request):
     raise PermissionDenied
 
 
-urlpatterns = [
-    url(r'^$', permission_denied_view),
-]
+urlpatterns = [url(r'^$', permission_denied_view)]
 
 handler403 = template_response_error_handler
 
@@ -34,10 +32,9 @@ handler403 = template_response_error_handler
 @override_settings(ROOT_URLCONF='handlers.tests_custom_error_handlers')
 @modify_settings(MIDDLEWARE={'append': 'handlers.tests_custom_error_handlers.MiddlewareAccessingContent'})
 class CustomErrorHandlerTests(SimpleTestCase):
-
     def test_handler_renders_template_response(self):
-        """
+        '''
         BaseHandler should render TemplateResponse if necessary.
-        """
+        '''
         response = self.client.get('/')
         self.assertContains(response, 'Error handler content', status_code=403)

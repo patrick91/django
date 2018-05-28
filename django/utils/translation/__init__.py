@@ -1,23 +1,38 @@
-"""
+'''
 Internationalization support.
-"""
+'''
 import re
 from contextlib import ContextDecorator
 
 from django.utils.functional import lazy
 
 __all__ = [
-    'activate', 'deactivate', 'override', 'deactivate_all',
-    'get_language', 'get_language_from_request',
-    'get_language_info', 'get_language_bidi',
-    'check_for_language', 'to_locale', 'templatize',
-    'gettext', 'gettext_lazy', 'gettext_noop',
-    'ugettext', 'ugettext_lazy', 'ugettext_noop',
-    'ngettext', 'ngettext_lazy',
-    'ungettext', 'ungettext_lazy',
-    'pgettext', 'pgettext_lazy',
-    'npgettext', 'npgettext_lazy',
-    'LANGUAGE_SESSION_KEY',
+    'activate',
+    'deactivate',
+    'override',
+    'deactivate_all',
+    'get_language',
+    'get_language_from_request',
+    'get_language_info',
+    'get_language_bidi',
+    'check_for_language',
+    'to_locale',
+    'templatize',
+    'gettext',
+    'gettext_lazy',
+    'gettext_noop',
+    'ugettext',
+    'ugettext_lazy',
+    'ugettext_noop',
+    'ngettext',
+    'ngettext_lazy',
+    'ungettext',
+    'ungettext_lazy',
+    'pgettext',
+    'pgettext_lazy',
+    'npgettext',
+    'npgettext_lazy',
+    'LANGUAGE_SESSION_KEY'
 ]
 
 LANGUAGE_SESSION_KEY = '_language'
@@ -36,7 +51,7 @@ class TranslatorCommentWarning(SyntaxWarning):
 # settings).
 
 class Trans:
-    """
+    '''
     The purpose of this class is to store the actual translation function upon
     receiving the first call to that function. After this is done, changes to
     USE_I18N will have no effect to which function is served upon request. If
@@ -46,7 +61,7 @@ class Trans:
     Note that storing the function with setattr will have a noticeable
     performance effect, as access to the function goes the normal path,
     instead of using __getattr__.
-    """
+    '''
 
     def __getattr__(self, real_name):
         from django.conf import settings
@@ -59,7 +74,6 @@ class Trans:
 
 
 _trans = Trans()
-
 # The Trans class is no more needed, so remove it from the namespace.
 del Trans
 
@@ -105,7 +119,6 @@ def lazy_number(func, resultclass, number=None, **kwargs):
         proxy = lazy(func, resultclass)(**kwargs)
     else:
         original_kwargs = kwargs.copy()
-
         class NumberAwareString(resultclass):
             def __bool__(self):
                 return bool(kwargs['singular'])
@@ -115,11 +128,12 @@ def lazy_number(func, resultclass, number=None, **kwargs):
                     try:
                         number_value = rhs[number]
                     except KeyError:
-                        raise KeyError(
-                            "Your dictionary lacks key '%s\'. Please provide "
+                        raise
+                        KeyError("Your dictionary lacks key '%s\'. Please provide "
                             "it, because it is required to determine whether "
-                            "string is singular or plural." % number
-                        )
+                            "string is singular or plural." \
+                        % \
+                        number)
                 else:
                     number_value = rhs
                 kwargs['number'] = number_value
@@ -130,9 +144,8 @@ def lazy_number(func, resultclass, number=None, **kwargs):
                     # String doesn't contain a placeholder for the number.
                     pass
                 return translated
-
         proxy = lazy(lambda **kwargs: NumberAwareString(), NumberAwareString)(**kwargs)
-        proxy.__reduce__ = lambda: (_lazy_number_unpickle, (func, resultclass, number, original_kwargs))
+        proxy.__reduce__ = lambda : (_lazy_number_unpickle, (func, resultclass, number, original_kwargs))
     return proxy
 
 
@@ -228,12 +241,12 @@ def get_language_info(lang_code):
             info = lang_info
     except KeyError:
         if '-' not in lang_code:
-            raise KeyError("Unknown language code %s." % lang_code)
+            raise KeyError('Unknown language code %s.' % lang_code)
         generic_lang_code = lang_code.split('-')[0]
         try:
             info = LANG_INFO[generic_lang_code]
         except KeyError:
-            raise KeyError("Unknown language code %s and %s." % (lang_code, generic_lang_code))
+            raise KeyError('Unknown language code %s and %s.' % (lang_code, generic_lang_code))
 
     if info:
         info['name_translated'] = gettext_lazy(info['name'])

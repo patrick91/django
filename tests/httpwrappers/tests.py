@@ -10,10 +10,17 @@ from django.core.serializers.json import DjangoJSONEncoder
 from django.core.signals import request_finished
 from django.db import close_old_connections
 from django.http import (
-    BadHeaderError, HttpResponse, HttpResponseNotAllowed,
-    HttpResponseNotModified, HttpResponsePermanentRedirect,
-    HttpResponseRedirect, JsonResponse, QueryDict, SimpleCookie,
-    StreamingHttpResponse, parse_cookie,
+    BadHeaderError,
+    HttpResponse,
+    HttpResponseNotAllowed,
+    HttpResponseNotModified,
+    HttpResponsePermanentRedirect,
+    HttpResponseRedirect,
+    JsonResponse,
+    QueryDict,
+    SimpleCookie,
+    StreamingHttpResponse,
+    parse_cookie
 )
 from django.test import SimpleTestCase
 from django.utils.functional import lazystr
@@ -62,7 +69,7 @@ class QueryDictTests(SimpleTestCase):
         self.assertEqual(q.urlencode(), '')
 
     def test_single_key_value(self):
-        """Test QueryDict with one key/value pair"""
+        '''Test QueryDict with one key/value pair'''
 
         q = QueryDict('foo=bar')
         self.assertEqual(q['foo'], 'bar')
@@ -115,10 +122,10 @@ class QueryDictTests(SimpleTestCase):
         self.assertEqual(q.urlencode(safe='/'), 'next=/t%C3%ABst%26key/')
 
     def test_mutable_copy(self):
-        """A copy of a QueryDict is mutable."""
+        '''A copy of a QueryDict is mutable.'''
         q = QueryDict().copy()
         with self.assertRaises(KeyError):
-            q.__getitem__("foo")
+            q.__getitem__('foo')
         q['name'] = 'john'
         self.assertEqual(q['name'], 'john')
 
@@ -167,7 +174,7 @@ class QueryDictTests(SimpleTestCase):
         self.assertEqual(len(q), 0)
 
     def test_multiple_keys(self):
-        """Test QueryDict with two key/value pairs with same keys."""
+        '''Test QueryDict with two key/value pairs with same keys.'''
 
         q = QueryDict('vote=yes&vote=no')
 
@@ -221,14 +228,14 @@ class QueryDictTests(SimpleTestCase):
         self.assertEqual(q, q1)
 
     def test_update_from_querydict(self):
-        """Regression test for #8278: QueryDict.update(QueryDict)"""
-        x = QueryDict("a=1&a=2", mutable=True)
-        y = QueryDict("a=3&a=4")
+        '''Regression test for #8278: QueryDict.update(QueryDict)'''
+        x = QueryDict('a=1&a=2', mutable=True)
+        y = QueryDict('a=3&a=4')
         x.update(y)
         self.assertEqual(x.getlist('a'), ['1', '2', '3', '4'])
 
     def test_non_default_encoding(self):
-        """#13572 - QueryDict with a non-default encoding"""
+        '''#13572 - QueryDict with a non-default encoding'''
         q = QueryDict('cur=%A4', encoding='iso-8859-15')
         self.assertEqual(q.encoding, 'iso-8859-15')
         self.assertEqual(list(q.items()), [('cur', '€')])
@@ -244,10 +251,11 @@ class QueryDictTests(SimpleTestCase):
         self.assertEqual(QueryDict.fromkeys(['key1', 'key2', 'key3']), QueryDict('key1&key2&key3'))
 
     def test_fromkeys_with_nonempty_value(self):
-        self.assertEqual(
-            QueryDict.fromkeys(['key1', 'key2', 'key3'], value='val'),
-            QueryDict('key1=val&key2=val&key3=val')
-        )
+        self.assertEqual(QueryDict.fromkeys([
+            'key1',
+            'key2',
+            'key3'
+        ], value='val'), QueryDict('key1=val&key2=val&key3=val'))
 
     def test_fromkeys_is_immutable_by_default(self):
         # Match behavior of __init__() which is also immutable by default.
@@ -280,26 +288,21 @@ class QueryDictTests(SimpleTestCase):
 
 
 class HttpResponseTests(unittest.TestCase):
-
     def test_headers_type(self):
         r = HttpResponse()
-
         # ASCII strings or bytes values are converted to strings.
         r['key'] = 'test'
         self.assertEqual(r['key'], 'test')
         r['key'] = 'test'.encode('ascii')
         self.assertEqual(r['key'], 'test')
         self.assertIn(b'test', r.serialize_headers())
-
         # Non-ASCII values are serialized to Latin-1.
         r['key'] = 'café'
         self.assertIn('café'.encode('latin-1'), r.serialize_headers())
-
         # Other unicode values are MIME-encoded (there's no way to pass them as bytes).
         r['key'] = '†'
         self.assertEqual(r['key'], '=?utf-8?b?4oCg?=')
         self.assertIn(b'=?utf-8?b?4oCg?=', r.serialize_headers())
-
         # The response also converts string or bytes keys to strings, but requires
         # them to contain ASCII
         r = HttpResponse()
@@ -343,9 +346,9 @@ class HttpResponseTests(unittest.TestCase):
             r.__setitem__('test\nstr', 'test')
 
     def test_dict_behavior(self):
-        """
+        '''
         Test for bug #14020: Make HttpResponse.get work like dict.get
-        """
+        '''
         r = HttpResponse()
         self.assertIsNone(r.get('test'))
 
@@ -353,7 +356,6 @@ class HttpResponseTests(unittest.TestCase):
         # Bug 16494: HttpResponse should behave consistently with non-strings
         r = HttpResponse(12345)
         self.assertEqual(r.content, b'12345')
-
         # test content via property
         r = HttpResponse()
         r.content = 12345
@@ -362,7 +364,6 @@ class HttpResponseTests(unittest.TestCase):
     def test_iter_content(self):
         r = HttpResponse(['abc', 'def', 'ghi'])
         self.assertEqual(r.content, b'abcdefghi')
-
         # test iter content via property
         r = HttpResponse()
         r.content = ['idan', 'alex', 'jacob']
@@ -371,13 +372,11 @@ class HttpResponseTests(unittest.TestCase):
         r = HttpResponse()
         r.content = [1, 2, 3]
         self.assertEqual(r.content, b'123')
-
         # test odd inputs
         r = HttpResponse()
         r.content = ['1', '2', 3, '\u079e']
         # '\xde\x9e' == unichr(1950).encode()
         self.assertEqual(r.content, b'123\xde\x9e')
-
         # .content can safely be accessed multiple times.
         r = HttpResponse(iter(['hello', 'world']))
         self.assertEqual(r.content, r.content)
@@ -387,12 +386,10 @@ class HttpResponseTests(unittest.TestCase):
         self.assertEqual(b''.join(r), b'helloworld')
         # Accessing .content still works.
         self.assertEqual(r.content, b'helloworld')
-
         # Accessing .content also works if the response was iterated first.
         r = HttpResponse(iter(['hello', 'world']))
         self.assertEqual(b''.join(r), b'helloworld')
         self.assertEqual(r.content, b'helloworld')
-
         # Additional content can be written to the response.
         r = HttpResponse(iter(['hello', 'world']))
         self.assertEqual(r.content, b'helloworld')
@@ -412,16 +409,15 @@ class HttpResponseTests(unittest.TestCase):
 
     def test_file_interface(self):
         r = HttpResponse()
-        r.write(b"hello")
+        r.write(b'hello')
         self.assertEqual(r.tell(), 5)
-        r.write("привет")
+        r.write('привет')
         self.assertEqual(r.tell(), 17)
 
         r = HttpResponse(['abc'])
         r.write('def')
         self.assertEqual(r.tell(), 6)
         self.assertEqual(r.content, b'abcdef')
-
         # with Content-Encoding header
         r = HttpResponse()
         r['Content-Encoding'] = 'winning'
@@ -442,7 +438,7 @@ class HttpResponseTests(unittest.TestCase):
         bad_urls = [
             'data:text/html,<script>window.alert("xss")</script>',
             'mailto:test@example.com',
-            'file:///etc/passwd',
+            'file:///etc/passwd'
         ]
         for url in bad_urls:
             with self.assertRaises(DisallowedRedirect):
@@ -456,16 +452,12 @@ class HttpResponseSubclassesTests(SimpleTestCase):
         response = HttpResponseRedirect('/redirected/')
         self.assertEqual(response.status_code, 302)
         # Standard HttpResponse init args can be used
-        response = HttpResponseRedirect(
-            '/redirected/',
-            content='The resource has temporarily moved',
-            content_type='text/html',
-        )
+        response = HttpResponseRedirect('/redirected/', content='The resource has temporarily moved', content_type='text/html')
         self.assertContains(response, 'The resource has temporarily moved', status_code=302)
         self.assertEqual(response.url, response['Location'])
 
     def test_redirect_lazy(self):
-        """Make sure HttpResponseRedirect works with lazy strings."""
+        '''Make sure HttpResponseRedirect works with lazy strings.'''
         r = HttpResponseRedirect(lazystr('/redirected/'))
         self.assertEqual(r.url, '/redirected/')
 
@@ -475,10 +467,10 @@ class HttpResponseSubclassesTests(SimpleTestCase):
         self.assertEqual(repr(response), expected)
 
     def test_invalid_redirect_repr(self):
-        """
+        '''
         If HttpResponseRedirect raises DisallowedRedirect, its __repr__()
         should work (in the debug view, for example).
-        """
+        '''
         response = HttpResponseRedirect.__new__(HttpResponseRedirect)
         with self.assertRaisesMessage(DisallowedRedirect, "Unsafe redirect to URL with protocol 'ssh'"):
             HttpResponseRedirect.__init__(response, 'ssh://foo')
@@ -490,7 +482,7 @@ class HttpResponseSubclassesTests(SimpleTestCase):
         self.assertEqual(response.status_code, 304)
         # 304 responses should not have content/content-type
         with self.assertRaises(AttributeError):
-            response.content = "Hello dear"
+            response.content = 'Hello dear'
         self.assertNotIn('content-type', response)
 
     def test_not_modified_repr(self):
@@ -522,11 +514,9 @@ class JsonResponseTests(SimpleTestCase):
         self.assertEqual(json.loads(response.content.decode()), data)
 
     def test_json_response_raises_type_error_with_default_setting(self):
-        with self.assertRaisesMessage(
-            TypeError,
-            'In order to allow non-dict objects to be serialized set the '
-            'safe parameter to False'
-        ):
+        with \
+                self.assertRaisesMessage(TypeError, 'In order to allow non-dict objects to be serialized set the '
+            'safe parameter to False'):
             JsonResponse([1, 2, 3])
 
     def test_json_response_text(self):
@@ -558,22 +548,18 @@ class JsonResponseTests(SimpleTestCase):
 class StreamingHttpResponseTests(SimpleTestCase):
     def test_streaming_response(self):
         r = StreamingHttpResponse(iter(['hello', 'world']))
-
         # iterating over the response itself yields bytestring chunks.
         chunks = list(r)
         self.assertEqual(chunks, [b'hello', b'world'])
         for chunk in chunks:
             self.assertIsInstance(chunk, bytes)
-
         # and the response can only be iterated once.
         self.assertEqual(list(r), [])
-
         # even when a sequence that can be iterated many times, like a list,
         # is given as content.
         r = StreamingHttpResponse(['abc', 'def'])
         self.assertEqual(list(r), [b'abc', b'def'])
         self.assertEqual(list(r), [])
-
         # iterating over strings still yields bytestring chunks.
         r.streaming_content = iter(['hello', 'café'])
         chunks = list(r)
@@ -581,36 +567,28 @@ class StreamingHttpResponseTests(SimpleTestCase):
         self.assertEqual(chunks, [b'hello', b'caf\xc3\xa9'])
         for chunk in chunks:
             self.assertIsInstance(chunk, bytes)
-
         # streaming responses don't have a `content` attribute.
         self.assertFalse(hasattr(r, 'content'))
-
         # and you can't accidentally assign to a `content` attribute.
         with self.assertRaises(AttributeError):
             r.content = 'xyz'
-
         # but they do have a `streaming_content` attribute.
         self.assertTrue(hasattr(r, 'streaming_content'))
-
         # that exists so we can check if a response is streaming, and wrap or
         # replace the content iterator.
         r.streaming_content = iter(['abc', 'def'])
         r.streaming_content = (chunk.upper() for chunk in r.streaming_content)
         self.assertEqual(list(r), [b'ABC', b'DEF'])
-
         # coercing a streaming response to bytes doesn't return a complete HTTP
         # message like a regular response does. it only gives us the headers.
         r = StreamingHttpResponse(iter(['hello', 'world']))
         self.assertEqual(bytes(r), b'Content-Type: text/html; charset=utf-8')
-
         # and this won't consume its content.
         self.assertEqual(list(r), [b'hello', b'world'])
-
         # additional content cannot be written to the response.
         r = StreamingHttpResponse(iter(['hello', 'world']))
         with self.assertRaises(Exception):
             r.write('!')
-
         # and we can't tell the current position.
         with self.assertRaises(Exception):
             r.tell()
@@ -620,7 +598,6 @@ class StreamingHttpResponseTests(SimpleTestCase):
 
 
 class FileCloseTests(SimpleTestCase):
-
     def setUp(self):
         # Disable the request_finished signal during this test
         # to avoid interfering with the database connection.
@@ -631,13 +608,11 @@ class FileCloseTests(SimpleTestCase):
 
     def test_response(self):
         filename = os.path.join(os.path.dirname(__file__), 'abc.txt')
-
         # file isn't closed until we close the response.
         file1 = open(filename)
         r = HttpResponse(file1)
         self.assertTrue(file1.closed)
         r.close()
-
         # when multiple file are assigned as content, make sure they are all
         # closed with the response.
         file1 = open(filename)
@@ -649,14 +624,12 @@ class FileCloseTests(SimpleTestCase):
 
     def test_streaming_response(self):
         filename = os.path.join(os.path.dirname(__file__), 'abc.txt')
-
         # file isn't closed until we close the response.
         file1 = open(filename)
         r = StreamingHttpResponse(file1)
         self.assertFalse(file1.closed)
         r.close()
         self.assertTrue(file1.closed)
-
         # when multiple file are assigned as content, make sure they are all
         # closed with the response.
         file1 = open(filename)
@@ -672,16 +645,16 @@ class FileCloseTests(SimpleTestCase):
 
 class CookieTests(unittest.TestCase):
     def test_encode(self):
-        """Semicolons and commas are encoded."""
+        '''Semicolons and commas are encoded.'''
         c = SimpleCookie()
-        c['test'] = "An,awkward;value"
-        self.assertNotIn(";", c.output().rstrip(';'))  # IE compat
-        self.assertNotIn(",", c.output().rstrip(';'))  # Safari compat
+        c['test'] = 'An,awkward;value'
+        self.assertNotIn(';', c.output().rstrip(';')) # IE compat
+        self.assertNotIn(',', c.output().rstrip(';')) # Safari compat
 
     def test_decode(self):
-        """Semicolons and commas are decoded."""
+        '''Semicolons and commas are decoded.'''
         c = SimpleCookie()
-        c['test'] = "An,awkward;value"
+        c['test'] = 'An,awkward;value'
         c2 = SimpleCookie()
         c2.load(c.output()[12:])
         self.assertEqual(c['test'].value, c2['test'].value)
@@ -707,10 +680,12 @@ class CookieTests(unittest.TestCase):
         self.assertEqual(parse_cookie('chips=ahoy; vienna=finger'), {'chips': 'ahoy', 'vienna': 'finger'})
         # Here parse_cookie() differs from Python's cookie parsing in that it
         # treats all semicolons as delimiters, even within quotes.
-        self.assertEqual(
-            parse_cookie('keebler="E=mc2; L=\\"Loves\\"; fudge=\\012;"'),
-            {'keebler': '"E=mc2', 'L': '\\"Loves\\"', 'fudge': '\\012', '': '"'}
-        )
+        self.assertEqual(parse_cookie('keebler="E=mc2; L=\\"Loves\\"; fudge=\\012;"'), {
+            'keebler': '"E=mc2',
+            'L': '\\"Loves\\"',
+            'fudge': '\\012',
+            '': '"'
+        })
         # Illegal cookies that have an '=' char in an unquoted value.
         self.assertEqual(parse_cookie('keebler=E=mc2'), {'keebler': 'E=mc2'})
         # Cookies with ':' character in their name.
@@ -726,10 +701,10 @@ class CookieTests(unittest.TestCase):
         self.assertEqual(parse_cookie('a=b; h=i; a=c'), {'a': 'c', 'h': 'i'})
 
     def test_invalid_cookies(self):
-        """
+        '''
         Cookie strings that go against RFC6265 but browsers will send if set
         via document.cookie.
-        """
+        '''
         # Chunks without an equals sign appear as unnamed values per
         # https://bugzilla.mozilla.org/show_bug.cgi?id=169091
         self.assertIn('django_language', parse_cookie('abc=def; unnamed; django_language=en'))
@@ -753,7 +728,7 @@ class CookieTests(unittest.TestCase):
 
     def test_httponly_after_load(self):
         c = SimpleCookie()
-        c.load("name=val")
+        c.load('name=val')
         c['name']['httponly'] = True
         self.assertTrue(c['name']['httponly'])
 

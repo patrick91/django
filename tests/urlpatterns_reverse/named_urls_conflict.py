@@ -13,5 +13,5 @@ urlpatterns = [
     url(r'^conflict-last/(?P<last>\w+)/$', empty_view, name='name-conflict'),
     # Two kwargs
     url(r'^conflict/(?P<another>\w+)/(?P<extra>\w+)/cannot-go-here/$', empty_view, name='name-conflict'),
-    url(r'^conflict/(?P<extra>\w+)/(?P<another>\w+)/$', empty_view, name='name-conflict'),
+    url(r'^conflict/(?P<extra>\w+)/(?P<another>\w+)/$', empty_view, name='name-conflict')
 ]

@@ -10,13 +10,14 @@ from .settings import TEST_ROOT
 
 
 class TestFinders:
-    """
+    '''
     Base finder test mixin.
 
     On Windows, sometimes the case of the path we ask the finders for and the
     path(s) they find can differ. Compare them using os.path.normcase() to
     avoid false negatives.
-    """
+    '''
+
     def test_find_first(self):
         src, dst = self.find_first
         found = self.finder.find(src)
@@ -30,10 +31,11 @@ class TestFinders:
         self.assertEqual(found, dst)
 
 
-class TestFileSystemFinder(TestFinders, StaticFilesTestCase):
-    """
+class TestFileSystemFinder(TestFinders,StaticFilesTestCase):
+    '''
     Test FileSystemFinder.
-    """
+    '''
+
     def setUp(self):
         super().setUp()
         self.finder = finders.FileSystemFinder()
@@ -42,10 +44,11 @@ class TestFileSystemFinder(TestFinders, StaticFilesTestCase):
         self.find_all = (os.path.join('test', 'file.txt'), [test_file_path])
 
 
-class TestAppDirectoriesFinder(TestFinders, StaticFilesTestCase):
-    """
+class TestAppDirectoriesFinder(TestFinders,StaticFilesTestCase):
+    '''
     Test AppDirectoriesFinder.
-    """
+    '''
+
     def setUp(self):
         super().setUp()
         self.finder = finders.AppDirectoriesFinder()
@@ -54,31 +57,29 @@ class TestAppDirectoriesFinder(TestFinders, StaticFilesTestCase):
         self.find_all = (os.path.join('test', 'file1.txt'), [test_file_path])
 
 
-class TestDefaultStorageFinder(TestFinders, StaticFilesTestCase):
-    """
+class TestDefaultStorageFinder(TestFinders,StaticFilesTestCase):
+    '''
     Test DefaultStorageFinder.
-    """
+    '''
+
     def setUp(self):
         super().setUp()
-        self.finder = finders.DefaultStorageFinder(
-            storage=storage.StaticFilesStorage(location=settings.MEDIA_ROOT))
+        self.finder = finders.DefaultStorageFinder(storage=storage.StaticFilesStorage(location=settings.MEDIA_ROOT))
         test_file_path = os.path.join(settings.MEDIA_ROOT, 'media-file.txt')
         self.find_first = ('media-file.txt', test_file_path)
         self.find_all = ('media-file.txt', [test_file_path])
 
 
-@override_settings(
-    STATICFILES_FINDERS=['django.contrib.staticfiles.finders.FileSystemFinder'],
-    STATICFILES_DIRS=[os.path.join(TEST_ROOT, 'project', 'documents')],
-)
+@override_settings(STATICFILES_FINDERS=['django.contrib.staticfiles.finders.FileSystemFinder'], STATICFILES_DIRS=[
+    os.path.join(TEST_ROOT, 'project', 'documents')
+])
 class TestMiscFinder(SimpleTestCase):
-    """
+    '''
     A few misc finder tests.
-    """
+    '''
+
     def test_get_finder(self):
-        self.assertIsInstance(finders.get_finder(
-            'django.contrib.staticfiles.finders.FileSystemFinder'),
-            finders.FileSystemFinder)
+        self.assertIsInstance(finders.get_finder('django.contrib.staticfiles.finders.FileSystemFinder'), finders.FileSystemFinder)
 
     def test_get_finder_bad_classname(self):
         with self.assertRaises(ImportError):
@@ -98,17 +99,12 @@ class TestMiscFinder(SimpleTestCase):
 
     def test_searched_locations(self):
         finders.find('spam')
-        self.assertEqual(
-            finders.searched_locations,
-            [os.path.join(TEST_ROOT, 'project', 'documents')]
-        )
+        self.assertEqual(finders.searched_locations, [os.path.join(TEST_ROOT, 'project', 'documents')])
 
     @override_settings(MEDIA_ROOT='')
     def test_location_empty(self):
-        msg = (
-            "The storage backend of the staticfiles finder "
+        msg = "The storage backend of the staticfiles finder "
             "<class 'django.contrib.staticfiles.finders.DefaultStorageFinder'> "
             "doesn't have a valid location."
-        )
         with self.assertRaisesMessage(ImproperlyConfigured, msg):
             finders.DefaultStorageFinder()

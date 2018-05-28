@@ -9,12 +9,28 @@ from .models import AggregateTestModel, StatTestModel
 
 try:
     from django.contrib.postgres.aggregates import (
-        ArrayAgg, BitAnd, BitOr, BoolAnd, BoolOr, Corr, CovarPop, JSONBAgg,
-        RegrAvgX, RegrAvgY, RegrCount, RegrIntercept, RegrR2, RegrSlope,
-        RegrSXX, RegrSXY, RegrSYY, StatAggregate, StringAgg,
+        ArrayAgg,
+        BitAnd,
+        BitOr,
+        BoolAnd,
+        BoolOr,
+        Corr,
+        CovarPop,
+        JSONBAgg,
+        RegrAvgX,
+        RegrAvgY,
+        RegrCount,
+        RegrIntercept,
+        RegrR2,
+        RegrSlope,
+        RegrSXX,
+        RegrSXY,
+        RegrSYY,
+        StatAggregate,
+        StringAgg
     )
 except ImportError:
-    pass  # psycopg2 is not installed
+    pass # psycopg2 is not installed
 
 
 class TestGeneralAggregate(PostgreSQLTestCase):
@@ -53,24 +69,21 @@ class TestGeneralAggregate(PostgreSQLTestCase):
         StatTestModel.objects.create(related_field=aggr1, int1=2, int2=0)
         StatTestModel.objects.create(related_field=aggr2, int1=3, int2=0)
         StatTestModel.objects.create(related_field=aggr2, int1=4, int2=0)
-        qs = StatTestModel.objects.values('related_field').annotate(
-            array=ArrayAgg('int1')
-        ).filter(array__overlap=[2]).values_list('array', flat=True)
+        qs = StatTestModel.objects.values('related_field').annotate(array=ArrayAgg('int1')).filter(array__overlap=[
+            2
+        ]).values_list('array', flat=True)
         self.assertCountEqual(qs.get(), [1, 2])
 
     def test_bit_and_general(self):
-        values = AggregateTestModel.objects.filter(
-            integer_field__in=[0, 1]).aggregate(bitand=BitAnd('integer_field'))
+        values = AggregateTestModel.objects.filter(integer_field__in=[0, 1]).aggregate(bitand=BitAnd('integer_field'))
         self.assertEqual(values, {'bitand': 0})
 
     def test_bit_and_on_only_true_values(self):
-        values = AggregateTestModel.objects.filter(
-            integer_field=1).aggregate(bitand=BitAnd('integer_field'))
+        values = AggregateTestModel.objects.filter(integer_field=1).aggregate(bitand=BitAnd('integer_field'))
         self.assertEqual(values, {'bitand': 1})
 
     def test_bit_and_on_only_false_values(self):
-        values = AggregateTestModel.objects.filter(
-            integer_field=0).aggregate(bitand=BitAnd('integer_field'))
+        values = AggregateTestModel.objects.filter(integer_field=0).aggregate(bitand=BitAnd('integer_field'))
         self.assertEqual(values, {'bitand': 0})
 
     def test_bit_and_empty_result(self):
@@ -79,18 +92,15 @@ class TestGeneralAggregate(PostgreSQLTestCase):
         self.assertEqual(values, {'bitand': None})
 
     def test_bit_or_general(self):
-        values = AggregateTestModel.objects.filter(
-            integer_field__in=[0, 1]).aggregate(bitor=BitOr('integer_field'))
+        values = AggregateTestModel.objects.filter(integer_field__in=[0, 1]).aggregate(bitor=BitOr('integer_field'))
         self.assertEqual(values, {'bitor': 1})
 
     def test_bit_or_on_only_true_values(self):
-        values = AggregateTestModel.objects.filter(
-            integer_field=1).aggregate(bitor=BitOr('integer_field'))
+        values = AggregateTestModel.objects.filter(integer_field=1).aggregate(bitor=BitOr('integer_field'))
         self.assertEqual(values, {'bitor': 1})
 
     def test_bit_or_on_only_false_values(self):
-        values = AggregateTestModel.objects.filter(
-            integer_field=0).aggregate(bitor=BitOr('integer_field'))
+        values = AggregateTestModel.objects.filter(integer_field=0).aggregate(bitor=BitOr('integer_field'))
         self.assertEqual(values, {'bitor': 0})
 
     def test_bit_or_empty_result(self):
@@ -169,21 +179,9 @@ class TestAggregateDistinct(PostgreSQLTestCase):
 class TestStatisticsAggregate(PostgreSQLTestCase):
     @classmethod
     def setUpTestData(cls):
-        StatTestModel.objects.create(
-            int1=1,
-            int2=3,
-            related_field=AggregateTestModel.objects.create(integer_field=0),
-        )
-        StatTestModel.objects.create(
-            int1=2,
-            int2=2,
-            related_field=AggregateTestModel.objects.create(integer_field=1),
-        )
-        StatTestModel.objects.create(
-            int1=3,
-            int2=1,
-            related_field=AggregateTestModel.objects.create(integer_field=2),
-        )
+        StatTestModel.objects.create(int1=1, int2=3, related_field=AggregateTestModel.objects.create(integer_field=0))
+        StatTestModel.objects.create(int1=2, int2=2, related_field=AggregateTestModel.objects.create(integer_field=1))
+        StatTestModel.objects.create(int1=3, int2=1, related_field=AggregateTestModel.objects.create(integer_field=2))
 
     # Tests for base class (StatAggregate)
 
@@ -199,6 +197,7 @@ class TestStatisticsAggregate(PostgreSQLTestCase):
     def test_alias_is_required(self):
         class SomeFunc(StatAggregate):
             function = 'TEST'
+
         with self.assertRaisesMessage(TypeError, 'Complex aggregates require an alias'):
             StatTestModel.objects.aggregate(SomeFunc(y='int2', x='int1'))
 
@@ -313,9 +312,9 @@ class TestStatisticsAggregate(PostgreSQLTestCase):
         self.assertEqual(values, {'regrsyy': None})
 
     def test_regr_avgx_with_related_obj_and_number_as_argument(self):
-        """
+        '''
         This is more complex test to check if JOIN on field and
         number as argument works as expected.
-        """
+        '''
         values = StatTestModel.objects.aggregate(complex_regravgx=RegrAvgX(y=5, x='related_field__integer_field'))
         self.assertEqual(values, {'complex_regravgx': 1.0})

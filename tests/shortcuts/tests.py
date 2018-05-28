@@ -4,7 +4,6 @@ from django.test.utils import require_jinja2
 
 @override_settings(ROOT_URLCONF='shortcuts.urls')
 class RenderTests(SimpleTestCase):
-
     def test_render(self):
         response = self.client.get('/render/')
         self.assertEqual(response.status_code, 200)

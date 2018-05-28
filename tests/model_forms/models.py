@@ -11,17 +11,9 @@ from django.db import models
 temp_storage_dir = tempfile.mkdtemp()
 temp_storage = FileSystemStorage(temp_storage_dir)
 
-ARTICLE_STATUS = (
-    (1, 'Draft'),
-    (2, 'Pending'),
-    (3, 'Live'),
-)
+ARTICLE_STATUS = ((1, 'Draft'), (2, 'Pending'), (3, 'Live'))
 
-ARTICLE_STATUS_CHAR = (
-    ('d', 'Draft'),
-    ('p', 'Pending'),
-    ('l', 'Live'),
-)
+ARTICLE_STATUS_CHAR = (('d', 'Draft'), ('p', 'Pending'), ('l', 'Live'))
 
 
 class Person(models.Model):
@@ -124,7 +116,7 @@ class WriterProfile(models.Model):
     age = models.PositiveIntegerField()
 
     def __str__(self):
-        return "%s is %s" % (self.writer, self.age)
+        return '%s is %s' % (self.writer, self.age)
 
 
 class Document(models.Model):
@@ -142,7 +134,7 @@ class TextFile(models.Model):
 class CustomFileField(models.FileField):
     def save_form_data(self, instance, data):
         been_here = getattr(self, 'been_saved', False)
-        assert not been_here, "save_form_data called more than once"
+        assert not been_here, 'save_form_data called more than once'
         setattr(self, 'been_saved', True)
 
 
@@ -155,7 +147,7 @@ class FilePathModel(models.Model):
 
 
 try:
-    from PIL import Image  # NOQA: detect if Pillow is installed
+    from PIL import Image # NOQA: detect if Pillow is installed
 
     test_images = True
 
@@ -165,13 +157,11 @@ try:
             return '%s/%s' % (path, filename)
 
         description = models.CharField(max_length=20)
-
         # Deliberately put the image field *after* the width/height fields to
         # trigger the bug in #10404 with width/height not getting assigned.
         width = models.IntegerField(editable=False)
         height = models.IntegerField(editable=False)
-        image = models.ImageField(storage=temp_storage, upload_to=custom_upload_path,
-                                  width_field='width', height_field='height')
+        image = models.ImageField(storage=temp_storage, upload_to=custom_upload_path, width_field='width', height_field='height')
         path = models.CharField(max_length=16, blank=True, default='')
 
         def __str__(self):
@@ -183,9 +173,7 @@ try:
             return '%s/%s' % (path, filename)
 
         description = models.CharField(max_length=20)
-        image = models.ImageField(storage=temp_storage, upload_to=custom_upload_path,
-                                  width_field='width', height_field='height',
-                                  blank=True, null=True)
+        image = models.ImageField(storage=temp_storage, upload_to=custom_upload_path, width_field='width', height_field='height', blank=True, null=True)
         width = models.IntegerField(editable=False, null=True)
         height = models.IntegerField(editable=False, null=True)
         path = models.CharField(max_length=16, blank=True, default='')
@@ -202,7 +190,6 @@ try:
 
         def __str__(self):
             return self.description
-
 except ImportError:
     test_images = False
 
@@ -223,7 +210,7 @@ class Price(models.Model):
     quantity = models.PositiveIntegerField()
 
     def __str__(self):
-        return "%s for %s" % (self.quantity, self.price)
+        return '%s for %s' % (self.quantity, self.price)
 
     class Meta:
         unique_together = (('price', 'quantity'),)
@@ -272,11 +259,11 @@ class BookXtra(models.Model):
     suffix2 = models.IntegerField(blank=True, default=0)
 
     class Meta:
-        unique_together = (('suffix1', 'suffix2'))
+        unique_together = ('suffix1', 'suffix2')
         abstract = True
 
 
-class DerivedBook(Book, BookXtra):
+class DerivedBook(Book,BookXtra):
     pass
 
 
@@ -324,7 +311,7 @@ class BigInt(models.Model):
 
 class MarkupField(models.CharField):
     def __init__(self, *args, **kwargs):
-        kwargs["max_length"] = 20
+        kwargs['max_length'] = 20
         super().__init__(*args, **kwargs)
 
     def formfield(self, **kwargs):
@@ -363,16 +350,12 @@ class ColourfulItem(models.Model):
 
 
 class CustomErrorMessage(models.Model):
-    name1 = models.CharField(
-        max_length=50,
-        validators=[validators.validate_slug],
-        error_messages={'invalid': 'Model custom error message.'},
-    )
-    name2 = models.CharField(
-        max_length=50,
-        validators=[validators.validate_slug],
-        error_messages={'invalid': 'Model custom error message.'},
-    )
+    name1 = models.CharField(max_length=50, validators=[validators.validate_slug], error_messages={
+        'invalid': 'Model custom error message.'
+    })
+    name2 = models.CharField(max_length=50, validators=[validators.validate_slug], error_messages={
+        'invalid': 'Model custom error message.'
+    })
 
     def clean(self):
         if self.name1 == 'FORBIDDEN_VALUE':
@@ -380,11 +363,11 @@ class CustomErrorMessage(models.Model):
         elif self.name1 == 'FORBIDDEN_VALUE2':
             raise ValidationError({'name1': 'Model.clean() error messages (simpler syntax).'})
         elif self.name1 == 'GLOBAL_ERROR':
-            raise ValidationError("Global error message.")
+            raise ValidationError('Global error message.')
 
 
 def today_callable_dict():
-    return {"last_action__gte": datetime.datetime.today()}
+    return {'last_action__gte': datetime.datetime.today()}
 
 
 def today_callable_q():
@@ -397,13 +380,8 @@ class Character(models.Model):
 
 
 class StumpJoke(models.Model):
-    most_recently_fooled = models.ForeignKey(
-        Character,
-        models.CASCADE,
-        limit_choices_to=today_callable_dict,
-        related_name="+",
-    )
-    has_fooled_today = models.ManyToManyField(Character, limit_choices_to=today_callable_q, related_name="+")
+    most_recently_fooled = models.ForeignKey(Character, models.CASCADE, limit_choices_to=today_callable_dict, related_name='+')
+    has_fooled_today = models.ManyToManyField(Character, limit_choices_to=today_callable_q, related_name='+')
 
 
 # Model for #13776
@@ -440,7 +418,7 @@ class StrictAssignmentFieldSpecific(models.Model):
 
     def __setattr__(self, key, value):
         if self._should_error is True:
-            raise ValidationError(message={key: "Cannot set attribute"}, code='invalid')
+            raise ValidationError(message={key: 'Cannot set attribute'}, code='invalid')
         super().__setattr__(key, value)
 
 
@@ -450,7 +428,7 @@ class StrictAssignmentAll(models.Model):
 
     def __setattr__(self, key, value):
         if self._should_error is True:
-            raise ValidationError(message="Cannot set attribute", code='invalid')
+            raise ValidationError(message='Cannot set attribute', code='invalid')
         super().__setattr__(key, value)
 
 

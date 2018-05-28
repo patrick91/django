@@ -11,6 +11,7 @@ class BytesToCharFieldConversionMixin:
         LPAD(column1, CHAR_LENGTH(column2), ' ')
     returns the LONGTEXT (bytes) instead of VARCHAR.
     """
+
     def convert_value(self, value, expression, connection):
         if connection.features.db_functions_convert_bytes_to_str:
             if self.output_field.get_internal_type() == 'CharField' and isinstance(value, bytes):
@@ -23,9 +24,8 @@ class Chr(Transform):
     lookup_name = 'chr'
 
     def as_mysql(self, compiler, connection):
-        return super().as_sql(
-            compiler, connection, function='CHAR', template='%(function)s(%(expressions)s USING utf16)'
-        )
+        return \
+            super().as_sql(compiler, connection, function='CHAR', template='%(function)s(%(expressions)s USING utf16)')
 
     def as_oracle(self, compiler, connection):
         return super().as_sql(compiler, connection, template='%(function)s(%(expressions)s USING NCHAR_CS)')
@@ -35,42 +35,36 @@ class Chr(Transform):
 
 
 class ConcatPair(Func):
-    """
+    '''
     Concatenate two arguments together. This is used by `Concat` because not
     all backend databases support more than two arguments.
-    """
+    '''
     function = 'CONCAT'
 
     def as_sqlite(self, compiler, connection):
         coalesced = self.coalesce()
-        return super(ConcatPair, coalesced).as_sql(
-            compiler, connection, template='%(expressions)s', arg_joiner=' || '
-        )
+        return super(ConcatPair, coalesced).as_sql(compiler, connection, template='%(expressions)s', arg_joiner=' || ')
 
     def as_mysql(self, compiler, connection):
         # Use CONCAT_WS with an empty separator so that NULLs are ignored.
-        return super().as_sql(
-            compiler, connection, function='CONCAT_WS', template="%(function)s('', %(expressions)s)"
-        )
+        return super().as_sql(compiler, connection, function='CONCAT_WS', template="%(function)s('', %(expressions)s)")
 
     def coalesce(self):
         # null on either side results in null for expression, wrap with coalesce
         c = self.copy()
-        expressions = [
-            Coalesce(expression, Value('')) for expression in c.get_source_expressions()
-        ]
+        expressions = [Coalesce(expression, Value('')) for expression in c.get_source_expressions()]
         c.set_source_expressions(expressions)
         return c
 
 
 class Concat(Func):
-    """
+    '''
     Concatenate text fields together. Backends that result in an entire
     null expression when any arguments are null will wrap each argument in
     coalesce functions to ensure a non-null result.
-    """
+    '''
     function = None
-    template = "%(expressions)s"
+    template = '%(expressions)s'
 
     def __init__(self, *expressions, **extra):
         if len(expressions) < 2:
@@ -92,10 +86,10 @@ class Left(Func):
     arity = 2
 
     def __init__(self, expression, length, **extra):
-        """
+        '''
         expression: the name of a field, or an expression returning a string
         length: the number of characters to return from the start of the string
-        """
+        '''
         if not hasattr(length, 'resolve_expression'):
             if length < 1:
                 raise ValueError("'length' must be greater than 0.")
@@ -112,7 +106,7 @@ class Left(Func):
 
 
 class Length(Transform):
-    """Return the number of characters in the expression."""
+    '''Return the number of characters in the expression.'''
     function = 'LENGTH'
     lookup_name = 'length'
     output_field = fields.IntegerField()
@@ -126,7 +120,7 @@ class Lower(Transform):
     lookup_name = 'lower'
 
 
-class LPad(BytesToCharFieldConversionMixin, Func):
+class LPad(BytesToCharFieldConversionMixin,Func):
     function = 'LPAD'
 
     def __init__(self, expression, length, fill_text=Value(' '), **extra):
@@ -152,7 +146,7 @@ class Ord(Transform):
         return super().as_sql(compiler, connection, function='UNICODE', **extra_context)
 
 
-class Repeat(BytesToCharFieldConversionMixin, Func):
+class Repeat(BytesToCharFieldConversionMixin,Func):
     function = 'REPEAT'
 
     def __init__(self, expression, number, **extra):
@@ -190,11 +184,11 @@ class RTrim(Transform):
 
 
 class StrIndex(Func):
-    """
+    '''
     Return a positive integer corresponding to the 1-indexed position of the
     first occurrence of a substring inside another string, or 0 if the
     substring is not found.
-    """
+    '''
     function = 'INSTR'
     arity = 2
     output_field = fields.IntegerField()
@@ -207,11 +201,11 @@ class Substr(Func):
     function = 'SUBSTRING'
 
     def __init__(self, expression, pos, length=None, **extra):
-        """
+        '''
         expression: the name of a field, or an expression returning a string
         pos: an integer > 0, or an expression returning an integer
         length: an optional number of characters to return
-        """
+        '''
         if not hasattr(pos, 'resolve_expression'):
             if pos < 1:
                 raise ValueError("'pos' must be greater than 0")

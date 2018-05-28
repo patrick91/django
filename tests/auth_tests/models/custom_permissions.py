@@ -1,8 +1,8 @@
-"""
+'''
 The CustomPermissionsUser users email as the identifier, but uses the normal
 Django permissions model. This allows us to check that the PermissionsMixin
 includes everything that is needed to interact with the ModelBackend.
-"""
+'''
 from django.contrib.auth.models import AbstractBaseUser, PermissionsMixin
 from django.db import models
 
@@ -18,7 +18,7 @@ class CustomPermissionsUserManager(CustomUserManager):
 
 
 with RemoveGroupsAndPermissions():
-    class CustomPermissionsUser(AbstractBaseUser, PermissionsMixin):
+    class CustomPermissionsUser(AbstractBaseUser,PermissionsMixin):
         email = models.EmailField(verbose_name='email address', max_length=255, unique=True)
         date_of_birth = models.DateField()
 

@@ -1,4 +1,4 @@
-"""
+'''
 "Rel objects" for related fields.
 
 "Rel objects" (for lack of a better name) carry information about the relation
@@ -7,7 +7,7 @@ in the ``remote_field`` attribute of the field.
 
 They also act as reverse fields for the purposes of the Meta API because
 they're the closest concept currently available.
-"""
+'''
 
 from django.core import exceptions
 from django.utils.functional import cached_property
@@ -17,25 +17,31 @@ from .mixins import FieldCacheMixin
 
 
 class ForeignObjectRel(FieldCacheMixin):
-    """
+    '''
     Used by ForeignObject to store information about the relation.
 
     ``_meta.get_fields()`` returns this class to provide access to the field
     flags for the reverse relation.
-    """
-
+    '''
     # Field flags
     auto_created = True
     concrete = False
     editable = False
     is_relation = True
-
     # Reverse relations are always nullable (Django can't enforce that a
     # foreign key on the related model points to this model).
     null = True
 
-    def __init__(self, field, to, related_name=None, related_query_name=None,
-                 limit_choices_to=None, parent_link=False, on_delete=None):
+    def __init__(
+        self,
+        field,
+        to,
+        related_name=None,
+        related_query_name=None,
+        limit_choices_to=None,
+        parent_link=False,
+        on_delete=None
+    ):
         self.field = field
         self.model = to
         self.related_name = related_name
@@ -65,10 +71,10 @@ class ForeignObjectRel(FieldCacheMixin):
 
     @property
     def target_field(self):
-        """
+        '''
         When filtering against this relation, return the field on the remote
         model against which the filtering should happen.
-        """
+        '''
         target_fields = self.get_path_info()[-1].target_fields
         if len(target_fields) > 1:
             raise exceptions.FieldError("Can't use target_field for multicolumn relations.")
@@ -77,8 +83,8 @@ class ForeignObjectRel(FieldCacheMixin):
     @cached_property
     def related_model(self):
         if not self.field.model:
-            raise AttributeError(
-                "This property can't be accessed before self.field.contribute_to_class has been called.")
+            raise
+            AttributeError("This property can't be accessed before self.field.contribute_to_class has been called.")
         return self.field.model
 
     @cached_property
@@ -108,26 +114,24 @@ class ForeignObjectRel(FieldCacheMixin):
         return self.field.db_type
 
     def __repr__(self):
-        return '<%s: %s.%s>' % (
-            type(self).__name__,
-            self.related_model._meta.app_label,
-            self.related_model._meta.model_name,
-        )
+        return \
+            '<%s: %s.%s>' \
+            % \
+            (type(self).__name__, self.related_model._meta.app_label, self.related_model._meta.model_name)
 
     def get_choices(self, include_blank=True, blank_choice=BLANK_CHOICE_DASH):
-        """
+        '''
         Return choices with a default blank choices included, for use
         as <select> choices for this field.
 
         Analog of django.db.models.fields.Field.get_choices(), provided
         initially for utilization by RelatedFieldListFilter.
-        """
-        return (blank_choice if include_blank else []) + [
-            (x.pk, str(x)) for x in self.related_model._default_manager.all()
-        ]
+        '''
+        return \
+            blank_choice if include_blank else [] + [(x.pk, str(x)) for x in self.related_model._default_manager.all()]
 
     def is_hidden(self):
-        """Should the related object be hidden?"""
+        '''Should the related object be hidden?'''
         return bool(self.related_name) and self.related_name[-1] == '+'
 
     def get_joining_columns(self):
@@ -161,21 +165,21 @@ class ForeignObjectRel(FieldCacheMixin):
                 return None
         if self.related_name:
             return self.related_name
-        return opts.model_name + ('_set' if self.multiple else '')
+        return opts.model_name + '_set' if self.multiple else ''
 
     def get_path_info(self, filtered_relation=None):
         return self.field.get_reverse_path_info(filtered_relation)
 
     def get_cache_name(self):
-        """
+        '''
         Return the name of the cache key to use for storing an instance of the
         forward model on the reverse model.
-        """
+        '''
         return self.get_accessor_name()
 
 
 class ManyToOneRel(ForeignObjectRel):
-    """
+    '''
     Used by the ForeignKey field to store information about the relation.
 
     ``_meta.get_fields()`` returns this class to provide access to the field
@@ -187,18 +191,20 @@ class ManyToOneRel(ForeignObjectRel):
     ``ManyToOneRel.one_to_many == True``. This is unfortunate but the actual
     ManyToOneRel class is a private API and there is work underway to turn
     reverse relations into actual fields.
-    """
+    '''
 
-    def __init__(self, field, to, field_name, related_name=None, related_query_name=None,
-                 limit_choices_to=None, parent_link=False, on_delete=None):
-        super().__init__(
-            field, to,
-            related_name=related_name,
-            related_query_name=related_query_name,
-            limit_choices_to=limit_choices_to,
-            parent_link=parent_link,
-            on_delete=on_delete,
-        )
+    def __init__(
+        self,
+        field,
+        to,
+        field_name,
+        related_name=None,
+        related_query_name=None,
+        limit_choices_to=None,
+        parent_link=False,
+        on_delete=None
+    ):
+        super().__init__(field, to, related_name=related_name, related_query_name=related_query_name, limit_choices_to=limit_choices_to, parent_link=parent_link, on_delete=on_delete)
 
         self.field_name = field_name
 
@@ -221,51 +227,57 @@ class ManyToOneRel(ForeignObjectRel):
 
 
 class OneToOneRel(ManyToOneRel):
-    """
+    '''
     Used by OneToOneField to store information about the relation.
 
     ``_meta.get_fields()`` returns this class to provide access to the field
     flags for the reverse relation.
-    """
+    '''
 
-    def __init__(self, field, to, field_name, related_name=None, related_query_name=None,
-                 limit_choices_to=None, parent_link=False, on_delete=None):
-        super().__init__(
-            field, to, field_name,
-            related_name=related_name,
-            related_query_name=related_query_name,
-            limit_choices_to=limit_choices_to,
-            parent_link=parent_link,
-            on_delete=on_delete,
-        )
+    def __init__(
+        self,
+        field,
+        to,
+        field_name,
+        related_name=None,
+        related_query_name=None,
+        limit_choices_to=None,
+        parent_link=False,
+        on_delete=None
+    ):
+        super().__init__(field, to, field_name, related_name=related_name, related_query_name=related_query_name, limit_choices_to=limit_choices_to, parent_link=parent_link, on_delete=on_delete)
 
         self.multiple = False
 
 
 class ManyToManyRel(ForeignObjectRel):
-    """
+    '''
     Used by ManyToManyField to store information about the relation.
 
     ``_meta.get_fields()`` returns this class to provide access to the field
     flags for the reverse relation.
-    """
+    '''
 
-    def __init__(self, field, to, related_name=None, related_query_name=None,
-                 limit_choices_to=None, symmetrical=True, through=None,
-                 through_fields=None, db_constraint=True):
-        super().__init__(
-            field, to,
-            related_name=related_name,
-            related_query_name=related_query_name,
-            limit_choices_to=limit_choices_to,
-        )
+    def __init__(
+        self,
+        field,
+        to,
+        related_name=None,
+        related_query_name=None,
+        limit_choices_to=None,
+        symmetrical=True,
+        through=None,
+        through_fields=None,
+        db_constraint=True
+    ):
+        super().__init__(field, to, related_name=related_name, related_query_name=related_query_name, limit_choices_to=limit_choices_to)
 
         if through and not db_constraint:
             raise ValueError("Can't supply a through model and db_constraint=False")
         self.through = through
 
         if through_fields and not through:
-            raise ValueError("Cannot specify through_fields without a through model")
+            raise ValueError('Cannot specify through_fields without a through model')
         self.through_fields = through_fields
 
         self.symmetrical = symmetrical

@@ -9,12 +9,7 @@ urlpatterns = [
     url(r'^not-prefixed/$', view, name='not-prefixed'),
     url(r'^not-prefixed-include/', include('i18n.patterns.urls.included')),
     url(_(r'^translated/$'), view, name='no-prefix-translated'),
-    url(_(r'^translated/(?P<slug>[\w-]+)/$'), view, name='no-prefix-translated-slug'),
+    url(_(r'^translated/(?P<slug>[\w-]+)/$'), view, name='no-prefix-translated-slug')
 ]
 
-urlpatterns += i18n_patterns(
-    url(r'^prefixed/$', view, name='prefixed'),
-    url(r'^prefixed\.xml$', view, name='prefixed_xml'),
-    url(_(r'^users/$'), view, name='users'),
-    url(_(r'^account/'), include('i18n.patterns.urls.namespace', namespace='account')),
-)
+urlpatterns += i18n_patterns(url(r'^prefixed/$', view, name='prefixed'), url(r'^prefixed\.xml$', view, name='prefixed_xml'), url(_(r'^users/$'), view, name='users'), url(_(r'^account/'), include('i18n.patterns.urls.namespace', namespace='account')))

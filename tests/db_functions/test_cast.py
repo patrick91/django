@@ -6,9 +6,7 @@ from django.db import connection, models
 from django.db.models import Avg
 from django.db.models.expressions import Value
 from django.db.models.functions import Cast
-from django.test import (
-    TestCase, ignore_warnings, override_settings, skipUnlessDBFeature,
-)
+from django.test import TestCase, ignore_warnings, override_settings, skipUnlessDBFeature
 
 from .models import Author
 
@@ -23,7 +21,7 @@ class CastTests(TestCase):
         self.assertEqual(numbers.get().cast_integer, 0)
 
     def test_cast_from_field(self):
-        numbers = Author.objects.annotate(cast_string=Cast('age', models.CharField(max_length=255)),)
+        numbers = Author.objects.annotate(cast_string=Cast('age', models.CharField(max_length=255)))
         self.assertEqual(numbers.get().cast_string, '1')
 
     def test_cast_to_char_field_without_max_length(self):
@@ -43,7 +41,7 @@ class CastTests(TestCase):
             models.BigIntegerField,
             models.SmallIntegerField,
             models.PositiveIntegerField,
-            models.PositiveSmallIntegerField,
+            models.PositiveSmallIntegerField
         ):
             with self.subTest(field_class=field_class):
                 numbers = Author.objects.annotate(cast_int=Cast('alias', field_class()))

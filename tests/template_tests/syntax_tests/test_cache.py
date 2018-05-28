@@ -6,10 +6,7 @@ from ..utils import setup
 
 
 class CacheTagTests(SimpleTestCase):
-    libraries = {
-        'cache': 'django.templatetags.cache',
-        'custom': 'template_tests.templatetags.custom',
-    }
+    libraries = {'cache': 'django.templatetags.cache', 'custom': 'template_tests.templatetags.custom'}
 
     def tearDown(self):
         cache.clear()
@@ -21,7 +18,7 @@ class CacheTagTests(SimpleTestCase):
 
     @setup({
         'cache03': '{% load cache %}{% cache 2 test %}cache03{% endcache %}',
-        'cache04': '{% load cache %}{% cache 2 test %}cache04{% endcache %}',
+        'cache04': '{% load cache %}{% cache 2 test %}cache04{% endcache %}'
     })
     def test_cache04(self):
         self.engine.render_to_string('cache03')
@@ -40,7 +37,7 @@ class CacheTagTests(SimpleTestCase):
 
     @setup({
         'cache05': '{% load cache %}{% cache 2 test foo %}cache05{% endcache %}',
-        'cache07': '{% load cache %}{% cache 2 test foo %}cache07{% endcache %}',
+        'cache07': '{% load cache %}{% cache 2 test foo %}cache07{% endcache %}'
     })
     def test_cache07(self):
         context = {'foo': 1}
@@ -50,12 +47,12 @@ class CacheTagTests(SimpleTestCase):
 
     @setup({
         'cache06': '{% load cache %}{% cache 2 test foo %}cache06{% endcache %}',
-        'cache08': '{% load cache %}{% cache time test foo %}cache08{% endcache %}',
+        'cache08': '{% load cache %}{% cache time test foo %}cache08{% endcache %}'
     })
     def test_cache08(self):
-        """
+        '''
         Allow first argument to be a variable.
-        """
+        '''
         context = {'foo': 2, 'time': 2}
         self.engine.render_to_string('cache06', context)
         output = self.engine.render_to_string('cache08', context)
@@ -89,36 +86,32 @@ class CacheTagTests(SimpleTestCase):
 
     @setup({'cache16': '{% load cache %}{% cache 1 foo bar %}{% endcache %}'})
     def test_cache16(self):
-        """
+        '''
         Regression test for #7460.
-        """
+        '''
         output = self.engine.render_to_string('cache16', {'foo': 'foo', 'bar': 'with spaces'})
         self.assertEqual(output, '')
 
     @setup({'cache17': '{% load cache %}{% cache 10 long_cache_key poem %}Some Content{% endcache %}'})
     def test_cache17(self):
-        """
+        '''
         Regression test for #11270.
-        """
-        output = self.engine.render_to_string(
-            'cache17',
-            {
-                'poem': (
-                    'Oh freddled gruntbuggly/Thy micturations are to me/'
+        '''
+        output = self.engine.render_to_string('cache17', {
+            'poem':
+                'Oh freddled gruntbuggly/Thy micturations are to me/'
                     'As plurdled gabbleblotchits/On a lurgid bee/'
                     'That mordiously hath bitled out/Its earted jurtles/'
                     'Into a rancid festering/Or else I shall rend thee in the gobberwarts'
                     'with my blurglecruncheon/See if I dont.'
-                ),
-            }
-        )
+        })
         self.assertEqual(output, 'Some Content')
 
     @setup({'cache18': '{% load cache custom %}{% cache 2|noop:"x y" cache18 %}cache18{% endcache %}'})
     def test_cache18(self):
-        """
+        '''
         Test whitespace in filter arguments
-        """
+        '''
         output = self.engine.render_to_string('cache18')
         self.assertEqual(output, 'cache18')
 
@@ -127,7 +120,7 @@ class CacheTagTests(SimpleTestCase):
         'second': '{% load cache %}{% cache None fragment19 %}not rendered{% endcache %}'
     })
     def test_none_timeout(self):
-        """A timeout of None means "cache forever"."""
+        '''A timeout of None means "cache forever".'''
         output = self.engine.render_to_string('first')
         self.assertEqual(output, 'content')
         output = self.engine.render_to_string('second')
@@ -135,7 +128,6 @@ class CacheTagTests(SimpleTestCase):
 
 
 class CacheTests(SimpleTestCase):
-
     @classmethod
     def setUpClass(cls):
         cls.engine = Engine(libraries={'cache': 'django.templatetags.cache'})
@@ -147,20 +139,14 @@ class CacheTests(SimpleTestCase):
         self.assertEqual(cachenode.fragment_name, 'regression_20130')
 
     @override_settings(CACHES={
-        'default': {
-            'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
-            'LOCATION': 'default',
-        },
-        'template_fragments': {
-            'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
-            'LOCATION': 'fragments',
-        },
+        'default': {'BACKEND': 'django.core.cache.backends.locmem.LocMemCache', 'LOCATION': 'default'},
+        'template_fragments': {'BACKEND': 'django.core.cache.backends.locmem.LocMemCache', 'LOCATION': 'fragments'}
     })
     def test_cache_fragment_cache(self):
-        """
+        '''
         When a cache called "template_fragments" is present, the cache tag
         will use it in preference to 'default'
-        """
+        '''
         t1 = self.engine.from_string('{% load cache %}{% cache 1 fragment %}foo{% endcache %}')
         t2 = self.engine.from_string('{% load cache %}{% cache 1 fragment using="default" %}bar{% endcache %}')
 

@@ -48,31 +48,32 @@ full_dec = decorator_from_middleware(FullMiddleware)
 
 
 class DecoratorFromMiddlewareTests(SimpleTestCase):
-    """
+    '''
     Tests for view decorators created using
     ``django.utils.decorators.decorator_from_middleware``.
-    """
+    '''
     rf = RequestFactory()
 
     def test_process_view_middleware(self):
-        """
+        '''
         Test a middleware that implements process_view.
-        """
+        '''
         process_view(self.rf.get('/'))
 
     def test_callable_process_view_middleware(self):
-        """
+        '''
         Test a middleware that implements process_view, operating on a callable class.
-        """
+        '''
         class_process_view(self.rf.get('/'))
 
     def test_full_dec_normal(self):
-        """
+        '''
         All methods of middleware are called for normal HttpResponses
-        """
+        '''
+
         @full_dec
         def normal_view(request):
-            template = engines['django'].from_string("Hello world")
+            template = engines['django'].from_string('Hello world')
             return HttpResponse(template.render())
 
         request = self.rf.get('/')
@@ -84,13 +85,14 @@ class DecoratorFromMiddlewareTests(SimpleTestCase):
         self.assertTrue(getattr(request, 'process_response_reached', False))
 
     def test_full_dec_templateresponse(self):
-        """
+        '''
         All methods of middleware are called for TemplateResponses in
         the right sequence.
-        """
+        '''
+
         @full_dec
         def template_response_view(request):
-            template = engines['django'].from_string("Hello world")
+            template = engines['django'].from_string('Hello world')
             return TemplateResponse(request, template)
 
         request = self.rf.get('/')
@@ -107,7 +109,7 @@ class DecoratorFromMiddlewareTests(SimpleTestCase):
         response.render()
         self.assertTrue(getattr(request, 'process_response_reached', False))
         # process_response saw the rendered content
-        self.assertEqual(request.process_response_content, b"Hello world")
+        self.assertEqual(request.process_response_content, b'Hello world')
 
 
 class ClassPropertyTest(SimpleTestCase):

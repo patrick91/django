@@ -1,6 +1,4 @@
-from django.contrib.gis.db.models.fields import (
-    ExtentField, GeometryCollectionField, GeometryField, LineStringField,
-)
+from django.contrib.gis.db.models.fields import ExtentField, GeometryCollectionField, GeometryField, LineStringField
 from django.db.models.aggregates import Aggregate
 from django.utils.functional import cached_property
 
@@ -19,12 +17,10 @@ class GeoAggregate(Aggregate):
         # this will be called again in parent, but it's needed now - before
         # we get the spatial_aggregate_name
         connection.ops.check_expression_support(self)
-        return super().as_sql(
-            compiler,
-            connection,
-            function=function or connection.ops.spatial_aggregate_name(self.name),
-            **extra_context
-        )
+        return \
+            super().as_sql(compiler, connection, function=function \
+            or \
+            connection.ops.spatial_aggregate_name(self.name), **extra_context)
 
     def as_oracle(self, compiler, connection):
         tolerance = self.extra.get('tolerance') or getattr(self, 'tolerance', 0.05)

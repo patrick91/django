@@ -8,11 +8,11 @@ from django.http import Http404
 
 
 def kml(request, label, model, field_name=None, compress=False, using=DEFAULT_DB_ALIAS):
-    """
+    '''
     This view generates KML for the given app label, model, and field name.
 
     The field name must be that of a geographic field.
-    """
+    '''
     placemarks = []
     try:
         klass = apps.get_model(label, model)
@@ -37,15 +37,13 @@ def kml(request, label, model, field_name=None, compress=False, using=DEFAULT_DB
         # attribute of the lazy geometry instead.
         placemarks = []
         if connection.features.has_Transform_function:
-            qs = klass._default_manager.using(using).annotate(
-                **{'%s_4326' % field_name: Transform(field_name, 4326)})
+            qs = klass._default_manager.using(using).annotate(**{'%s_4326' % field_name: Transform(field_name, 4326)})
             field_name += '_4326'
         else:
             qs = klass._default_manager.using(using).all()
         for mod in qs:
             mod.kml = getattr(mod, field_name).kml
             placemarks.append(mod)
-
     # Getting the render function and rendering to the correct.
     if compress:
         render = render_to_kmz
@@ -55,7 +53,7 @@ def kml(request, label, model, field_name=None, compress=False, using=DEFAULT_DB
 
 
 def kmz(request, label, model, field_name=None, using=DEFAULT_DB_ALIAS):
-    """
+    '''
     Return KMZ for the given app label, model, and field name.
-    """
+    '''
     return kml(request, label, model, field_name, compress=True, using=using)

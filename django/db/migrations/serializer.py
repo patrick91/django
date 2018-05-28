@@ -38,7 +38,7 @@ class BaseSequenceSerializer(BaseSerializer):
             imports.update(item_imports)
             strings.append(item_string)
         value = self._format()
-        return value % (", ".join(strings)), imports
+        return value % ', '.join(strings), imports
 
 
 class BaseSimpleSerializer(BaseSerializer):
@@ -52,10 +52,10 @@ class DatetimeSerializer(BaseSerializer):
             self.value = self.value.astimezone(utc)
         value_repr = repr(self.value).replace("datetime.timezone(datetime.timedelta(0), 'UTC')", 'utc')
         if isinstance(self.value, datetime_safe.datetime):
-            value_repr = "datetime.%s" % value_repr
-        imports = ["import datetime"]
+            value_repr = 'datetime.%s' % value_repr
+        imports = ['import datetime']
         if self.value.tzinfo is not None:
-            imports.append("from django.utils.timezone import utc")
+            imports.append('from django.utils.timezone import utc')
         return value_repr, set(imports)
 
 
@@ -63,13 +63,13 @@ class DateSerializer(BaseSerializer):
     def serialize(self):
         value_repr = repr(self.value)
         if isinstance(self.value, datetime_safe.date):
-            value_repr = "datetime.%s" % value_repr
-        return value_repr, {"import datetime"}
+            value_repr = 'datetime.%s' % value_repr
+        return value_repr, {'import datetime'}
 
 
 class DecimalSerializer(BaseSerializer):
     def serialize(self):
-        return repr(self.value), {"from decimal import Decimal"}
+        return repr(self.value), {'from decimal import Decimal'}
 
 
 class DeconstructableSerializer(BaseSerializer):
@@ -84,17 +84,17 @@ class DeconstructableSerializer(BaseSerializer):
         for kw, arg in sorted(kwargs.items()):
             arg_string, arg_imports = serializer_factory(arg).serialize()
             imports.update(arg_imports)
-            strings.append("%s=%s" % (kw, arg_string))
-        return "%s(%s)" % (name, ", ".join(strings)), imports
+            strings.append('%s=%s' % (kw, arg_string))
+        return '%s(%s)' % (name, ', '.join(strings)), imports
 
     @staticmethod
     def _serialize_path(path):
-        module, name = path.rsplit(".", 1)
-        if module == "django.db.models":
-            imports = {"from django.db import models"}
-            name = "models.%s" % name
+        module, name = path.rsplit('.', 1)
+        if module == 'django.db.models':
+            imports = {'from django.db import models'}
+            name = 'models.%s' % name
         else:
-            imports = {"import %s" % module}
+            imports = {'import %s' % module}
             name = path
         return name, imports
 
@@ -112,7 +112,7 @@ class DictionarySerializer(BaseSerializer):
             imports.update(k_imports)
             imports.update(v_imports)
             strings.append((k_string, v_string))
-        return "{%s}" % (", ".join("%s: %s" % (k, v) for k, v in strings)), imports
+        return '{%s}' % ', '.join('%s: %s' % (k, v) for (k, v) in strings), imports
 
 
 class EnumSerializer(BaseSerializer):
@@ -121,7 +121,7 @@ class EnumSerializer(BaseSerializer):
         module = enum_class.__module__
         v_string, v_imports = serializer_factory(self.value.value).serialize()
         imports = {'import %s' % module, *v_imports}
-        return "%s.%s(%s)" % (module, enum_class.__name__, v_string), imports
+        return '%s.%s(%s)' % (module, enum_class.__name__, v_string), imports
 
 
 class FloatSerializer(BaseSimpleSerializer):
@@ -133,29 +133,27 @@ class FloatSerializer(BaseSimpleSerializer):
 
 class FrozensetSerializer(BaseSequenceSerializer):
     def _format(self):
-        return "frozenset([%s])"
+        return 'frozenset([%s])'
 
 
 class FunctionTypeSerializer(BaseSerializer):
     def serialize(self):
-        if getattr(self.value, "__self__", None) and isinstance(self.value.__self__, type):
+        if getattr(self.value, '__self__', None) and isinstance(self.value.__self__, type):
             klass = self.value.__self__
             module = klass.__module__
-            return "%s.%s.%s" % (module, klass.__name__, self.value.__name__), {"import %s" % module}
+            return '%s.%s.%s' % (module, klass.__name__, self.value.__name__), {'import %s' % module}
         # Further error checking
         if self.value.__name__ == '<lambda>':
-            raise ValueError("Cannot serialize function: lambda")
+            raise ValueError('Cannot serialize function: lambda')
         if self.value.__module__ is None:
-            raise ValueError("Cannot serialize function %r: No module" % self.value)
+            raise ValueError('Cannot serialize function %r: No module' % self.value)
 
         module_name = self.value.__module__
 
-        if '<' not in self.value.__qualname__:  # Qualname can include <locals>
+        if '<' not in self.value.__qualname__: # Qualname can include <locals>
             return '%s.%s' % (module_name, self.value.__qualname__), {'import %s' % self.value.__module__}
 
-        raise ValueError(
-            'Could not find function %s in %s.\n' % (self.value.__name__, module_name)
-        )
+        raise ValueError('Could not find function %s in %s.\n' % (self.value.__name__, module_name))
 
 
 class FunctoolsPartialSerializer(BaseSerializer):
@@ -166,15 +164,13 @@ class FunctoolsPartialSerializer(BaseSerializer):
         keywords_string, keywords_imports = serializer_factory(self.value.keywords).serialize()
         # Add any imports needed by arguments
         imports = {'import functools', *func_imports, *args_imports, *keywords_imports}
-        return (
-            'functools.%s(%s, *%s, **%s)' % (
-                self.value.__class__.__name__,
-                func_string,
-                args_string,
-                keywords_string,
-            ),
-            imports,
-        )
+        return \
+            (
+                'functools.%s(%s, *%s, **%s)' \
+                % \
+                (self.value.__class__.__name__, func_string, args_string, keywords_string),
+                imports
+            )
 
 
 class IterableSerializer(BaseSerializer):
@@ -187,8 +183,8 @@ class IterableSerializer(BaseSerializer):
             strings.append(item_string)
         # When len(strings)==0, the empty iterable should be serialized as
         # "()", not "(,)" because (,) is invalid Python syntax.
-        value = "(%s)" if len(strings) != 1 else "(%s,)"
-        return value % (", ".join(strings)), imports
+        value = '(%s)' if len(strings) != 1 else '(%s,)'
+        return value % ', '.join(strings), imports
 
 
 class ModelFieldSerializer(DeconstructableSerializer):
@@ -202,7 +198,7 @@ class ModelManagerSerializer(DeconstructableSerializer):
         as_manager, manager_path, qs_path, args, kwargs = self.value.deconstruct()
         if as_manager:
             name, imports = self._serialize_path(qs_path)
-            return "%s.as_manager()" % name, imports
+            return '%s.as_manager()' % name, imports
         else:
             return self.serialize_deconstructed(manager_path, args, kwargs)
 
@@ -226,12 +222,12 @@ class RegexSerializer(BaseSerializer):
         args = [regex_pattern]
         if flags:
             args.append(regex_flags)
-        return "re.compile(%s)" % ', '.join(args), imports
+        return 're.compile(%s)' % ', '.join(args), imports
 
 
 class SequenceSerializer(BaseSequenceSerializer):
     def _format(self):
-        return "[%s]"
+        return '[%s]'
 
 
 class SetSerializer(BaseSequenceSerializer):
@@ -243,48 +239,46 @@ class SetSerializer(BaseSequenceSerializer):
 
 class SettingsReferenceSerializer(BaseSerializer):
     def serialize(self):
-        return "settings.%s" % self.value.setting_name, {"from django.conf import settings"}
+        return 'settings.%s' % self.value.setting_name, {'from django.conf import settings'}
 
 
 class TimedeltaSerializer(BaseSerializer):
     def serialize(self):
-        return repr(self.value), {"import datetime"}
+        return repr(self.value), {'import datetime'}
 
 
 class TimeSerializer(BaseSerializer):
     def serialize(self):
         value_repr = repr(self.value)
         if isinstance(self.value, datetime_safe.time):
-            value_repr = "datetime.%s" % value_repr
-        return value_repr, {"import datetime"}
+            value_repr = 'datetime.%s' % value_repr
+        return value_repr, {'import datetime'}
 
 
 class TupleSerializer(BaseSequenceSerializer):
     def _format(self):
         # When len(value)==0, the empty tuple should be serialized as "()",
         # not "(,)" because (,) is invalid Python syntax.
-        return "(%s)" if len(self.value) != 1 else "(%s,)"
+        return '(%s)' if len(self.value) != 1 else '(%s,)'
 
 
 class TypeSerializer(BaseSerializer):
     def serialize(self):
-        special_cases = [
-            (models.Model, "models.Model", []),
-        ]
+        special_cases = [(models.Model, 'models.Model', [])]
         for case, string, imports in special_cases:
             if case is self.value:
                 return string, set(imports)
-        if hasattr(self.value, "__module__"):
+        if hasattr(self.value, '__module__'):
             module = self.value.__module__
             if module == builtins.__name__:
                 return self.value.__name__, set()
             else:
-                return "%s.%s" % (module, self.value.__name__), {"import %s" % module}
+                return '%s.%s' % (module, self.value.__name__), {'import %s' % module}
 
 
 class UUIDSerializer(BaseSerializer):
     def serialize(self):
-        return "uuid.%s" % repr(self.value), {"import uuid"}
+        return 'uuid.%s' % repr(self.value), {'import uuid'}
 
 
 def serializer_factory(value):
@@ -307,7 +301,6 @@ def serializer_factory(value):
     # Anything that knows how to deconstruct itself.
     if hasattr(value, 'deconstruct'):
         return DeconstructableSerializer(value)
-
     # Unfortunately some of these are order-dependent.
     if isinstance(value, frozenset):
         return FrozensetSerializer(value)
@@ -347,8 +340,9 @@ def serializer_factory(value):
         return RegexSerializer(value)
     if isinstance(value, uuid.UUID):
         return UUIDSerializer(value)
-    raise ValueError(
-        "Cannot serialize: %r\nThere are some values Django cannot serialize into "
+    raise
+    ValueError("Cannot serialize: %r\nThere are some values Django cannot serialize into "
         "migration files.\nFor more, see https://docs.djangoproject.com/en/%s/"
-        "topics/migrations/#migration-serializing" % (value, get_docs_version())
-    )
+        "topics/migrations/#migration-serializing" \
+    % \
+    (value, get_docs_version()))

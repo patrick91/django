@@ -1,4 +1,4 @@
-"Misc. utility functions/classes for admin documentation generator."
+'Misc. utility functions/classes for admin documentation generator.'
 
 import re
 from email.errors import HeaderParseError
@@ -25,24 +25,24 @@ def get_view_name(view_func):
 
 
 def trim_docstring(docstring):
-    """
+    '''
     Uniformly trim leading/trailing whitespace from docstrings.
 
     Based on https://www.python.org/dev/peps/pep-0257/#handling-docstring-indentation
-    """
+    '''
     if not docstring or not docstring.strip():
         return ''
     # Convert tabs to spaces and split into lines
     lines = docstring.expandtabs().splitlines()
     indent = min(len(line) - len(line.lstrip()) for line in lines if line.lstrip())
     trimmed = [lines[0].lstrip()] + [line[indent:].rstrip() for line in lines[1:]]
-    return "\n".join(trimmed).strip()
+    return '\n'.join(trimmed).strip()
 
 
 def parse_docstring(docstring):
-    """
+    '''
     Parse out the parts of a docstring.  Return (title, body, metadata).
-    """
+    '''
     docstring = trim_docstring(docstring)
     parts = re.split(r'\n{2,}', docstring)
     title = parts[0]
@@ -55,43 +55,40 @@ def parse_docstring(docstring):
             metadata = parser.parsestr(parts[-1])
         except HeaderParseError:
             metadata = {}
-            body = "\n\n".join(parts[1:])
+            body = '\n\n'.join(parts[1:])
         else:
-            metadata = dict(metadata.items())
-            if metadata:
-                body = "\n\n".join(parts[1:-1])
+            metadata = dict(metadata.items())if metadata:
+                body = '\n\n'.join(parts[1:-1])
             else:
-                body = "\n\n".join(parts[1:])
+                body = '\n\n'.join(parts[1:])
     return title, body, metadata
 
 
 def parse_rst(text, default_reference_context, thing_being_parsed=None):
-    """
+    '''
     Convert the string from reST to an XHTML fragment.
-    """
+    '''
     overrides = {
         'doctitle_xform': True,
         'initial_header_level': 3,
-        "default_reference_context": default_reference_context,
-        "link_base": reverse('django-admindocs-docroot').rstrip('/'),
+        'default_reference_context': default_reference_context,
+        'link_base': reverse('django-admindocs-docroot').rstrip('/'),
         'raw_enabled': False,
-        'file_insertion_enabled': False,
+        'file_insertion_enabled': False
     }
     thing_being_parsed = thing_being_parsed and force_bytes('<%s>' % thing_being_parsed)
     # Wrap ``text`` in some reST that sets the default role to ``cmsreference``,
     # then restores it.
-    source = """
+    source = '''
 .. default-role:: cmsreference
 
 %s
 
 .. default-role::
-"""
-    parts = docutils.core.publish_parts(
-        source % text,
-        source_path=thing_being_parsed, destination_path=None,
-        writer_name='html', settings_overrides=overrides,
-    )
+'''
+    parts = docutils.core.publish_parts(source \
+    % \
+    text, source_path=thing_being_parsed, destination_path=None, writer_name='html', settings_overrides=overrides)
     return mark_safe(parts['fragment'])
 
 
@@ -103,7 +100,7 @@ ROLES = {
     'view': '%s/views/%s/',
     'template': '%s/templates/%s/',
     'filter': '%s/filters/#%s',
-    'tag': '%s/tags/#%s',
+    'tag': '%s/tags/#%s'
 }
 
 
@@ -113,16 +110,11 @@ def create_reference_role(rolename, urlbase):
             options = {}
         if content is None:
             content = []
-        node = docutils.nodes.reference(
-            rawtext,
-            text,
-            refuri=(urlbase % (
-                inliner.document.settings.link_base,
-                text.lower(),
-            )),
-            **options
-        )
+        node = docutils.nodes.reference(rawtext, text, refuri=urlbase \
+        % \
+        (inliner.document.settings.link_base, text.lower()), **options)
         return [node], []
+
     docutils.parsers.rst.roles.register_canonical_role(rolename, _role)
 
 
@@ -132,15 +124,9 @@ def default_reference_role(name, rawtext, text, lineno, inliner, options=None, c
     if content is None:
         content = []
     context = inliner.document.settings.default_reference_context
-    node = docutils.nodes.reference(
-        rawtext,
-        text,
-        refuri=(ROLES[context] % (
-            inliner.document.settings.link_base,
-            text.lower(),
-        )),
-        **options
-    )
+    node = docutils.nodes.reference(rawtext, text, refuri=ROLES[context] \
+    % \
+    (inliner.document.settings.link_base, text.lower()), **options)
     return [node], []
 
 
@@ -149,22 +135,18 @@ if docutils_is_available:
 
     for name, urlbase in ROLES.items():
         create_reference_role(name, urlbase)
-
 # Match the beginning of a named or unnamed group.
 named_group_matcher = re.compile(r'\(\?P(<\w+>)')
 unnamed_group_matcher = re.compile(r'\(')
 
 
 def replace_named_groups(pattern):
-    r"""
+    r'''
     Find named groups in `pattern` and replace them with the group name. E.g.,
     1. ^(?P<a>\w+)/b/(\w+)$ ==> ^<a>/b/(\w+)$
     2. ^(?P<a>\w+)/b/(?P<c>\w+)/$ ==> ^<a>/b/<c>/$
-    """
-    named_group_indices = [
-        (m.start(0), m.end(0), m.group(1))
-        for m in named_group_matcher.finditer(pattern)
-    ]
+    '''
+    named_group_indices = [(m.start(0), m.end(0), m.group(1)) for m in named_group_matcher.finditer(pattern)]
     # Tuples of (named capture group pattern, group name).
     group_pattern_and_name = []
     # Loop over the groups and their start and end indices.
@@ -177,7 +159,6 @@ def replace_named_groups(pattern):
             if unmatched_open_brackets == 0:
                 group_pattern_and_name.append((pattern[start:end + idx], group_name))
                 break
-
             # Check for unescaped `(` and `)`. They mark the start and end of a
             # nested group.
             if val == '(' and prev_char != '\\':
@@ -185,7 +166,6 @@ def replace_named_groups(pattern):
             elif val == ')' and prev_char != '\\':
                 unmatched_open_brackets -= 1
             prev_char = val
-
     # Replace the string for named capture groups with their group names.
     for group_pattern, group_name in group_pattern_and_name:
         pattern = pattern.replace(group_pattern, group_name)
@@ -209,7 +189,6 @@ def replace_unnamed_groups(pattern):
             if unmatched_open_brackets == 0:
                 group_indices.append((start, start + 1 + idx))
                 break
-
             # Check for unescaped `(` and `)`. They mark the start and end of
             # a nested group.
             if val == '(' and prev_char != '\\':
@@ -217,7 +196,6 @@ def replace_unnamed_groups(pattern):
             elif val == ')' and prev_char != '\\':
                 unmatched_open_brackets -= 1
             prev_char = val
-
     # Remove unnamed group matches inside other unnamed capture groups.
     group_start_end_indices = []
     prev_end = None

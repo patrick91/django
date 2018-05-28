@@ -11,5 +11,5 @@ urlpatterns = [
     path('users/', views.empty_view, name='users'),
     path('users/<id>/', views.empty_view, name='user-with-id'),
     path('included_urls/', include('urlpatterns_reverse.included_urls')),
-    path('<lang>/<path:url>/', views.empty_view, name='lang-and-path'),
+    path('<lang>/<path:url>/', views.empty_view, name='lang-and-path')
 ]

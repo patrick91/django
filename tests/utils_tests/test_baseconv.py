@@ -1,12 +1,9 @@
 from unittest import TestCase
 
-from django.utils.baseconv import (
-    BaseConverter, base2, base16, base36, base56, base62, base64,
-)
+from django.utils.baseconv import BaseConverter, base2, base16, base36, base56, base62, base64
 
 
 class TestBaseConv(TestCase):
-
     def test_baseconv(self):
         nums = [-10 ** 10, 10 ** 10] + list(range(-100, 100))
         for converter in [base2, base16, base36, base56, base62, base64]:

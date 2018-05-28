@@ -10,9 +10,9 @@ from .models import Category, CategoryInfo
 
 
 class Foo:
-    """
+    '''
     A simple class with just one attribute.
-    """
+    '''
     foo = 'bar'
 
     def __eq__(self, other):
@@ -21,9 +21,10 @@ class Foo:
 
 class LazyObjectTestCase(TestCase):
     def lazy_wrap(self, wrapped_object):
-        """
+        '''
         Wrap the given object into a LazyObject
-        """
+        '''
+
         class AdHocLazyObject(LazyObject):
             def _setup(self):
                 self._wrapped = wrapped_object
@@ -105,15 +106,9 @@ class LazyObjectTestCase(TestCase):
         self.assertEqual(d['foo'], 'bar')
 
     def test_contains(self):
-        test_data = [
-            ('c', 'abcde'),
-            (2, [1, 2, 3]),
-            ('a', {'a': 1, 'b': 2, 'c': 3}),
-            (2, {1, 2, 3}),
-        ]
+        test_data = [('c', 'abcde'), (2, [1, 2, 3]), ('a', {'a': 1, 'b': 2, 'c': 3}), (2, {1, 2, 3})]
         for needle, haystack in test_data:
             self.assertIn(needle, self.lazy_wrap(haystack))
-
         # __contains__ doesn't work when the haystack is a string and the needle a LazyObject
         for needle_haystack in test_data[1:]:
             self.assertIn(self.lazy_wrap(needle), haystack)
@@ -168,7 +163,6 @@ class LazyObjectTestCase(TestCase):
         # used when iterating over it.
 
         class IterObject:
-
             def __init__(self, values):
                 self.values = values
 
@@ -176,10 +170,7 @@ class LazyObjectTestCase(TestCase):
                 return iter(self.values)
 
         original_list = ['test', '123']
-        self.assertEqual(
-            list(self.lazy_wrap(IterObject(original_list))),
-            original_list
-        )
+        self.assertEqual(list(self.lazy_wrap(IterObject(original_list))), original_list)
 
     def test_pickle(self):
         # See ticket #16563
@@ -201,7 +192,7 @@ class LazyObjectTestCase(TestCase):
         lst = [1, 2, 3]
 
         obj = self.lazy_wrap(lst)
-        len(lst)  # forces evaluation
+        len(lst) # forces evaluation
         obj2 = copy.copy(obj)
 
         self.assertIsNot(obj, obj2)
@@ -224,7 +215,7 @@ class LazyObjectTestCase(TestCase):
         foo = Foo()
 
         obj = self.lazy_wrap(foo)
-        str(foo)  # forces evaluation
+        str(foo) # forces evaluation
         obj2 = copy.copy(obj)
 
         self.assertIsNot(obj, obj2)
@@ -247,7 +238,7 @@ class LazyObjectTestCase(TestCase):
         lst = [1, 2, 3]
 
         obj = self.lazy_wrap(lst)
-        len(lst)  # forces evaluation
+        len(lst) # forces evaluation
         obj2 = copy.deepcopy(obj)
 
         self.assertIsNot(obj, obj2)
@@ -270,7 +261,7 @@ class LazyObjectTestCase(TestCase):
         foo = Foo()
 
         obj = self.lazy_wrap(foo)
-        str(foo)  # forces evaluation
+        str(foo) # forces evaluation
         obj2 = copy.deepcopy(obj)
 
         self.assertIsNot(obj, obj2)
@@ -294,7 +285,7 @@ class SimpleLazyObjectTestCase(LazyObjectTestCase):
     # method which all testcases use, we get to make sure all behaviors
     # tested in the parent testcase also apply to SimpleLazyObject.
     def lazy_wrap(self, wrapped_object):
-        return SimpleLazyObject(lambda: wrapped_object)
+        return SimpleLazyObject(lambda : wrapped_object)
 
     def test_repr(self):
         # First, for an unevaluated SimpleLazyObject
@@ -302,9 +293,9 @@ class SimpleLazyObjectTestCase(LazyObjectTestCase):
         # __repr__ contains __repr__ of setup function and does not evaluate
         # the SimpleLazyObject
         self.assertRegex(repr(obj), '^<SimpleLazyObject:')
-        self.assertIs(obj._wrapped, empty)  # make sure evaluation hasn't been triggered
+        self.assertIs(obj._wrapped, empty) # make sure evaluation hasn't been triggered
 
-        self.assertEqual(obj, 42)  # evaluate the lazy object
+        self.assertEqual(obj, 42) # evaluate the lazy object
         self.assertIsInstance(obj._wrapped, int)
         self.assertEqual(repr(obj), '<SimpleLazyObject: 42>')
 
@@ -316,8 +307,10 @@ class SimpleLazyObjectTestCase(LazyObjectTestCase):
                 frame.f_locals['self'].__class__
                 if old_trace_func is not None:
                     old_trace_func(frame, event, arg)
+
             sys.settrace(trace_func)
             self.lazy_wrap(None)
+
         finally:
             sys.settrace(old_trace_func)
 
@@ -329,14 +322,14 @@ class SimpleLazyObjectTestCase(LazyObjectTestCase):
             return None
 
         x = SimpleLazyObject(f)
-        self.assertEqual(str(x), "None")
+        self.assertEqual(str(x), 'None')
         self.assertEqual(i, [1])
-        self.assertEqual(str(x), "None")
+        self.assertEqual(str(x), 'None')
         self.assertEqual(i, [1])
 
     def test_dict(self):
         # See ticket #18447
-        lazydict = SimpleLazyObject(lambda: {'one': 1})
+        lazydict = SimpleLazyObject(lambda : {'one': 1})
         self.assertEqual(lazydict['one'], 1)
         lazydict['one'] = -1
         self.assertEqual(lazydict['one'], -1)
@@ -348,8 +341,8 @@ class SimpleLazyObjectTestCase(LazyObjectTestCase):
             lazydict['one']
 
     def test_list_set(self):
-        lazy_list = SimpleLazyObject(lambda: [1, 2, 3, 4, 5])
-        lazy_set = SimpleLazyObject(lambda: {1, 2, 3, 4})
+        lazy_list = SimpleLazyObject(lambda : [1, 2, 3, 4, 5])
+        lazy_set = SimpleLazyObject(lambda : {1, 2, 3, 4})
         self.assertIn(1, lazy_list)
         self.assertIn(1, lazy_set)
         self.assertNotIn(6, lazy_list)
@@ -359,10 +352,11 @@ class SimpleLazyObjectTestCase(LazyObjectTestCase):
 
 
 class BaseBaz:
-    """
+    '''
     A base class with a funky __reduce__ method, meant to simulate the
     __reduce__ method of Model, which sets self._django_version.
-    """
+    '''
+
     def __init__(self):
         self.baz = 'wrong'
 
@@ -382,9 +376,10 @@ class BaseBaz:
 
 
 class Baz(BaseBaz):
-    """
+    '''
     A class that inherits from BaseBaz and has its own __reduce_ex__ method.
-    """
+    '''
+
     def __init__(self, bar):
         self.bar = bar
         super().__init__()
@@ -395,11 +390,12 @@ class Baz(BaseBaz):
 
 
 class BazProxy(Baz):
-    """
+    '''
     A class that acts as a proxy for Baz. It does some scary mucking about with
     dicts, which simulates some crazy things that people might do with
     e.g. proxy models.
-    """
+    '''
+
     def __init__(self, baz):
         self.__dict__ = baz.__dict__
         self._baz = baz
@@ -408,20 +404,21 @@ class BazProxy(Baz):
 
 
 class SimpleLazyObjectPickleTestCase(TestCase):
-    """
+    '''
     Regression test for pickling a SimpleLazyObject wrapping a model (#25389).
     Also covers other classes with a custom __reduce__ method.
-    """
+    '''
+
     def test_pickle_with_reduce(self):
-        """
+        '''
         Test in a fairly synthetic setting.
-        """
+        '''
         # Test every pickle protocol available
         for protocol in range(pickle.HIGHEST_PROTOCOL + 1):
             lazy_objs = [
-                SimpleLazyObject(lambda: BaseBaz()),
-                SimpleLazyObject(lambda: Baz(1)),
-                SimpleLazyObject(lambda: BazProxy(Baz(2))),
+                SimpleLazyObject(lambda : BaseBaz()),
+                SimpleLazyObject(lambda : Baz(1)),
+                SimpleLazyObject(lambda : BazProxy(Baz(2)))
             ]
             for obj in lazy_objs:
                 pickled = pickle.dumps(obj, protocol)
@@ -430,17 +427,17 @@ class SimpleLazyObjectPickleTestCase(TestCase):
                 self.assertEqual(unpickled.baz, 'right')
 
     def test_pickle_model(self):
-        """
+        '''
         Test on an actual model, based on the report in #25426.
-        """
-        category = Category.objects.create(name="thing1")
+        '''
+        category = Category.objects.create(name='thing1')
         CategoryInfo.objects.create(category=category)
         # Test every pickle protocol available
         for protocol in range(pickle.HIGHEST_PROTOCOL + 1):
-            lazy_category = SimpleLazyObject(lambda: category)
+            lazy_category = SimpleLazyObject(lambda : category)
             # Test both if we accessed a field on the model and if we didn't.
             lazy_category.categoryinfo
-            lazy_category_2 = SimpleLazyObject(lambda: category)
+            lazy_category_2 = SimpleLazyObject(lambda : category)
             with warnings.catch_warnings(record=True) as recorded:
                 self.assertEqual(pickle.loads(pickle.dumps(lazy_category, protocol)), category)
                 self.assertEqual(pickle.loads(pickle.dumps(lazy_category_2, protocol)), category)

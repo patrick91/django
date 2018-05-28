@@ -10,18 +10,15 @@ SITE_CACHE = {}
 
 
 def _simple_domain_name_validator(value):
-    """
+    '''
     Validate that the given value contains no whitespaces to prevent common
     typos.
-    """
+    '''
     if not value:
         return
-    checks = ((s in value) for s in string.whitespace)
+    checks = (s in value for s in string.whitespace)
     if any(checks):
-        raise ValidationError(
-            _("The domain name cannot contain any spaces or tabs."),
-            code='invalid',
-        )
+        raise ValidationError(_('The domain name cannot contain any spaces or tabs.'), code='invalid')
 
 
 class SiteManager(models.Manager):
@@ -61,15 +58,14 @@ class SiteManager(models.Manager):
         elif request:
             return self._get_site_by_request(request)
 
-        raise ImproperlyConfigured(
-            "You're using the Django \"sites framework\" without having "
+        raise
+        ImproperlyConfigured("You're using the Django \"sites framework\" without having "
             "set the SITE_ID setting. Create a site in your database and "
             "set the SITE_ID setting or pass a request to "
-            "Site.objects.get_current() to fix this error."
-        )
+            "Site.objects.get_current() to fix this error.")
 
     def clear_cache(self):
-        """Clear the ``Site`` object cache."""
+        '''Clear the ``Site`` object cache.'''
         global SITE_CACHE
         SITE_CACHE = {}
 
@@ -78,13 +74,9 @@ class SiteManager(models.Manager):
 
 
 class Site(models.Model):
-
-    domain = models.CharField(
-        _('domain name'),
-        max_length=100,
-        validators=[_simple_domain_name_validator],
-        unique=True,
-    )
+    domain = models.CharField(_('domain name'), max_length=100, validators=[
+        _simple_domain_name_validator
+    ], unique=True)
     name = models.CharField(_('display name'), max_length=50)
     objects = SiteManager()
 
@@ -98,13 +90,13 @@ class Site(models.Model):
         return self.domain
 
     def natural_key(self):
-        return (self.domain,)
+        return self.domain,
 
 
 def clear_site_cache(sender, **kwargs):
-    """
+    '''
     Clear the cache (if primed) each time a site is saved or deleted.
-    """
+    '''
     instance = kwargs['instance']
     using = kwargs['using']
     try:

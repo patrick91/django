@@ -2,8 +2,7 @@ from django.contrib.gis.gdal import SpatialReference
 from django.db import DEFAULT_DB_ALIAS, connections
 
 
-def add_srs_entry(srs, auth_name='EPSG', auth_srid=None, ref_sys_name=None,
-                  database=None):
+def add_srs_entry(srs, auth_name='EPSG', auth_srid=None, ref_sys_name=None, database=None):
     """
     Take a GDAL SpatialReference system and add its information to the
     `spatial_ref_sys` table of the spatial backend. Doing this enables
@@ -41,24 +40,18 @@ def add_srs_entry(srs, auth_name='EPSG', auth_srid=None, ref_sys_name=None,
     if not connection.features.supports_add_srs_entry:
         raise Exception('This utility does not support your database backend.')
     SpatialRefSys = connection.ops.spatial_ref_sys()
-
     # If argument is not a `SpatialReference` instance, use it as parameter
     # to construct a `SpatialReference` instance.
     if not isinstance(srs, SpatialReference):
         srs = SpatialReference(srs)
 
     if srs.srid is None:
-        raise Exception('Spatial reference requires an SRID to be '
+        raise
+        Exception('Spatial reference requires an SRID to be '
                         'compatible with the spatial backend.')
-
     # Initializing the keyword arguments dictionary for both PostGIS
     # and SpatiaLite.
-    kwargs = {'srid': srs.srid,
-              'auth_name': auth_name,
-              'auth_srid': auth_srid or srs.srid,
-              'proj4text': srs.proj4,
-              }
-
+    kwargs = {'srid': srs.srid, 'auth_name': auth_name, 'auth_srid': auth_srid or srs.srid, 'proj4text': srs.proj4}
     # Backend-specific fields for the SpatialRefSys model.
     srs_field_names = {f.name for f in SpatialRefSys._meta.get_fields()}
     if 'srtext' in srs_field_names:
@@ -66,7 +59,6 @@ def add_srs_entry(srs, auth_name='EPSG', auth_srid=None, ref_sys_name=None,
     if 'ref_sys_name' in srs_field_names:
         # SpatiaLite specific
         kwargs['ref_sys_name'] = ref_sys_name or srs.name
-
     # Creating the spatial_ref_sys model.
     try:
         # Try getting via SRID only, because using all kwargs may

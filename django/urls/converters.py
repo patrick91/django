@@ -46,7 +46,7 @@ DEFAULT_CONVERTERS = {
     'path': PathConverter(),
     'slug': SlugConverter(),
     'str': StringConverter(),
-    'uuid': UUIDConverter(),
+    'uuid': UUIDConverter()
 }
 
 
@@ -60,7 +60,7 @@ def register_converter(converter, type_name):
 
 @lru_cache.lru_cache(maxsize=None)
 def get_converters():
-    return {**DEFAULT_CONVERTERS, **REGISTERED_CONVERTERS}
+    return {: DEFAULT_CONVERTERS, : REGISTERED_CONVERTERS}
 
 
 def get_converter(raw_converter):

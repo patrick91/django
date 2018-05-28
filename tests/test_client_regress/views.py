@@ -14,12 +14,12 @@ class CustomTestException(Exception):
 
 
 def no_template_view(request):
-    "A simple view that expects a GET request, and returns a rendered template"
-    return HttpResponse("No template used. Sample content: twice once twice. Content ends.")
+    'A simple view that expects a GET request, and returns a rendered template'
+    return HttpResponse('No template used. Sample content: twice once twice. Content ends.')
 
 
 def staff_only_view(request):
-    "A view that can only be visited by staff. Non staff members get an exception"
+    'A view that can only be visited by staff. Non staff members get an exception'
     if request.user.is_staff:
         return HttpResponse('')
     else:
@@ -28,28 +28,29 @@ def staff_only_view(request):
 
 @login_required
 def get_view(request):
-    "A simple login protected view"
-    return HttpResponse("Hello world")
+    'A simple login protected view'
+    return HttpResponse('Hello world')
 
 
 def request_data(request, template='base.html', data='sausage'):
-    "A simple view that returns the request data in the context"
-    return render(request, template, {
-        'get-foo': request.GET.get('foo'),
-        'get-bar': request.GET.get('bar'),
-        'post-foo': request.POST.get('foo'),
-        'post-bar': request.POST.get('bar'),
-        'data': data,
-    })
+    'A simple view that returns the request data in the context'
+    return \
+        render(request, template, {
+            'get-foo': request.GET.get('foo'),
+            'get-bar': request.GET.get('bar'),
+            'post-foo': request.POST.get('foo'),
+            'post-bar': request.POST.get('bar'),
+            'data': data
+        })
 
 
 def view_with_argument(request, name):
-    """A view that takes a string argument
+    '''A view that takes a string argument
 
     The purpose of this view is to check that if a space is provided in
     the argument, the test framework unescapes the %20 before passing
     the value to the view.
-    """
+    '''
     if name == 'Arthur Dent':
         return HttpResponse('Hi, Arthur')
     else:
@@ -57,17 +58,17 @@ def view_with_argument(request, name):
 
 
 def nested_view(request):
-    """
+    '''
     A view that uses test client to call another view.
-    """
+    '''
     c = Client()
-    c.get("/no_template_view/")
+    c.get('/no_template_view/')
     return render(request, 'base.html', {'nested': 'yes'})
 
 
 @login_required
 def login_protected_redirect_view(request):
-    "A view that redirects all requests to the GET view"
+    'A view that redirects all requests to the GET view'
     return HttpResponseRedirect('/get_view/')
 
 
@@ -78,18 +79,18 @@ def redirect_to_self_with_changing_query_view(request):
 
 
 def set_session_view(request):
-    "A view that sets a session variable"
+    'A view that sets a session variable'
     request.session['session_var'] = 'YES'
     return HttpResponse('set_session')
 
 
 def check_session_view(request):
-    "A view that reads a session variable"
+    'A view that reads a session variable'
     return HttpResponse(request.session.get('session_var', 'NO'))
 
 
 def request_methods_view(request):
-    "A view that responds with the request method"
+    'A view that responds with the request method'
     return HttpResponse('request method: %s' % request.method)
 
 
@@ -98,9 +99,7 @@ def return_unicode(request):
 
 
 def return_undecodable_binary(request):
-    return HttpResponse(
-        b'%PDF-1.4\r\n%\x93\x8c\x8b\x9e ReportLab Generated PDF document http://www.reportlab.com'
-    )
+    return HttpResponse(b'%PDF-1.4\r\n%\x93\x8c\x8b\x9e ReportLab Generated PDF document http://www.reportlab.com')
 
 
 def return_json_response(request):
@@ -110,7 +109,7 @@ def return_json_response(request):
 
 
 def return_text_file(request):
-    "A view that parses and returns text as a file."
+    'A view that parses and returns text as a file.'
     match = CONTENT_TYPE_RE.match(request.META['CONTENT_TYPE'])
     if match:
         charset = match.group(1)
@@ -122,22 +121,22 @@ def return_text_file(request):
 
 
 def check_headers(request):
-    "A view that responds with value of the X-ARG-CHECK header"
+    'A view that responds with value of the X-ARG-CHECK header'
     return HttpResponse('HTTP_X_ARG_CHECK: %s' % request.META.get('HTTP_X_ARG_CHECK', 'Undefined'))
 
 
 def body(request):
-    "A view that is requested with GET and accesses request.body. Refs #14753."
+    'A view that is requested with GET and accesses request.body. Refs #14753.'
     return HttpResponse(request.body)
 
 
 def read_all(request):
-    "A view that is requested with accesses request.read()."
+    'A view that is requested with accesses request.read().'
     return HttpResponse(request.read())
 
 
 def read_buffer(request):
-    "A view that is requested with accesses request.read(LARGE_BUFFER)."
+    'A view that is requested with accesses request.read(LARGE_BUFFER).'
     return HttpResponse(request.read(99999))
 
 
@@ -148,6 +147,5 @@ def request_context_view(request):
 
 
 def render_template_multiple_times(request):
-    """A view that renders a template multiple times."""
-    return HttpResponse(
-        render_to_string('base.html') + render_to_string('base.html'))
+    '''A view that renders a template multiple times.'''
+    return HttpResponse(render_to_string('base.html') + render_to_string('base.html'))

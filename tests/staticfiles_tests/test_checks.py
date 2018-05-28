@@ -8,7 +8,6 @@ from django.test import SimpleTestCase, override_settings
 
 
 class FindersCheckTests(SimpleTestCase):
-
     def test_base_finder_check_not_implemented(self):
         finder = BaseFinder()
         msg = 'subclasses may provide a check() method to verify the finder is configured correctly.'
@@ -16,7 +15,7 @@ class FindersCheckTests(SimpleTestCase):
             finder.check()
 
     def test_check_finders(self):
-        """check_finders() concatenates all errors."""
+        '''check_finders() concatenates all errors.'''
         error1 = Error('1')
         error2 = Error('2')
         error3 = Error('3')
@@ -49,29 +48,19 @@ class FindersCheckTests(SimpleTestCase):
     @override_settings(STATICFILES_DIRS='a string')
     def test_dirs_not_tuple_or_list(self):
         self.assertEqual(check_finders(None), [
-            Error(
-                'The STATICFILES_DIRS setting is not a tuple or list.',
-                hint='Perhaps you forgot a trailing comma?',
-                id='staticfiles.E001',
-            )
+            Error('The STATICFILES_DIRS setting is not a tuple or list.', hint='Perhaps you forgot a trailing comma?', id='staticfiles.E001')
         ])
 
     @override_settings(STATICFILES_DIRS=['/fake/path', settings.STATIC_ROOT])
     def test_dirs_contains_static_root(self):
         self.assertEqual(check_finders(None), [
-            Error(
-                'The STATICFILES_DIRS setting should not contain the '
-                'STATIC_ROOT setting.',
-                id='staticfiles.E002',
-            )
+            Error('The STATICFILES_DIRS setting should not contain the '
+                'STATIC_ROOT setting.', id='staticfiles.E002')
         ])
 
     @override_settings(STATICFILES_DIRS=[('prefix', settings.STATIC_ROOT)])
     def test_dirs_contains_static_root_in_tuple(self):
         self.assertEqual(check_finders(None), [
-            Error(
-                'The STATICFILES_DIRS setting should not contain the '
-                'STATIC_ROOT setting.',
-                id='staticfiles.E002',
-            )
+            Error('The STATICFILES_DIRS setting should not contain the '
+                'STATIC_ROOT setting.', id='staticfiles.E002')
         ])

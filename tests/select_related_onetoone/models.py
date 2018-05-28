@@ -15,7 +15,7 @@ class UserProfile(models.Model):
     state = models.CharField(max_length=2)
 
     def __str__(self):
-        return "%s, %s" % (self.city, self.state)
+        return '%s, %s' % (self.city, self.state)
 
 
 class UserStatResult(models.Model):
@@ -71,7 +71,7 @@ class Parent2(models.Model):
         return self.name2
 
 
-class Child1(Parent1, Parent2):
+class Child1(Parent1,Parent2):
     value = models.IntegerField()
 
     def __str__(self):
@@ -96,8 +96,4 @@ class Child4(Child1):
 
 class LinkedList(models.Model):
     name = models.CharField(max_length=50)
-    previous_item = models.OneToOneField(
-        'self', models.CASCADE,
-        related_name='next_item',
-        blank=True, null=True,
-    )
+    previous_item = models.OneToOneField('self', models.CASCADE, related_name='next_item', blank=True, null=True)

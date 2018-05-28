@@ -2,9 +2,18 @@ from django.core.serializers.json import DjangoJSONEncoder
 from django.db import models
 
 from .fields import (
-    ArrayField, BigIntegerRangeField, CICharField, CIEmailField, CITextField,
-    DateRangeField, DateTimeRangeField, FloatRangeField, HStoreField,
-    IntegerRangeField, JSONField, SearchVectorField,
+    ArrayField,
+    BigIntegerRangeField,
+    CICharField,
+    CIEmailField,
+    CITextField,
+    DateRangeField,
+    DateTimeRangeField,
+    FloatRangeField,
+    HStoreField,
+    IntegerRangeField,
+    JSONField,
+    SearchVectorField
 )
 
 
@@ -17,7 +26,6 @@ class Tag:
 
 
 class TagField(models.SmallIntegerField):
-
     def from_db_value(self, value, expression, connection):
         if value is None:
             return value
@@ -151,18 +159,18 @@ class ArrayFieldSubclass(ArrayField):
 
 
 class AggregateTestModel(models.Model):
-    """
+    '''
     To test postgres-specific general aggregation functions
-    """
+    '''
     char_field = models.CharField(max_length=30, blank=True)
     integer_field = models.IntegerField(null=True)
     boolean_field = models.BooleanField(null=True)
 
 
 class StatTestModel(models.Model):
-    """
+    '''
     To test postgres-specific aggregation functions for statistics
-    """
+    '''
     int1 = models.IntegerField()
     int2 = models.IntegerField()
     related_field = models.ForeignKey(AggregateTestModel, models.SET_NULL, null=True)

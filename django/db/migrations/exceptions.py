@@ -2,7 +2,7 @@ from django.db.utils import DatabaseError
 
 
 class AmbiguityError(Exception):
-    """More than one migration matches a name prefix."""
+    '''More than one migration matches a name prefix.'''
     pass
 
 
@@ -17,7 +17,7 @@ class CircularDependencyError(Exception):
 
 
 class InconsistentMigrationHistory(Exception):
-    """An applied migration has some of its dependencies not applied."""
+    '''An applied migration has some of its dependencies not applied.'''
     pass
 
 
@@ -27,12 +27,12 @@ class InvalidBasesError(ValueError):
 
 
 class IrreversibleError(RuntimeError):
-    """An irreversible migration is about to be reversed."""
+    '''An irreversible migration is about to be reversed.'''
     pass
 
 
 class NodeNotFoundError(LookupError):
-    """An attempt on a node is made that is not available in the graph."""
+    '''An attempt on a node is made that is not available in the graph.'''
 
     def __init__(self, message, node, origin=None):
         self.message = message
@@ -43,7 +43,7 @@ class NodeNotFoundError(LookupError):
         return self.message
 
     def __repr__(self):
-        return "NodeNotFoundError(%r)" % (self.node,)
+        return 'NodeNotFoundError(%r)' % (self.node,)
 
 
 class MigrationSchemaMissing(DatabaseError):

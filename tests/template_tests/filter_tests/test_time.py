@@ -9,9 +9,9 @@ from .timezone_utils import TimezoneTestCase
 
 
 class TimeTests(TimezoneTestCase):
-    """
+    '''
     #20693: Timezone support for the time template filter
-    """
+    '''
 
     @setup({'time00': '{{ dt|time }}'})
     def test_time00(self):
@@ -57,7 +57,6 @@ class TimeTests(TimezoneTestCase):
 
 
 class FunctionTests(SimpleTestCase):
-
     def test_no_args(self):
         self.assertEqual(time_filter(''), '')
         self.assertEqual(time_filter(None), '')

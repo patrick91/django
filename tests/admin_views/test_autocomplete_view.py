@@ -44,10 +44,7 @@ class AutocompleteJsonViewTests(AdminViewBasicTestCase):
 
     @classmethod
     def setUpTestData(cls):
-        cls.user = User.objects.create_user(
-            username='user', password='secret',
-            email='user@example.com', is_staff=True,
-        )
+        cls.user = User.objects.create_user(username='user', password='secret', email='user@example.com', is_staff=True)
         super().setUpTestData()
 
     def test_success(self):
@@ -57,10 +54,7 @@ class AutocompleteJsonViewTests(AdminViewBasicTestCase):
         response = AutocompleteJsonView.as_view(**self.as_view_args)(request)
         self.assertEqual(response.status_code, 200)
         data = json.loads(response.content.decode('utf-8'))
-        self.assertEqual(data, {
-            'results': [{'id': str(q.pk), 'text': q.question}],
-            'pagination': {'more': False},
-        })
+        self.assertEqual(data, {'results': [{'id': str(q.pk), 'text': q.question}], 'pagination': {'more': False}})
 
     def test_must_be_logged_in(self):
         response = self.client.get(self.url, {'term': ''})
@@ -70,10 +64,10 @@ class AutocompleteJsonViewTests(AdminViewBasicTestCase):
         self.assertEqual(response.status_code, 302)
 
     def test_has_change_permission_required(self):
-        """
+        '''
         Users require the change permission for the related model to the
         autocomplete view for it.
-        """
+        '''
         request = self.factory.get(self.url, {'term': 'is'})
         self.user.is_staff = True
         self.user.save()
@@ -82,20 +76,17 @@ class AutocompleteJsonViewTests(AdminViewBasicTestCase):
         self.assertEqual(response.status_code, 403)
         self.assertJSONEqual(response.content.decode('utf-8'), {'error': '403 Forbidden'})
         # Add the change permission and retry.
-        p = Permission.objects.get(
-            content_type=ContentType.objects.get_for_model(Question),
-            codename='change_question',
-        )
+        p = Permission.objects.get(content_type=ContentType.objects.get_for_model(Question), codename='change_question')
         self.user.user_permissions.add(p)
         request.user = User.objects.get(pk=self.user.pk)
         response = AutocompleteJsonView.as_view(**self.as_view_args)(request)
         self.assertEqual(response.status_code, 200)
 
     def test_search_use_distinct(self):
-        """
+        '''
         Searching across model relations use QuerySet.distinct() to avoid
         duplicates.
-        """
+        '''
         q1 = Question.objects.create(question='question 1')
         q2 = Question.objects.create(question='question 2')
         q2.related_questions.add(q1)
@@ -123,7 +114,7 @@ class AutocompleteJsonViewTests(AdminViewBasicTestCase):
             model_admin.autocomplete_view(self.factory.get(self.url))
 
     def test_get_paginator(self):
-        """Search results are paginated."""
+        '''Search results are paginated.'''
         Question.objects.bulk_create(Question(question=str(i)) for i in range(PAGINATOR_SIZE + 10))
         model_admin = QuestionAdmin(Question, site)
         model_admin.ordering = ['pk']
@@ -135,7 +126,7 @@ class AutocompleteJsonViewTests(AdminViewBasicTestCase):
         data = json.loads(response.content.decode('utf-8'))
         self.assertEqual(data, {
             'results': [{'id': str(q.pk), 'text': q.question} for q in Question.objects.all()[:PAGINATOR_SIZE]],
-            'pagination': {'more': True},
+            'pagination': {'more': True}
         })
         # The second page of results.
         request = self.factory.get(self.url, {'term': '', 'page': '2'})
@@ -145,7 +136,7 @@ class AutocompleteJsonViewTests(AdminViewBasicTestCase):
         data = json.loads(response.content.decode('utf-8'))
         self.assertEqual(data, {
             'results': [{'id': str(q.pk), 'text': q.question} for q in Question.objects.all()[PAGINATOR_SIZE:]],
-            'pagination': {'more': False},
+            'pagination': {'more': False}
         })
 
 
@@ -154,9 +145,7 @@ class SeleniumTests(AdminSeleniumTestCase):
     available_apps = ['admin_views'] + AdminSeleniumTestCase.available_apps
 
     def setUp(self):
-        self.superuser = User.objects.create_superuser(
-            username='super', password='secret', email='super@example.com',
-        )
+        self.superuser = User.objects.create_superuser(username='super', password='secret', email='super@example.com')
         self.admin_login(username='super', password='secret', login_url=reverse('autocomplete_admin:index'))
 
     def test_select(self):
@@ -164,15 +153,15 @@ class SeleniumTests(AdminSeleniumTestCase):
         from selenium.webdriver.support.ui import Select
         self.selenium.get(self.live_server_url + reverse('autocomplete_admin:admin_views_answer_add'))
         elem = self.selenium.find_element_by_css_selector('.select2-selection')
-        elem.click()  # Open the autocomplete dropdown.
+        elem.click() # Open the autocomplete dropdown.
         results = self.selenium.find_element_by_css_selector('.select2-results')
         self.assertTrue(results.is_displayed())
         option = self.selenium.find_element_by_css_selector('.select2-results__option')
         self.assertEqual(option.text, 'No results found')
-        elem.click()  # Close the autocomplete dropdown.
+        elem.click() # Close the autocomplete dropdown.
         q1 = Question.objects.create(question='Who am I?')
         Question.objects.bulk_create(Question(question=str(i)) for i in range(PAGINATOR_SIZE + 10))
-        elem.click()  # Reopen the dropdown now that some objects exist.
+        elem.click() # Reopen the dropdown now that some objects exist.
         result_container = self.selenium.find_element_by_css_selector('.select2-results')
         self.assertTrue(result_container.is_displayed())
         results = result_container.find_elements_by_css_selector('.select2-results__option')
@@ -199,15 +188,15 @@ class SeleniumTests(AdminSeleniumTestCase):
         from selenium.webdriver.support.ui import Select
         self.selenium.get(self.live_server_url + reverse('autocomplete_admin:admin_views_question_add'))
         elem = self.selenium.find_element_by_css_selector('.select2-selection')
-        elem.click()  # Open the autocomplete dropdown.
+        elem.click() # Open the autocomplete dropdown.
         results = self.selenium.find_element_by_css_selector('.select2-results')
         self.assertTrue(results.is_displayed())
         option = self.selenium.find_element_by_css_selector('.select2-results__option')
         self.assertEqual(option.text, 'No results found')
-        elem.click()  # Close the autocomplete dropdown.
+        elem.click() # Close the autocomplete dropdown.
         Question.objects.create(question='Who am I?')
         Question.objects.bulk_create(Question(question=str(i)) for i in range(PAGINATOR_SIZE + 10))
-        elem.click()  # Reopen the dropdown now that some objects exist.
+        elem.click() # Reopen the dropdown now that some objects exist.
         result_container = self.selenium.find_element_by_css_selector('.select2-results')
         self.assertTrue(result_container.is_displayed())
         results = result_container.find_elements_by_css_selector('.select2-results__option')
@@ -234,7 +223,7 @@ class SeleniumTests(AdminSeleniumTestCase):
     def test_inline_add_another_widgets(self):
         def assertNoResults(row):
             elem = row.find_element_by_css_selector('.select2-selection')
-            elem.click()  # Open the autocomplete dropdown.
+            elem.click() # Open the autocomplete dropdown.
             results = self.selenium.find_element_by_css_selector('.select2-results')
             self.assertTrue(results.is_displayed())
             option = self.selenium.find_element_by_css_selector('.select2-results__option')

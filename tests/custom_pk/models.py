@@ -1,9 +1,9 @@
-"""
+'''
 Using a custom primary key
 
 By default, Django adds an ``"id"`` field to each model. But you can override
 this behavior by explicitly adding ``primary_key=True`` to a field.
-"""
+'''
 
 from django.db import models
 
@@ -19,7 +19,7 @@ class Employee(models.Model):
         ordering = ('last_name', 'first_name')
 
     def __str__(self):
-        return "%s %s" % (self.first_name, self.last_name)
+        return '%s %s' % (self.first_name, self.last_name)
 
 
 class Business(models.Model):

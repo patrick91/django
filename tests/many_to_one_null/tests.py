@@ -9,12 +9,12 @@ class ManyToOneNullTests(TestCase):
         self.r = Reporter(name='John Smith')
         self.r.save()
         # Create an Article.
-        self.a = Article(headline="First", reporter=self.r)
+        self.a = Article(headline='First', reporter=self.r)
         self.a.save()
         # Create an Article via the Reporter object.
-        self.a2 = self.r.article_set.create(headline="Second")
+        self.a2 = self.r.article_set.create(headline='Second')
         # Create an Article with no Reporter by passing "reporter=None".
-        self.a3 = Article(headline="Third", reporter=None)
+        self.a3 = Article(headline='Third', reporter=None)
         self.a3.save()
         # Create another article and reporter
         self.r2 = Reporter(name='Paul Jones')
@@ -53,10 +53,11 @@ class ManyToOneNullTests(TestCase):
         # Set the reporter for the Third article
         self.assertQuerysetEqual(self.r.article_set.all(), ['<Article: First>', '<Article: Second>'])
         self.r.article_set.add(a3)
-        self.assertQuerysetEqual(
-            self.r.article_set.all(),
-            ['<Article: First>', '<Article: Second>', '<Article: Third>']
-        )
+        self.assertQuerysetEqual(self.r.article_set.all(), [
+            '<Article: First>',
+            '<Article: Second>',
+            '<Article: Third>'
+        ])
         # Remove an article from the set, and check that it was removed.
         self.r.article_set.remove(a3)
         self.assertQuerysetEqual(self.r.article_set.all(), ['<Article: First>', '<Article: Second>'])
@@ -80,10 +81,11 @@ class ManyToOneNullTests(TestCase):
         # Clear the rest of the set
         self.r2.article_set.set([])
         self.assertQuerysetEqual(self.r2.article_set.all(), [])
-        self.assertQuerysetEqual(
-            Article.objects.filter(reporter__isnull=True),
-            ['<Article: Fourth>', '<Article: Second>', '<Article: Third>']
-        )
+        self.assertQuerysetEqual(Article.objects.filter(reporter__isnull=True), [
+            '<Article: Fourth>',
+            '<Article: Second>',
+            '<Article: Third>'
+        ])
 
     def test_assign_clear_related_set(self):
         # Use descriptor assignment to allocate ForeignKey. Null is legal, so
@@ -94,10 +96,10 @@ class ManyToOneNullTests(TestCase):
         # Clear the rest of the set
         self.r.article_set.clear()
         self.assertQuerysetEqual(self.r.article_set.all(), [])
-        self.assertQuerysetEqual(
-            Article.objects.filter(reporter__isnull=True),
-            ['<Article: First>', '<Article: Fourth>']
-        )
+        self.assertQuerysetEqual(Article.objects.filter(reporter__isnull=True), [
+            '<Article: First>',
+            '<Article: Fourth>'
+        ])
 
     def test_assign_with_queryset(self):
         # Querysets used in reverse FK assignments are pre-evaluated
@@ -105,7 +107,7 @@ class ManyToOneNullTests(TestCase):
         # RelatedManager.set() (#19816).
         self.r2.article_set.set([self.a2, self.a3])
 
-        qs = self.r2.article_set.filter(headline="Second")
+        qs = self.r2.article_set.filter(headline='Second')
         self.r2.article_set.set(qs)
 
         self.assertEqual(1, self.r2.article_set.count())

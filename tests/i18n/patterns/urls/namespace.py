@@ -9,5 +9,5 @@ app_name = 'account'
 urlpatterns = [
     url(_(r'^register/$'), view, name='register'),
     url(_(r'^register-without-slash$'), view, name='register-without-slash'),
-    path(_('register-as-path/'), view, name='register-as-path'),
+    path(_('register-as-path/'), view, name='register-as-path')
 ]

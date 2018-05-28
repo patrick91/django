@@ -34,11 +34,7 @@ class GeoExpressionsTests(TestCase):
     def test_update_from_other_field(self):
         p1 = Point(1, 1, srid=4326)
         p2 = Point(2, 2, srid=4326)
-        obj = ManyPointModel.objects.create(
-            point1=p1,
-            point2=p2,
-            point3=p2.transform(3857, clone=True),
-        )
+        obj = ManyPointModel.objects.create(point1=p1, point2=p2, point3=p2.transform(3857, clone=True))
         # Updating a point to a point of the same SRID.
         ManyPointModel.objects.filter(pk=obj.pk).update(point2=F('point1'))
         obj.refresh_from_db()
@@ -50,14 +46,14 @@ class GeoExpressionsTests(TestCase):
             self.assertTrue(obj.point3.equals_exact(p1.transform(3857, clone=True), 0.1))
 
     def test_multiple_annotation(self):
-        multi_field = MultiFields.objects.create(
-            point=Point(1, 1),
-            city=City.objects.get(name='Houston'),
-            poly=Polygon(((1, 1), (1, 2), (2, 2), (2, 1), (1, 1))),
-        )
-        qs = City.objects.values('name').annotate(
-            distance=functions.Distance('multifields__point', multi_field.city.point),
-        ).annotate(count=Count('multifields'))
+        multi_field = MultiFields.objects.create(point=Point(1, 1), city=City.objects.get(name='Houston'), poly=Polygon((
+            (1, 1),
+            (1, 2),
+            (2, 2),
+            (2, 1),
+            (1, 1)
+        )))
+        qs = City.objects.values('name').annotate(distance=functions.Distance('multifields__point', multi_field.city.point)).annotate(count=Count('multifields'))
         self.assertTrue(qs.first())
 
     @skipUnlessDBFeature('has_Translate_function')

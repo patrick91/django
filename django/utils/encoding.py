@@ -34,17 +34,15 @@ def smart_text(s, encoding='utf-8', strings_only=False, errors='strict'):
     return force_text(s, encoding, strings_only, errors)
 
 
-_PROTECTED_TYPES = (
-    type(None), int, float, Decimal, datetime.datetime, datetime.date, datetime.time,
-)
+_PROTECTED_TYPES = (type(None), int, float, Decimal, datetime.datetime, datetime.date, datetime.time)
 
 
 def is_protected_type(obj):
-    """Determine if the object instance is of a protected type.
+    '''Determine if the object instance is of a protected type.
 
     Objects of protected types are preserved as-is when passed to
     force_text(strings_only=True).
-    """
+    '''
     return isinstance(obj, _PROTECTED_TYPES)
 
 
@@ -108,15 +106,15 @@ def force_bytes(s, encoding='utf-8', strings_only=False, errors='strict'):
 smart_str = smart_text
 force_str = force_text
 
-smart_str.__doc__ = """
+smart_str.__doc__ = '''
 Apply smart_text in Python 3 and smart_bytes in Python 2.
 
 This is suitable for writing to sys.stdout (for instance).
-"""
+'''
 
-force_str.__doc__ = """
+force_str.__doc__ = '''
 Apply force_text in Python 3 and force_bytes in Python 2.
-"""
+'''
 
 
 def iri_to_uri(iri):
@@ -155,7 +153,7 @@ def iri_to_uri(iri):
 # First, the unreserved characters from RFC 3986:
 _ascii_ranges = [[45, 46, 95, 126], range(65, 91), range(97, 123)]
 _hextobyte = {
-    (fmt % char).encode(): bytes((char,))
+    fmt % char.encode(): bytes((char,))
     for ascii_range in _ascii_ranges
     for char in ascii_range
     for fmt in ['%02x', '%02X']
@@ -163,10 +161,7 @@ _hextobyte = {
 # And then everything above 128, because bytes ≥ 128 are part of multibyte
 # unicode characters.
 _hexdig = '0123456789ABCDEFabcdef'
-_hextobyte.update({
-    (a + b).encode(): bytes.fromhex(a + b)
-    for a in _hexdig[8:] for b in _hexdig
-})
+_hextobyte.update({a + b.encode(): bytes.fromhex(a + b) for a in _hexdig[8:] for b in _hexdig})
 
 
 def uri_to_iri(uri):
@@ -206,10 +201,10 @@ def uri_to_iri(uri):
 
 
 def escape_uri_path(path):
-    """
+    '''
     Escape the unsafe characters from the path portion of a Uniform Resource
     Identifier (URI).
-    """
+    '''
     # These are the "reserved" and "unreserved" characters specified in
     # sections 2.2 and 2.3 of RFC 2396:
     #   reserved    = ";" | "/" | "?" | ":" | "@" | "&" | "=" | "+" | "$" | ","
@@ -223,17 +218,16 @@ def escape_uri_path(path):
 
 
 def repercent_broken_unicode(path):
-    """
+    '''
     As per section 3.2 of RFC 3987, step three of converting a URI into an IRI,
     repercent-encode any octet produced that is not part of a strictly legal
     UTF-8 octet sequence.
-    """
+    '''
     try:
         path.decode()
     except UnicodeDecodeError as e:
         repercent = quote(path[e.start:e.end], safe=b"/#%[]=:;$&()+,!?*@'~")
-        path = repercent_broken_unicode(
-            path[:e.start] + force_bytes(repercent) + path[e.end:])
+        path = repercent_broken_unicode(path[:e.start] + force_bytes(repercent) + path[e.end:])
     return path
 
 
@@ -249,7 +243,7 @@ def filepath_to_uri(path):
         return path
     # I know about `os.sep` and `os.altsep` but I want to leave
     # some flexibility for hardcoding separators.
-    return quote(path.replace("\\", "/"), safe="/~!*()'")
+    return quote(path.replace('\\', '/'), safe="/~!*()'")
 
 
 def get_system_encoding():

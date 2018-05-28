@@ -32,12 +32,10 @@ def salted_hmac(key_salt, value, secret=None):
 
     key_salt = force_bytes(key_salt)
     secret = force_bytes(secret)
-
     # We need to generate a derived key from our base key.  We can do this by
     # passing the key_salt and our base key through a pseudo-random function and
     # SHA1 works nicely.
     key = hashlib.sha1(key_salt + secret).digest()
-
     # If len(key_salt + secret) > sha_constructor().block_size, the above
     # line is redundant and could be replaced by key = key_salt + secret, since
     # the hmac module does the same thing for keys longer than the block size.
@@ -45,15 +43,18 @@ def salted_hmac(key_salt, value, secret=None):
     return hmac.new(key, msg=force_bytes(value), digestmod=hashlib.sha1)
 
 
-def get_random_string(length=12,
-                      allowed_chars='abcdefghijklmnopqrstuvwxyz'
-                                    'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'):
-    """
+def get_random_string(
+    length=12,
+    allowed_chars=
+        'abcdefghijklmnopqrstuvwxyz'
+                                    'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'
+):
+    '''
     Return a securely generated random string.
 
     The default length of 12 with the a-z, A-Z, 0-9 character set returns
     a 71-bit value. log_2((26+26+10)^12) =~ 71 bits
-    """
+    '''
     if not using_sysrandom:
         # This is ugly, and a hack, but it makes things better than
         # the alternative of predictability. This re-seeds the PRNG
@@ -61,21 +62,17 @@ def get_random_string(length=12,
         # time a random string is required. This may change the
         # properties of the chosen random sequence slightly, but this
         # is better than absolute predictability.
-        random.seed(
-            hashlib.sha256(
-                ('%s%s%s' % (random.getstate(), time.time(), settings.SECRET_KEY)).encode()
-            ).digest()
-        )
+        random.seed(hashlib.sha256('%s%s%s' % (random.getstate(), time.time(), settings.SECRET_KEY).encode()).digest())
     return ''.join(random.choice(allowed_chars) for i in range(length))
 
 
 def constant_time_compare(val1, val2):
-    """Return True if the two strings are equal, False otherwise."""
+    '''Return True if the two strings are equal, False otherwise.'''
     return hmac.compare_digest(force_bytes(val1), force_bytes(val2))
 
 
 def pbkdf2(password, salt, iterations, dklen=0, digest=None):
-    """Return the hash of password using pbkdf2."""
+    '''Return the hash of password using pbkdf2.'''
     if digest is None:
         digest = hashlib.sha256
     dklen = dklen or None

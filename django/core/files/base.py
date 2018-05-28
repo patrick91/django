@@ -20,7 +20,7 @@ class File(FileProxyMixin):
         return self.name or ''
 
     def __repr__(self):
-        return "<%s: %s>" % (self.__class__.__name__, self or "None")
+        return '<%s: %s>' % (self.__class__.__name__, self or 'None')
 
     def __bool__(self):
         return bool(self.name)
@@ -46,10 +46,10 @@ class File(FileProxyMixin):
         raise AttributeError("Unable to determine the file's size.")
 
     def chunks(self, chunk_size=None):
-        """
+        '''
         Read the file and yield chunks of ``chunk_size`` bytes (defaults to
         ``File.DEFAULT_CHUNK_SIZE``).
-        """
+        '''
         chunk_size = chunk_size or self.DEFAULT_CHUNK_SIZE
         try:
             self.seek(0)
@@ -70,7 +70,7 @@ class File(FileProxyMixin):
         always return ``False`` -- there's no good reason to read from memory in
         chunks.
         """
-        return self.size > (chunk_size or self.DEFAULT_CHUNK_SIZE)
+        return self.size > chunk_size or self.DEFAULT_CHUNK_SIZE
 
     def __iter__(self):
         # Iterate over this file-like object by newlines
@@ -81,15 +81,14 @@ class File(FileProxyMixin):
                     if endswith_cr(buffer_) and not equals_lf(line):
                         # Line split after a \r newline; yield buffer_.
                         yield buffer_
-                        # Continue with line.
                     else:
+                        # Continue with line.
                         # Line either split without a newline (line
                         # continues after buffer_) or with \r\n
                         # newline (line == b'\n').
                         line = buffer_ + line
                     # buffer_ handled, clear it.
                     buffer_ = None
-
                 # If this is the end of a \n or \r\n line, yield.
                 if endswith_lf(line):
                     yield line
@@ -111,7 +110,7 @@ class File(FileProxyMixin):
         elif self.name and os.path.exists(self.name):
             self.file = open(self.name, mode or self.mode)
         else:
-            raise ValueError("The file cannot be reopened.")
+            raise ValueError('The file cannot be reopened.')
         return self
 
     def close(self):
@@ -119,9 +118,10 @@ class File(FileProxyMixin):
 
 
 class ContentFile(File):
-    """
+    '''
     A File-like object that take just raw content, rather than an actual file.
-    """
+    '''
+
     def __init__(self, content, name=None):
         stream_class = StringIO if isinstance(content, str) else BytesIO
         super().__init__(stream_class(content), name=name)
@@ -141,7 +141,7 @@ class ContentFile(File):
         pass
 
     def write(self, data):
-        self.__dict__.pop('size', None)  # Clear the computed size.
+        self.__dict__.pop('size', None) # Clear the computed size.
         return self.file.write(data)
 
 
@@ -157,4 +157,4 @@ def endswith_lf(line):
 
 def equals_lf(line):
     """Return True if line (a text or byte string) equals '\n'."""
-    return line == ('\n' if isinstance(line, str) else b'\n')
+    return line == '\n' if isinstance(line, str) else b'\n'

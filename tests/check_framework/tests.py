@@ -9,22 +9,18 @@ from django.core.management import call_command
 from django.core.management.base import CommandError
 from django.db import models
 from django.test import SimpleTestCase
-from django.test.utils import (
-    isolate_apps, override_settings, override_system_checks,
-)
+from django.test.utils import isolate_apps, override_settings, override_system_checks
 
 from .models import SimpleModel, my_check
 
 
 class DummyObj:
     def __repr__(self):
-        return "obj"
+        return 'obj'
 
 
 class SystemCheckFrameworkTests(SimpleTestCase):
-
     def test_register_and_run_checks(self):
-
         def f(**kwargs):
             calls[0] += 1
             return [1, 2, 3]
@@ -36,19 +32,16 @@ class SystemCheckFrameworkTests(SimpleTestCase):
             return [5]
 
         calls = [0]
-
         # test register as decorator
         registry = CheckRegistry()
         registry.register()(f)
-        registry.register("tag1", "tag2")(f2)
-        registry.register("tag2", deploy=True)(f3)
-
+        registry.register('tag1', 'tag2')(f2)
+        registry.register('tag2', deploy=True)(f3)
         # test register as function
         registry2 = CheckRegistry()
         registry2.register(f)
-        registry2.register(f2, "tag1", "tag2")
-        registry2.register(f3, "tag2", deploy=True)
-
+        registry2.register(f2, 'tag1', 'tag2')
+        registry2.register(f3, 'tag2', deploy=True)
         # check results
         errors = registry.run_checks()
         errors2 = registry2.run_checks()
@@ -56,72 +49,71 @@ class SystemCheckFrameworkTests(SimpleTestCase):
         self.assertEqual(sorted(errors), [1, 2, 3, 4])
         self.assertEqual(calls[0], 2)
 
-        errors = registry.run_checks(tags=["tag1"])
-        errors2 = registry2.run_checks(tags=["tag1"])
+        errors = registry.run_checks(tags=['tag1'])
+        errors2 = registry2.run_checks(tags=['tag1'])
         self.assertEqual(errors, errors2)
         self.assertEqual(sorted(errors), [4])
 
-        errors = registry.run_checks(tags=["tag1", "tag2"], include_deployment_checks=True)
-        errors2 = registry2.run_checks(tags=["tag1", "tag2"], include_deployment_checks=True)
+        errors = registry.run_checks(tags=['tag1', 'tag2'], include_deployment_checks=True)
+        errors2 = registry2.run_checks(tags=['tag1', 'tag2'], include_deployment_checks=True)
         self.assertEqual(errors, errors2)
         self.assertEqual(sorted(errors), [4, 5])
 
 
 class MessageTests(SimpleTestCase):
-
     def test_printing(self):
-        e = Error("Message", hint="Hint", obj=DummyObj())
-        expected = "obj: Message\n\tHINT: Hint"
+        e = Error('Message', hint='Hint', obj=DummyObj())
+        expected = 'obj: Message\n\tHINT: Hint'
         self.assertEqual(str(e), expected)
 
     def test_printing_no_hint(self):
-        e = Error("Message", obj=DummyObj())
-        expected = "obj: Message"
+        e = Error('Message', obj=DummyObj())
+        expected = 'obj: Message'
         self.assertEqual(str(e), expected)
 
     def test_printing_no_object(self):
-        e = Error("Message", hint="Hint")
-        expected = "?: Message\n\tHINT: Hint"
+        e = Error('Message', hint='Hint')
+        expected = '?: Message\n\tHINT: Hint'
         self.assertEqual(str(e), expected)
 
     def test_printing_with_given_id(self):
-        e = Error("Message", hint="Hint", obj=DummyObj(), id="ID")
-        expected = "obj: (ID) Message\n\tHINT: Hint"
+        e = Error('Message', hint='Hint', obj=DummyObj(), id='ID')
+        expected = 'obj: (ID) Message\n\tHINT: Hint'
         self.assertEqual(str(e), expected)
 
     def test_printing_field_error(self):
         field = SimpleModel._meta.get_field('field')
-        e = Error("Error", obj=field)
-        expected = "check_framework.SimpleModel.field: Error"
+        e = Error('Error', obj=field)
+        expected = 'check_framework.SimpleModel.field: Error'
         self.assertEqual(str(e), expected)
 
     def test_printing_model_error(self):
-        e = Error("Error", obj=SimpleModel)
-        expected = "check_framework.SimpleModel: Error"
+        e = Error('Error', obj=SimpleModel)
+        expected = 'check_framework.SimpleModel: Error'
         self.assertEqual(str(e), expected)
 
     def test_printing_manager_error(self):
         manager = SimpleModel.manager
-        e = Error("Error", obj=manager)
-        expected = "check_framework.SimpleModel.manager: Error"
+        e = Error('Error', obj=manager)
+        expected = 'check_framework.SimpleModel.manager: Error'
         self.assertEqual(str(e), expected)
 
     def test_equal_to_self(self):
-        e = Error("Error", obj=SimpleModel)
+        e = Error('Error', obj=SimpleModel)
         self.assertEqual(e, e)
 
     def test_equal_to_same_constructed_check(self):
-        e1 = Error("Error", obj=SimpleModel)
-        e2 = Error("Error", obj=SimpleModel)
+        e1 = Error('Error', obj=SimpleModel)
+        e2 = Error('Error', obj=SimpleModel)
         self.assertEqual(e1, e2)
 
     def test_not_equal_to_different_constructed_check(self):
-        e1 = Error("Error", obj=SimpleModel)
-        e2 = Error("Error2", obj=SimpleModel)
+        e1 = Error('Error', obj=SimpleModel)
+        e2 = Error('Error2', obj=SimpleModel)
         self.assertNotEqual(e1, e2)
 
     def test_not_equal_to_non_check(self):
-        e = Error("Error", obj=DummyObj())
+        e = Error('Error', obj=DummyObj())
         self.assertNotEqual(e, 'a string')
 
 
@@ -147,7 +139,6 @@ deployment_system_check.tags = ['deploymenttag']
 
 
 class CheckCommandTests(SimpleTestCase):
-
     def setUp(self):
         simple_system_check.kwargs = None
         tagged_system_check.kwargs = None
@@ -229,7 +220,6 @@ def custom_warning_system_check(app_configs, **kwargs):
 
 
 class SilencingCheckTests(SimpleTestCase):
-
     def setUp(self):
         self.old_stdout, self.old_stderr = sys.stdout, sys.stderr
         self.stdout, self.stderr = StringIO(), StringIO()
@@ -272,32 +262,20 @@ class CheckFrameworkReservedNamesTests(SimpleTestCase):
 
         class ModelWithDescriptorCalledCheck(models.Model):
             check = models.ForeignKey(ModelWithRelatedManagerCalledCheck, models.CASCADE)
-            article = models.ForeignKey(
-                ModelWithRelatedManagerCalledCheck,
-                models.CASCADE,
-                related_name='check',
-            )
+            article = models.ForeignKey(ModelWithRelatedManagerCalledCheck, models.CASCADE, related_name='check')
 
         errors = checks.run_checks(app_configs=apps.get_app_configs())
         expected = [
-            Error(
-                "The 'ModelWithAttributeCalledCheck.check()' class method is "
-                "currently overridden by 42.",
-                obj=ModelWithAttributeCalledCheck,
-                id='models.E020'
-            ),
-            Error(
-                "The 'ModelWithRelatedManagerCalledCheck.check()' class method is "
-                "currently overridden by %r." % ModelWithRelatedManagerCalledCheck.check,
-                obj=ModelWithRelatedManagerCalledCheck,
-                id='models.E020'
-            ),
-            Error(
-                "The 'ModelWithDescriptorCalledCheck.check()' class method is "
-                "currently overridden by %r." % ModelWithDescriptorCalledCheck.check,
-                obj=ModelWithDescriptorCalledCheck,
-                id='models.E020'
-            ),
+            Error("The 'ModelWithAttributeCalledCheck.check()' class method is "
+                "currently overridden by 42.", obj=ModelWithAttributeCalledCheck, id='models.E020'),
+            Error("The 'ModelWithRelatedManagerCalledCheck.check()' class method is "
+                "currently overridden by %r." \
+            % \
+            ModelWithRelatedManagerCalledCheck.check, obj=ModelWithRelatedManagerCalledCheck, id='models.E020'),
+            Error("The 'ModelWithDescriptorCalledCheck.check()' class method is "
+                "currently overridden by %r." \
+            % \
+            ModelWithDescriptorCalledCheck.check, obj=ModelWithDescriptorCalledCheck, id='models.E020')
         ]
         self.assertEqual(errors, expected)
 

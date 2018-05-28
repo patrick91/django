@@ -5,10 +5,22 @@ from django.test import SimpleTestCase, ignore_warnings
 from django.utils.datastructures import MultiValueDict
 from django.utils.deprecation import RemovedInDjango30Warning
 from django.utils.http import (
-    base36_to_int, cookie_date, http_date, int_to_base36, is_safe_url,
-    is_same_domain, parse_etags, parse_http_date, quote_etag, urlencode,
-    urlquote, urlquote_plus, urlsafe_base64_decode, urlsafe_base64_encode,
-    urlunquote, urlunquote_plus,
+    base36_to_int,
+    cookie_date,
+    http_date,
+    int_to_base36,
+    is_safe_url,
+    is_same_domain,
+    parse_etags,
+    parse_http_date,
+    quote_etag,
+    urlencode,
+    urlquote,
+    urlquote_plus,
+    urlsafe_base64_decode,
+    urlsafe_base64_encode,
+    urlunquote,
+    urlunquote_plus
 )
 
 
@@ -25,7 +37,7 @@ class URLEncodeTests(unittest.TestCase):
             'b=2&a=1&c=3',
             'b=2&c=3&a=1',
             'c=3&a=1&b=2',
-            'c=3&b=2&a=1',
+            'c=3&b=2&a=1'
         ])
 
     def test_dict_containing_sequence_not_doseq(self):
@@ -38,14 +50,11 @@ class URLEncodeTests(unittest.TestCase):
         self.assertEqual(urlencode({'a': []}, doseq=True), '')
 
     def test_multivaluedict(self):
-        result = urlencode(MultiValueDict({
-            'name': ['Adrian', 'Simon'],
-            'position': ['Developer'],
-        }), doseq=True)
+        result = urlencode(MultiValueDict({'name': ['Adrian', 'Simon'], 'position': ['Developer']}), doseq=True)
         # MultiValueDicts are similarly unordered.
         self.assertIn(result, [
             'name=Adrian&name=Simon&position=Developer',
-            'position=Developer&name=Adrian&name=Simon',
+            'position=Developer&name=Adrian&name=Simon'
         ])
 
     def test_dict_with_bytes_values(self):
@@ -132,7 +141,7 @@ class IsSafeURLTests(unittest.TestCase):
             'ftp:9999999999',
             '\n',
             'http://[2001:cdba:0000:0000:0000:0000:3257:9652/',
-            'http://2001:cdba:0000:0000:0000:0000:3257:9652]/',
+            'http://2001:cdba:0000:0000:0000:0000:3257:9652]/'
         )
         for bad_url in bad_urls:
             with self.subTest(url=bad_url):
@@ -149,7 +158,7 @@ class IsSafeURLTests(unittest.TestCase):
             '//testserver/',
             'http://testserver/confirm?email=me@example.com',
             '/url%20with%20spaces/',
-            'path/http:2222222222',
+            'path/http:2222222222'
         )
         for good_url in good_urls:
             with self.subTest(url=good_url):
@@ -166,21 +175,13 @@ class IsSafeURLTests(unittest.TestCase):
         self.assertIs(is_safe_url(r'http://testserver\@example.com', allowed_hosts=None), False)
 
     def test_secure_param_https_urls(self):
-        secure_urls = (
-            'https://example.com/p',
-            'HTTPS://example.com/p',
-            '/view/?param=http://example.com',
-        )
+        secure_urls = ('https://example.com/p', 'HTTPS://example.com/p', '/view/?param=http://example.com')
         for url in secure_urls:
             with self.subTest(url=url):
                 self.assertIs(is_safe_url(url, allowed_hosts={'example.com'}, require_https=True), True)
 
     def test_secure_param_non_https_urls(self):
-        insecure_urls = (
-            'http://example.com/p',
-            'ftp://example.com/p',
-            '//example.com/p',
-        )
+        insecure_urls = ('http://example.com/p', 'ftp://example.com/p', '//example.com/p')
         for url in insecure_urls:
             with self.subTest(url=url):
                 self.assertIs(is_safe_url(url, allowed_hosts={'example.com'}, require_https=True), False)
@@ -197,7 +198,7 @@ class URLSafeBase64Tests(unittest.TestCase):
 class URLQuoteTests(unittest.TestCase):
     def test_quote(self):
         self.assertEqual(urlquote('Paris & Orl\xe9ans'), 'Paris%20%26%20Orl%C3%A9ans')
-        self.assertEqual(urlquote('Paris & Orl\xe9ans', safe="&"), 'Paris%20&%20Orl%C3%A9ans')
+        self.assertEqual(urlquote('Paris & Orl\xe9ans', safe='&'), 'Paris%20&%20Orl%C3%A9ans')
 
     def test_unquote(self):
         self.assertEqual(urlunquote('Paris%20%26%20Orl%C3%A9ans'), 'Paris & Orl\xe9ans')
@@ -205,7 +206,7 @@ class URLQuoteTests(unittest.TestCase):
 
     def test_quote_plus(self):
         self.assertEqual(urlquote_plus('Paris & Orl\xe9ans'), 'Paris+%26+Orl%C3%A9ans')
-        self.assertEqual(urlquote_plus('Paris & Orl\xe9ans', safe="&"), 'Paris+&+Orl%C3%A9ans')
+        self.assertEqual(urlquote_plus('Paris & Orl\xe9ans', safe='&'), 'Paris+&+Orl%C3%A9ans')
 
     def test_unquote_plus(self):
         self.assertEqual(urlunquote_plus('Paris+%26+Orl%C3%A9ans'), 'Paris & Orl\xe9ans')
@@ -220,7 +221,7 @@ class IsSameDomainTests(unittest.TestCase):
             ('foo.example.com', '.example.com'),
             ('example.com:8888', 'example.com:8888'),
             ('example.com:8888', '.example.com:8888'),
-            ('foo.example.com:8888', '.example.com:8888'),
+            ('foo.example.com:8888', '.example.com:8888')
         ):
             self.assertIs(is_same_domain(*pair), True)
 
@@ -228,26 +229,22 @@ class IsSameDomainTests(unittest.TestCase):
         for pair in (
             ('example2.com', 'example.com'),
             ('foo.example.com', 'example.com'),
-            ('example.com:9999', 'example.com:8888'),
+            ('example.com:9999', 'example.com:8888')
         ):
             self.assertIs(is_same_domain(*pair), False)
 
 
 class ETagProcessingTests(unittest.TestCase):
     def test_parsing(self):
-        self.assertEqual(
-            parse_etags(r'"" ,  "etag", "e\\tag", W/"weak"'),
-            ['""', '"etag"', r'"e\\tag"', 'W/"weak"']
-        )
+        self.assertEqual(parse_etags(r'"" ,  "etag", "e\\tag", W/"weak"'), ['""', '"etag"', r'"e\\tag"', 'W/"weak"'])
         self.assertEqual(parse_etags('*'), ['*'])
-
         # Ignore RFC 2616 ETags that are invalid according to RFC 7232.
-        self.assertEqual(parse_etags(r'"etag", "e\"t\"ag"'), ['"etag"'])
+        self.assertEqual(parse_etags(r'"etag", "e"t"ag"'), ['"etag"'])
 
     def test_quoting(self):
-        self.assertEqual(quote_etag('etag'), '"etag"')  # unquoted
-        self.assertEqual(quote_etag('"etag"'), '"etag"')  # quoted
-        self.assertEqual(quote_etag('W/"etag"'), 'W/"etag"')  # quoted, weak
+        self.assertEqual(quote_etag('etag'), '"etag"') # unquoted
+        self.assertEqual(quote_etag('"etag"'), '"etag"') # quoted
+        self.assertEqual(quote_etag('W/"etag"'), 'W/"etag"') # quoted, weak
 
 
 class HttpDateProcessingTests(unittest.TestCase):

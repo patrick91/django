@@ -3,7 +3,6 @@ from django.test import SimpleTestCase
 
 
 class GenericIPAddressFieldTest(SimpleTestCase):
-
     def test_generic_ipaddress_invalid_arguments(self):
         with self.assertRaises(ValueError):
             GenericIPAddressField(protocol='hamster')
@@ -41,7 +40,7 @@ class GenericIPAddressFieldTest(SimpleTestCase):
             f.clean('1:2')
 
     def test_generic_ipaddress_as_ipv4_only(self):
-        f = GenericIPAddressField(protocol="IPv4")
+        f = GenericIPAddressField(protocol='IPv4')
         with self.assertRaisesMessage(ValidationError, "'This field is required.'"):
             f.clean('')
         with self.assertRaisesMessage(ValidationError, "'This field is required.'"):
@@ -61,7 +60,7 @@ class GenericIPAddressFieldTest(SimpleTestCase):
             f.clean('2a02::223:6cff:fe8a:2e8a')
 
     def test_generic_ipaddress_as_ipv6_only(self):
-        f = GenericIPAddressField(protocol="IPv6")
+        f = GenericIPAddressField(protocol='IPv6')
         with self.assertRaisesMessage(ValidationError, "'This field is required.'"):
             f.clean('')
         with self.assertRaisesMessage(ValidationError, "'This field is required.'"):

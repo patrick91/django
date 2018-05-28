@@ -5,7 +5,7 @@ from django.core.paginator import Paginator
 
 from .models import Child, Event, Parent, Swallow
 
-site = admin.AdminSite(name="admin")
+site = admin.AdminSite(name='admin')
 
 site.register(User, UserAdmin)
 
@@ -40,7 +40,7 @@ class ChildAdmin(admin.ModelAdmin):
     list_filter = ['parent', 'age']
 
     def get_queryset(self, request):
-        return super().get_queryset(request).select_related("parent")
+        return super().get_queryset(request).select_related('parent')
 
 
 class CustomPaginationAdmin(ChildAdmin):
@@ -111,7 +111,7 @@ site.register(Parent, NoListDisplayLinksParentAdmin)
 
 
 class SwallowAdmin(admin.ModelAdmin):
-    actions = None  # prevent ['action_checkbox'] + list(list_display)
+    actions = None # prevent ['action_checkbox'] + list(list_display)
     list_display = ('origin', 'load', 'speed', 'swallowonetoone')
     list_editable = ['load', 'speed']
     list_per_page = 3
@@ -146,4 +146,5 @@ class EmptyValueChildAdmin(admin.ModelAdmin):
 
     def age_display(self, obj):
         return obj.age
+
     age_display.empty_value_display = '&dagger;'

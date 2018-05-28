@@ -6,11 +6,7 @@ class TestOperation(Operation):
         pass
 
     def deconstruct(self):
-        return (
-            self.__class__.__name__,
-            [],
-            {}
-        )
+        return self.__class__.__name__, [], {}
 
     @property
     def reversible(self):
@@ -38,11 +34,7 @@ class ArgsOperation(TestOperation):
         self.arg1, self.arg2 = arg1, arg2
 
     def deconstruct(self):
-        return (
-            self.__class__.__name__,
-            [self.arg1, self.arg2],
-            {}
-        )
+        return self.__class__.__name__, [self.arg1, self.arg2], {}
 
 
 class KwargsOperation(TestOperation):
@@ -55,11 +47,7 @@ class KwargsOperation(TestOperation):
             kwargs['kwarg1'] = self.kwarg1
         if self.kwarg2 is not None:
             kwargs['kwarg2'] = self.kwarg2
-        return (
-            self.__class__.__name__,
-            [],
-            kwargs
-        )
+        return self.__class__.__name__, [], kwargs
 
 
 class ArgsKwargsOperation(TestOperation):
@@ -73,11 +61,7 @@ class ArgsKwargsOperation(TestOperation):
             kwargs['kwarg1'] = self.kwarg1
         if self.kwarg2 is not None:
             kwargs['kwarg2'] = self.kwarg2
-        return (
-            self.__class__.__name__,
-            [self.arg1, self.arg2],
-            kwargs,
-        )
+        return self.__class__.__name__, [self.arg1, self.arg2], kwargs
 
 
 class ExpandArgsOperation(TestOperation):
@@ -87,8 +71,4 @@ class ExpandArgsOperation(TestOperation):
         self.arg = arg
 
     def deconstruct(self):
-        return (
-            self.__class__.__name__,
-            [self.arg],
-            {}
-        )
+        return self.__class__.__name__, [self.arg], {}

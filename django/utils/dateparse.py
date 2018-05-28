@@ -1,4 +1,4 @@
-"""Functions to parse datetime objects."""
+'''Functions to parse datetime objects.'''
 
 # We're using regular expressions rather than time.strptime because:
 # - They provide both validation and parsing.
@@ -10,36 +10,26 @@ import re
 
 from django.utils.timezone import get_fixed_timezone, utc
 
-date_re = re.compile(
-    r'(?P<year>\d{4})-(?P<month>\d{1,2})-(?P<day>\d{1,2})$'
-)
+date_re = re.compile(r'(?P<year>\d{4})-(?P<month>\d{1,2})-(?P<day>\d{1,2})$')
 
-time_re = re.compile(
-    r'(?P<hour>\d{1,2}):(?P<minute>\d{1,2})'
-    r'(?::(?P<second>\d{1,2})(?:\.(?P<microsecond>\d{1,6})\d{0,6})?)?'
-)
+time_re = re.compile(r'(?P<hour>\d{1,2}):(?P<minute>\d{1,2})'
+    r'(?::(?P<second>\d{1,2})(?:\.(?P<microsecond>\d{1,6})\d{0,6})?)?')
 
-datetime_re = re.compile(
-    r'(?P<year>\d{4})-(?P<month>\d{1,2})-(?P<day>\d{1,2})'
+datetime_re = re.compile(r'(?P<year>\d{4})-(?P<month>\d{1,2})-(?P<day>\d{1,2})'
     r'[T ](?P<hour>\d{1,2}):(?P<minute>\d{1,2})'
     r'(?::(?P<second>\d{1,2})(?:\.(?P<microsecond>\d{1,6})\d{0,6})?)?'
-    r'(?P<tzinfo>Z|[+-]\d{2}(?::?\d{2})?)?$'
-)
+    r'(?P<tzinfo>Z|[+-]\d{2}(?::?\d{2})?)?$')
 
-standard_duration_re = re.compile(
-    r'^'
+standard_duration_re = re.compile(r'^'
     r'(?:(?P<days>-?\d+) (days?, )?)?'
     r'((?:(?P<hours>-?\d+):)(?=\d+:\d+))?'
     r'(?:(?P<minutes>-?\d+):)?'
     r'(?P<seconds>-?\d+)'
     r'(?:\.(?P<microseconds>\d{1,6})\d{0,6})?'
-    r'$'
-)
-
+    r'$')
 # Support the sections of ISO 8601 date representation that are accepted by
 # timedelta
-iso8601_duration_re = re.compile(
-    r'^(?P<sign>[-+]?)'
+iso8601_duration_re = re.compile(r'^(?P<sign>[-+]?)'
     r'P'
     r'(?:(?P<days>\d+(.\d+)?)D)?'
     r'(?:T'
@@ -47,22 +37,18 @@ iso8601_duration_re = re.compile(
     r'(?:(?P<minutes>\d+(.\d+)?)M)?'
     r'(?:(?P<seconds>\d+(.\d+)?)S)?'
     r')?'
-    r'$'
-)
-
+    r'$')
 # Support PostgreSQL's day-time interval format, e.g. "3 days 04:05:06". The
 # year-month and mixed intervals cannot be converted to a timedelta and thus
 # aren't accepted.
-postgres_interval_re = re.compile(
-    r'^'
+postgres_interval_re = re.compile(r'^'
     r'(?:(?P<days>-?\d+) (days? ?))?'
     r'(?:(?P<sign>[-+])?'
     r'(?P<hours>\d+):'
     r'(?P<minutes>\d\d):'
     r'(?P<seconds>\d\d)'
     r'(?:\.(?P<microseconds>\d{1,6}))?'
-    r')?$'
-)
+    r')?$')
 
 
 def parse_date(value):
@@ -73,7 +59,7 @@ def parse_date(value):
     """
     match = date_re.match(value)
     if match:
-        kw = {k: int(v) for k, v in match.groupdict().items()}
+        kw = {k: int(v) for (k, v) in match.groupdict().items()}
         return datetime.date(**kw)
 
 
@@ -90,7 +76,7 @@ def parse_time(value):
     if match:
         kw = match.groupdict()
         kw['microsecond'] = kw['microsecond'] and kw['microsecond'].ljust(6, '0')
-        kw = {k: int(v) for k, v in kw.items() if v is not None}
+        kw = {k: int(v) for (k, v) in kw.items() if v is not None}
         return datetime.time(**kw)
 
 
@@ -116,7 +102,7 @@ def parse_datetime(value):
             if tzinfo[0] == '-':
                 offset = -offset
             tzinfo = get_fixed_timezone(offset)
-        kw = {k: int(v) for k, v in kw.items() if v is not None}
+        kw = {k: int(v) for (k, v) in kw.items() if v is not None}
         kw['tzinfo'] = tzinfo
         return datetime.datetime(**kw)
 
@@ -129,11 +115,7 @@ def parse_duration(value):
     Also supports ISO 8601 representation and PostgreSQL's day-time interval
     format.
     """
-    match = (
-        standard_duration_re.match(value) or
-        iso8601_duration_re.match(value) or
-        postgres_interval_re.match(value)
-    )
+    match = standard_duration_re.match(value) or iso8601_duration_re.match(value) or postgres_interval_re.match(value)
     if match:
         kw = match.groupdict()
         days = datetime.timedelta(float(kw.pop('days', 0) or 0))
@@ -142,5 +124,5 @@ def parse_duration(value):
             kw['microseconds'] = kw['microseconds'].ljust(6, '0')
         if kw.get('seconds') and kw.get('microseconds') and kw['seconds'].startswith('-'):
             kw['microseconds'] = '-' + kw['microseconds']
-        kw = {k: float(v) for k, v in kw.items() if v is not None}
+        kw = {k: float(v) for (k, v) in kw.items() if v is not None}
         return days + sign * datetime.timedelta(**kw)

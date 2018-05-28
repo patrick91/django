@@ -3,8 +3,7 @@ from django.contrib.auth.models import User
 from .tests import AdminDocsTestCase, TestDataMixin
 
 
-class XViewMiddlewareTest(TestDataMixin, AdminDocsTestCase):
-
+class XViewMiddlewareTest(TestDataMixin,AdminDocsTestCase):
     def test_xview_func(self):
         user = User.objects.get(username='super')
         response = self.client.head('/xview/func/')

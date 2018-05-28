@@ -5,7 +5,6 @@ from django.db import models
 
 
 class ValidationMessagesTest(TestCase):
-
     def _test_validation_messages(self, field, value, expected):
         with self.assertRaises(ValidationError) as cm:
             field.clean(value, None)
@@ -41,51 +40,42 @@ class ValidationMessagesTest(TestCase):
 
     def test_date_field_raises_error_message(self):
         f = models.DateField()
-        self._test_validation_messages(
-            f, 'fõo',
-            ["'fõo' value has an invalid date format. It must be in YYYY-MM-DD format."]
-        )
-        self._test_validation_messages(
-            f, 'aaaa-10-10',
-            ["'aaaa-10-10' value has an invalid date format. It must be in YYYY-MM-DD format."]
-        )
-        self._test_validation_messages(
-            f, '2011-13-10',
-            ["'2011-13-10' value has the correct format (YYYY-MM-DD) but it is an invalid date."]
-        )
-        self._test_validation_messages(
-            f, '2011-10-32',
-            ["'2011-10-32' value has the correct format (YYYY-MM-DD) but it is an invalid date."]
-        )
+        self._test_validation_messages(f, 'fõo', [
+            "'fõo' value has an invalid date format. It must be in YYYY-MM-DD format."
+        ])
+        self._test_validation_messages(f, 'aaaa-10-10', [
+            "'aaaa-10-10' value has an invalid date format. It must be in YYYY-MM-DD format."
+        ])
+        self._test_validation_messages(f, '2011-13-10', [
+            "'2011-13-10' value has the correct format (YYYY-MM-DD) but it is an invalid date."
+        ])
+        self._test_validation_messages(f, '2011-10-32', [
+            "'2011-10-32' value has the correct format (YYYY-MM-DD) but it is an invalid date."
+        ])
 
     def test_datetime_field_raises_error_message(self):
         f = models.DateTimeField()
         # Wrong format
-        self._test_validation_messages(
-            f, 'fõo',
-            ["'fõo' value has an invalid format. It must be in YYYY-MM-DD HH:MM[:ss[.uuuuuu]][TZ] format."]
-        )
+        self._test_validation_messages(f, 'fõo', [
+            "'fõo' value has an invalid format. It must be in YYYY-MM-DD HH:MM[:ss[.uuuuuu]][TZ] format."
+        ])
         # Correct format but invalid date
-        self._test_validation_messages(
-            f, '2011-10-32',
-            ["'2011-10-32' value has the correct format (YYYY-MM-DD) but it is an invalid date."]
-        )
+        self._test_validation_messages(f, '2011-10-32', [
+            "'2011-10-32' value has the correct format (YYYY-MM-DD) but it is an invalid date."
+        ])
         # Correct format but invalid date/time
-        self._test_validation_messages(
-            f, '2011-10-32 10:10',
-            ["'2011-10-32 10:10' value has the correct format (YYYY-MM-DD HH:MM[:ss[.uuuuuu]][TZ]) "
-             "but it is an invalid date/time."]
-        )
+        self._test_validation_messages(f, '2011-10-32 10:10', [
+            "'2011-10-32 10:10' value has the correct format (YYYY-MM-DD HH:MM[:ss[.uuuuuu]][TZ]) "
+             "but it is an invalid date/time."
+        ])
 
     def test_time_field_raises_error_message(self):
         f = models.TimeField()
         # Wrong format
-        self._test_validation_messages(
-            f, 'fõo',
-            ["'fõo' value has an invalid format. It must be in HH:MM[:ss[.uuuuuu]] format."]
-        )
+        self._test_validation_messages(f, 'fõo', [
+            "'fõo' value has an invalid format. It must be in HH:MM[:ss[.uuuuuu]] format."
+        ])
         # Correct format but invalid time
-        self._test_validation_messages(
-            f, '25:50',
-            ["'25:50' value has the correct format (HH:MM[:ss[.uuuuuu]]) but it is an invalid time."]
-        )
+        self._test_validation_messages(f, '25:50', [
+            "'25:50' value has the correct format (HH:MM[:ss[.uuuuuu]]) but it is an invalid time."
+        ])

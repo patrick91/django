@@ -1,37 +1,37 @@
-"""
+'''
 Functions for reversing a regular expression (used in reverse URL resolving).
 Used internally by Django and not intended for external use.
 
 This is not, and is not intended to be, a complete reg-exp decompiler. It
 should be good enough for a large class of URLS, however.
-"""
+'''
 # Mapping of an escape character to a representative of that class. So, e.g.,
 # "\w" is replaced by "x" in a reverse URL. A value of None means to ignore
 # this sequence. Any missing key is mapped to itself.
 ESCAPE_MAPPINGS = {
-    "A": None,
-    "b": None,
-    "B": None,
-    "d": "0",
-    "D": "x",
-    "s": " ",
-    "S": "x",
-    "w": "x",
-    "W": "!",
-    "Z": None,
+    'A': None,
+    'b': None,
+    'B': None,
+    'd': '0',
+    'D': 'x',
+    's': ' ',
+    'S': 'x',
+    'w': 'x',
+    'W': '!',
+    'Z': None
 }
 
 
 class Choice(list):
-    """Represent multiple possibilities at this point in a pattern string."""
+    '''Represent multiple possibilities at this point in a pattern string.'''
 
 
 class Group(list):
-    """Represent a capturing group in the pattern string."""
+    '''Represent a capturing group in the pattern string.'''
 
 
 class NonCapture(list):
-    """Represent a non-capturing group in the pattern string."""
+    '''Represent a non-capturing group in the pattern string.'''
 
 
 def normalize(pattern):
@@ -62,7 +62,6 @@ def normalize(pattern):
     consume_next = True
     pattern_iter = next_char(iter(pattern))
     num_args = 0
-
     # A "while" loop is used here because later on we need to be able to peek
     # at the next character and possibly go around without consuming another
     # one at the top of the loop.
@@ -77,11 +76,11 @@ def normalize(pattern):
                 result.append(ch)
             elif ch == '.':
                 # Replace "any character" with an arbitrary representative.
-                result.append(".")
+                result.append('.')
             elif ch == '|':
                 # FIXME: One day we'll should do this, but not in 1.0.
                 raise NotImplementedError('Awaiting Implementation')
-            elif ch == "^":
+            elif ch == '^':
                 pass
             elif ch == '$':
                 break
@@ -107,9 +106,9 @@ def normalize(pattern):
                 ch, escaped = next(pattern_iter)
                 if ch != '?' or escaped:
                     # A positional group
-                    name = "_%d" % num_args
+                    name = '_%d' % num_args
                     num_args += 1
-                    result.append(Group((("%%(%s)s" % name), name)))
+                    result.append(Group(('%%(%s)s' % name, name)))
                     walk_to_end(ch, pattern_iter)
                 else:
                     ch, escaped = next(pattern_iter)
@@ -132,8 +131,8 @@ def normalize(pattern):
                         # then skip to the end.
                         if ch == '<':
                             terminal_char = '>'
-                        # We are in a named backreference.
                         else:
+                            # We are in a named backreference.
                             terminal_char = ')'
                         name = []
                         ch, escaped = next(pattern_iter)
@@ -144,11 +143,11 @@ def normalize(pattern):
                         # Named backreferences have already consumed the
                         # parenthesis.
                         if terminal_char != ')':
-                            result.append(Group((("%%(%s)s" % param), param)))
+                            result.append(Group(('%%(%s)s' % param, param)))
                             walk_to_end(ch, pattern_iter)
                         else:
-                            result.append(Group((("%%(%s)s" % param), None)))
-            elif ch in "*?+{":
+                            result.append(Group(('%%(%s)s' % param, None)))
+            elif ch in '*?+{':
                 # Quantifiers affect the previous item in the result list.
                 count, ch = get_quantifier(ch, pattern_iter)
                 if ch:
@@ -169,7 +168,7 @@ def normalize(pattern):
                     else:
                         result.pop()
                 elif count > 1:
-                    result.extend([result[-1]] * (count - 1))
+                    result.extend([result[-1]] * count - 1)
             else:
                 # Anything else is a literal.
                 result.append(ch)
@@ -187,7 +186,7 @@ def normalize(pattern):
 
 
 def next_char(input_iter):
-    r"""
+    r'''
     An iterator that yields the next character from "pattern_iter", respecting
     escape sequences. An escaped character is replaced by a representative of
     its class (e.g. \w -> "x"). If the escaped character is one that is
@@ -195,24 +194,24 @@ def next_char(input_iter):
 
     Yield the next character, along with a boolean indicating whether it is a
     raw (unescaped) character or not.
-    """
+    '''
     for ch in input_iter:
         if ch != '\\':
-            yield ch, False
+            yield (ch, False)
             continue
         ch = next(input_iter)
         representative = ESCAPE_MAPPINGS.get(ch, ch)
         if representative is None:
             continue
-        yield representative, True
+        yield (representative, True)
 
 
 def walk_to_end(ch, input_iter):
-    """
+    '''
     The iterator is currently inside a capturing group. Walk to the close of
     this group, skipping over any nested groups and handling escaped
     parentheses correctly.
-    """
+    '''
     if ch == '(':
         nesting = 1
     else:
@@ -229,14 +228,14 @@ def walk_to_end(ch, input_iter):
 
 
 def get_quantifier(ch, input_iter):
-    """
+    '''
     Parse a quantifier from the input, where "ch" is the first character in the
     quantifier.
 
     Return the minimum number of occurrences permitted by the quantifier and
     either None or the next character from the input_iter if the next character
     is not part of the quantifier.
-    """
+    '''
     if ch in '*?+':
         try:
             ch2, escaped = next(input_iter)
@@ -254,7 +253,6 @@ def get_quantifier(ch, input_iter):
         quant.append(ch)
     quant = quant[:-1]
     values = ''.join(quant).split(',')
-
     # Consume the trailing '?', if necessary.
     try:
         ch, escaped = next(input_iter)
@@ -266,10 +264,10 @@ def get_quantifier(ch, input_iter):
 
 
 def contains(source, inst):
-    """
+    '''
     Return True if the "source" contains an instance of "inst". False,
     otherwise.
-    """
+    '''
     if isinstance(source, inst):
         return True
     if isinstance(source, NonCapture):
@@ -280,11 +278,11 @@ def contains(source, inst):
 
 
 def flatten_result(source):
-    """
+    '''
     Turn the given source sequence into a list of reg-exp possibilities and
     their arguments. Return a list of strings and a list of argument lists.
     Each of the two lists will be of the same length.
-    """
+    '''
     if source is None:
         return [''], [[]]
     if isinstance(source, Group):

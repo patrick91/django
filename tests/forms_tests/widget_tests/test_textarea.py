@@ -8,9 +8,7 @@ class TextareaTest(WidgetTest):
     widget = Textarea()
 
     def test_render(self):
-        self.check_html(self.widget, 'msg', 'value', html=(
-            '<textarea rows="10" cols="40" name="msg">value</textarea>'
-        ))
+        self.check_html(self.widget, 'msg', 'value', html='<textarea rows="10" cols="40" name="msg">value</textarea>')
 
     def test_render_required(self):
         widget = Textarea()
@@ -24,11 +22,7 @@ class TextareaTest(WidgetTest):
         self.check_html(self.widget, 'msg', None, html='<textarea rows="10" cols="40" name="msg"></textarea>')
 
     def test_escaping(self):
-        self.check_html(self.widget, 'msg', 'some "quoted" & ampersanded value', html=(
-            '<textarea rows="10" cols="40" name="msg">some &quot;quoted&quot; &amp; ampersanded value</textarea>'
-        ))
+        self.check_html(self.widget, 'msg', 'some "quoted" & ampersanded value', html='<textarea rows="10" cols="40" name="msg">some &quot;quoted&quot; &amp; ampersanded value</textarea>')
 
     def test_mark_safe(self):
-        self.check_html(self.widget, 'msg', mark_safe('pre &quot;quoted&quot; value'), html=(
-            '<textarea rows="10" cols="40" name="msg">pre &quot;quoted&quot; value</textarea>'
-        ))
+        self.check_html(self.widget, 'msg', mark_safe('pre &quot;quoted&quot; value'), html='<textarea rows="10" cols="40" name="msg">pre &quot;quoted&quot; value</textarea>')

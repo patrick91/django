@@ -12,7 +12,8 @@ __all__ = ('BoundField',)
 
 @html_safe
 class BoundField:
-    "A Field plus data"
+    'A Field plus data'
+
     def __init__(self, form, field, name):
         self.form = form
         self.field = field
@@ -27,27 +28,28 @@ class BoundField:
         self.help_text = field.help_text or ''
 
     def __str__(self):
-        """Render this field as an HTML widget."""
+        '''Render this field as an HTML widget.'''
         if self.field.show_hidden_initial:
             return self.as_widget() + self.as_hidden(only_initial=True)
         return self.as_widget()
 
     @cached_property
     def subwidgets(self):
-        """
+        '''
         Most widgets yield a single subwidget, but others like RadioSelect and
         CheckboxSelectMultiple produce one subwidget for each choice.
 
         This property is cached so that only one database query occurs when
         rendering ModelChoiceFields.
-        """
+        '''
         id_ = self.field.widget.attrs.get('id') or self.auto_id
         attrs = {'id': id_} if id_ else {}
         attrs = self.build_widget_attrs(attrs)
-        return [
-            BoundWidget(self.field.widget, widget, self.form.renderer)
-            for widget in self.field.widget.subwidgets(self.html_name, self.value(), attrs=attrs)
-        ]
+        return \
+            [
+                BoundWidget(self.field.widget, widget, self.form.renderer)
+                for widget in self.field.widget.subwidgets(self.html_name, self.value(), attrs=attrs)
+            ]
 
     def __bool__(self):
         # BoundField evaluates to True even if it doesn't have subwidgets.
@@ -68,9 +70,9 @@ class BoundField:
 
     @property
     def errors(self):
-        """
+        '''
         Return an ErrorList (empty if there are no errors) for this field.
-        """
+        '''
         return self.form.errors.get(self.name, self.form.error_class())
 
     def as_widget(self, widget=None, attrs=None, only_initial=False):
@@ -86,27 +88,23 @@ class BoundField:
         attrs = self.build_widget_attrs(attrs, widget)
         if self.auto_id and 'id' not in widget.attrs:
             attrs.setdefault('id', self.html_initial_id if only_initial else self.auto_id)
-        return widget.render(
-            name=self.html_initial_name if only_initial else self.html_name,
-            value=self.value(),
-            attrs=attrs,
-            renderer=self.form.renderer,
-        )
+        return \
+            widget.render(name=self.html_initial_name if only_initial else self.html_name, value=self.value(), attrs=attrs, renderer=self.form.renderer)
 
     def as_text(self, attrs=None, **kwargs):
-        """
+        '''
         Return a string of HTML for representing this as an <input type="text">.
-        """
+        '''
         return self.as_widget(TextInput(), attrs, **kwargs)
 
     def as_textarea(self, attrs=None, **kwargs):
-        """Return a string of HTML for representing this as a <textarea>."""
+        '''Return a string of HTML for representing this as a <textarea>.'''
         return self.as_widget(Textarea(), attrs, **kwargs)
 
     def as_hidden(self, attrs=None, **kwargs):
-        """
+        '''
         Return a string of HTML for representing this as an <input type="hidden">.
-        """
+        '''
         return self.as_widget(self.field.hidden_widget(), attrs, **kwargs)
 
     @property
@@ -117,10 +115,10 @@ class BoundField:
         return self.field.widget.value_from_datadict(self.form.data, self.form.files, self.html_name)
 
     def value(self):
-        """
+        '''
         Return the value for this BoundField, using the initial value if
         the form is not bound or the data otherwise.
-        """
+        '''
         data = self.initial
         if self.form.is_bound:
             data = self.field.bound_data(self.data, data)
@@ -138,8 +136,7 @@ class BoundField:
         """
         contents = contents or self.label
         if label_suffix is None:
-            label_suffix = (self.field.label_suffix if self.field.label_suffix is not None
-                            else self.form.label_suffix)
+            label_suffix = self.field.label_suffix if self.field.label_suffix is not None else self.form.label_suffix
         # Only add the suffix if the label does not end in punctuation.
         # Translators: If found as last label character, these punctuation
         # characters will prevent the default label_suffix to be appended to the label
@@ -150,7 +147,7 @@ class BoundField:
         if id_:
             id_for_label = widget.id_for_label(id_)
             if id_for_label:
-                attrs = {**(attrs or {}), 'for': id_for_label}
+                attrs = {: attrs or {}, 'for': id_for_label}
             if self.field.required and hasattr(self.form, 'required_css_class'):
                 attrs = attrs or {}
                 if 'class' in attrs:
@@ -164,9 +161,9 @@ class BoundField:
         return mark_safe(contents)
 
     def css_classes(self, extra_classes=None):
-        """
+        '''
         Return a string of space-separated CSS classes for this field.
-        """
+        '''
         if hasattr(extra_classes, 'split'):
             extra_classes = extra_classes.split()
         extra_classes = set(extra_classes or [])
@@ -183,11 +180,11 @@ class BoundField:
 
     @property
     def auto_id(self):
-        """
+        '''
         Calculate and return the ID attribute for this BoundField, if the
         associated Form has specified auto_id. Return an empty string otherwise.
-        """
-        auto_id = self.form.auto_id  # Boolean or string
+        '''
+        auto_id = self.form.auto_id # Boolean or string
         if auto_id and '%s' in str(auto_id):
             return auto_id % self.html_name
         elif auto_id:
@@ -210,14 +207,13 @@ class BoundField:
         data = self.form.get_initial_for_field(self.field, self.name)
         # If this is an auto-generated default date, nix the microseconds for
         # standardized handling. See #22502.
-        if (isinstance(data, (datetime.datetime, datetime.time)) and
-                not self.field.widget.supports_microseconds):
+        if isinstance(data, (datetime.datetime, datetime.time)) and not self.field.widget.supports_microseconds:
             data = data.replace(microsecond=0)
         return data
 
     def build_widget_attrs(self, attrs, widget=None):
         widget = widget or self.field.widget
-        attrs = dict(attrs)  # Copy attrs to avoid modifying the argument.
+        attrs = dict(attrs) # Copy attrs to avoid modifying the argument.
         if widget.use_required_attribute(self.initial) and self.field.required and self.form.use_required_attribute:
             attrs['required'] = True
         if self.field.disabled:
@@ -227,7 +223,7 @@ class BoundField:
 
 @html_safe
 class BoundWidget:
-    """
+    '''
     A container class used for iterating over widgets. This is useful for
     widgets that have choices. For example, the following can be used in a
     template:
@@ -238,7 +234,8 @@ class BoundWidget:
         <span class="radio">{{ radio.tag }}</span>
       </label>
     {% endfor %}
-    """
+    '''
+
     def __init__(self, parent_widget, data, renderer):
         self.parent_widget = parent_widget
         self.data = data
@@ -248,7 +245,7 @@ class BoundWidget:
         return self.tag(wrap_label=True)
 
     def tag(self, wrap_label=False):
-        context = {'widget': {**self.data, 'wrap_label': wrap_label}}
+        context = {'widget': {: self.data, 'wrap_label': wrap_label}}
         return self.parent_widget._render(self.template_name, context, self.renderer)
 
     @property

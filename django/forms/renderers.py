@@ -37,15 +37,16 @@ class EngineMixin:
 
     @cached_property
     def engine(self):
-        return self.backend({
-            'APP_DIRS': True,
-            'DIRS': [str(ROOT / self.backend.app_dirname)],
-            'NAME': 'djangoforms',
-            'OPTIONS': {},
-        })
+        return \
+            self.backend({
+                'APP_DIRS': True,
+                'DIRS': [str(ROOT / self.backend.app_dirname)],
+                'NAME': 'djangoforms',
+                'OPTIONS': {}
+            })
 
 
-class DjangoTemplates(EngineMixin, BaseRenderer):
+class DjangoTemplates(EngineMixin,BaseRenderer):
     """
     Load Django templates from the built-in widget templates in
     django/forms/templates and from apps' 'templates' directory.
@@ -53,7 +54,7 @@ class DjangoTemplates(EngineMixin, BaseRenderer):
     backend = DjangoTemplates
 
 
-class Jinja2(EngineMixin, BaseRenderer):
+class Jinja2(EngineMixin,BaseRenderer):
     """
     Load Jinja2 templates from the built-in widget templates in
     django/forms/jinja2 and from apps' 'jinja2' directory.
@@ -62,9 +63,10 @@ class Jinja2(EngineMixin, BaseRenderer):
 
 
 class TemplatesSetting(BaseRenderer):
-    """
+    '''
     Load templates using template.loader.get_template() which is configured
     based on settings.TEMPLATES.
-    """
+    '''
+
     def get_template(self, template_name):
         return get_template(template_name)

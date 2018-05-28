@@ -23,46 +23,46 @@ class UpdateOnlyFieldsTests(TestCase):
         s = Person.objects.create(name='Sara', gender='F', pid=22)
         self.assertEqual(s.gender, 'F')
 
-        s1 = Person.objects.defer("gender", "pid").get(pk=s.pk)
-        s1.name = "Emily"
-        s1.gender = "M"
+        s1 = Person.objects.defer('gender', 'pid').get(pk=s.pk)
+        s1.name = 'Emily'
+        s1.gender = 'M'
 
         with self.assertNumQueries(1):
             s1.save()
 
         s2 = Person.objects.get(pk=s1.pk)
-        self.assertEqual(s2.name, "Emily")
-        self.assertEqual(s2.gender, "M")
+        self.assertEqual(s2.name, 'Emily')
+        self.assertEqual(s2.gender, 'M')
 
     def test_update_fields_only_1(self):
         s = Person.objects.create(name='Sara', gender='F')
         self.assertEqual(s.gender, 'F')
 
         s1 = Person.objects.only('name').get(pk=s.pk)
-        s1.name = "Emily"
-        s1.gender = "M"
+        s1.name = 'Emily'
+        s1.gender = 'M'
 
         with self.assertNumQueries(1):
             s1.save()
 
         s2 = Person.objects.get(pk=s1.pk)
-        self.assertEqual(s2.name, "Emily")
-        self.assertEqual(s2.gender, "M")
+        self.assertEqual(s2.name, 'Emily')
+        self.assertEqual(s2.gender, 'M')
 
     def test_update_fields_only_2(self):
         s = Person.objects.create(name='Sara', gender='F', pid=22)
         self.assertEqual(s.gender, 'F')
 
         s1 = Person.objects.only('name').get(pk=s.pk)
-        s1.name = "Emily"
-        s1.gender = "M"
+        s1.name = 'Emily'
+        s1.gender = 'M'
 
         with self.assertNumQueries(2):
             s1.save(update_fields=['pid'])
 
         s2 = Person.objects.get(pk=s1.pk)
-        self.assertEqual(s2.name, "Sara")
-        self.assertEqual(s2.gender, "F")
+        self.assertEqual(s2.name, 'Sara')
+        self.assertEqual(s2.gender, 'F')
 
     def test_update_fields_only_repeated(self):
         s = Person.objects.create(name='Sara', gender='F')
@@ -183,11 +183,13 @@ class UpdateOnlyFieldsTests(TestCase):
 
         def pre_save_receiver(**kwargs):
             pre_save_data.append(kwargs['update_fields'])
+
         pre_save.connect(pre_save_receiver)
         post_save_data = []
 
         def post_save_receiver(**kwargs):
             post_save_data.append(kwargs['update_fields'])
+
         post_save.connect(post_save_receiver)
         p.save(update_fields=['name'])
         self.assertEqual(len(pre_save_data), 1)
@@ -205,11 +207,10 @@ class UpdateOnlyFieldsTests(TestCase):
 
         with self.assertRaisesMessage(ValueError, self.msg % 'first_name'):
             s.save(update_fields=['first_name'])
-
         # "name" is treated as an iterable so the output is something like
         # "n, a, m, e" but the order isn't deterministic.
         with self.assertRaisesMessage(ValueError, self.msg % ''):
-            s.save(update_fields="name")
+            s.save(update_fields='name')
 
     def test_empty_update_fields(self):
         s = Person.objects.create(name='Sara', gender='F')
@@ -217,11 +218,13 @@ class UpdateOnlyFieldsTests(TestCase):
 
         def pre_save_receiver(**kwargs):
             pre_save_data.append(kwargs['update_fields'])
+
         pre_save.connect(pre_save_receiver)
         post_save_data = []
 
         def post_save_receiver(**kwargs):
             post_save_data.append(kwargs['update_fields'])
+
         post_save.connect(post_save_receiver)
         # Save is skipped.
         with self.assertNumQueries(0):

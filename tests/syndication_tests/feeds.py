@@ -21,7 +21,7 @@ class TestRss2Feed(views.Feed):
         return Entry.objects.all()
 
     def item_description(self, item):
-        return "Overridden description: %s" % item
+        return 'Overridden description: %s' % item
 
     def item_pubdate(self, item):
         return item.published
@@ -67,9 +67,9 @@ class TestAtomFeed(TestRss2Feed):
 
 
 class TestLatestFeed(TestRss2Feed):
-    """
+    '''
     A feed where the latest entry date is an `updated` element.
-    """
+    '''
     feed_type = feedgenerator.Atom1Feed
     subtitle = TestRss2Feed.description
 
@@ -78,18 +78,20 @@ class TestLatestFeed(TestRss2Feed):
 
 
 class ArticlesFeed(TestRss2Feed):
-    """
+    '''
     A feed to test no link being defined. Articles have no get_absolute_url()
     method, and item_link() is not defined.
-    """
+    '''
+
     def items(self):
         return Article.objects.all()
 
 
 class TestSingleEnclosureRSSFeed(TestRss2Feed):
-    """
+    '''
     A feed to test that RSS feeds work with a single enclosure.
-    """
+    '''
+
     def item_enclosure_url(self, item):
         return 'http://example.com'
 
@@ -101,32 +103,34 @@ class TestSingleEnclosureRSSFeed(TestRss2Feed):
 
 
 class TestMultipleEnclosureRSSFeed(TestRss2Feed):
-    """
+    '''
     A feed to test that RSS feeds raise an exception with multiple enclosures.
-    """
+    '''
+
     def item_enclosures(self, item):
-        return [
-            feedgenerator.Enclosure('http://example.com/hello.png', 0, 'image/png'),
-            feedgenerator.Enclosure('http://example.com/goodbye.png', 0, 'image/png'),
-        ]
+        return \
+            [
+                feedgenerator.Enclosure('http://example.com/hello.png', 0, 'image/png'),
+                feedgenerator.Enclosure('http://example.com/goodbye.png', 0, 'image/png')
+            ]
 
 
 class TemplateFeed(TestRss2Feed):
-    """
+    '''
     A feed to test defining item titles and descriptions with templates.
-    """
+    '''
     title_template = 'syndication/title.html'
     description_template = 'syndication/description.html'
 
     # Defining a template overrides any item_title definition
     def item_title(self):
-        return "Not in a template"
+        return 'Not in a template'
 
 
 class TemplateContextFeed(TestRss2Feed):
-    """
+    '''
     A feed to test custom context data in templates for title or description.
-    """
+    '''
     title_template = 'syndication/title_context.html'
     description_template = 'syndication/description_context.html'
 
@@ -137,17 +141,19 @@ class TemplateContextFeed(TestRss2Feed):
 
 
 class NaiveDatesFeed(TestAtomFeed):
-    """
+    '''
     A feed with naive (non-timezone-aware) dates.
-    """
+    '''
+
     def item_pubdate(self, item):
         return item.published
 
 
 class TZAwareDatesFeed(TestAtomFeed):
-    """
+    '''
     A feed with timezone-aware dates.
-    """
+    '''
+
     def item_pubdate(self, item):
         # Provide a weird offset so that the test can know it's getting this
         # specific offset and not accidentally getting on from
@@ -160,9 +166,10 @@ class TestFeedUrlFeed(TestAtomFeed):
 
 
 class MyCustomAtom1Feed(feedgenerator.Atom1Feed):
-    """
+    '''
     Test of a custom feed generator class.
-    """
+    '''
+
     def root_attributes(self):
         attrs = super().root_attributes()
         attrs['django'] = 'rocks'
@@ -187,9 +194,10 @@ class TestCustomFeed(TestAtomFeed):
 
 
 class TestSingleEnclosureAtomFeed(TestAtomFeed):
-    """
+    '''
     A feed to test that Atom feeds work with a single enclosure.
-    """
+    '''
+
     def item_enclosure_url(self, item):
         return 'http://example.com'
 
@@ -201,11 +209,13 @@ class TestSingleEnclosureAtomFeed(TestAtomFeed):
 
 
 class TestMultipleEnclosureAtomFeed(TestAtomFeed):
-    """
+    '''
     A feed to test that Atom feeds work with multiple enclosures.
-    """
+    '''
+
     def item_enclosures(self, item):
-        return [
-            feedgenerator.Enclosure('http://example.com/hello.png', '0', 'image/png'),
-            feedgenerator.Enclosure('http://example.com/goodbye.png', '0', 'image/png'),
-        ]
+        return \
+            [
+                feedgenerator.Enclosure('http://example.com/hello.png', '0', 'image/png'),
+                feedgenerator.Enclosure('http://example.com/goodbye.png', '0', 'image/png')
+            ]

@@ -1,1 +1,1 @@
-from ..postgresql.schema import *  # NOQA
+from ..postgresql.schema import * # NOQA

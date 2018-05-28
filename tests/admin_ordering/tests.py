@@ -4,10 +4,7 @@ from django.contrib.auth.models import User
 from django.db.models import F
 from django.test import RequestFactory, TestCase
 
-from .models import (
-    Band, DynOrderingBandAdmin, Song, SongInlineDefaultOrdering,
-    SongInlineNewOrdering,
-)
+from .models import Band, DynOrderingBandAdmin, Song, SongInlineDefaultOrdering, SongInlineNewOrdering
 
 
 class MockRequest:
@@ -40,14 +37,14 @@ class TestAdminOrdering(TestCase):
         Band.objects.bulk_create([
             Band(name='Aerosmith', bio='', rank=3),
             Band(name='Radiohead', bio='', rank=1),
-            Band(name='Van Halen', bio='', rank=2),
+            Band(name='Van Halen', bio='', rank=2)
         ])
 
     def test_default_ordering(self):
-        """
+        '''
         The default ordering should be by name, as specified in the inner Meta
         class.
-        """
+        '''
         ma = ModelAdmin(Band, site)
         names = [b.name for b in ma.get_queryset(request)]
         self.assertEqual(['Aerosmith', 'Radiohead', 'Van Halen'], names)
@@ -57,8 +54,10 @@ class TestAdminOrdering(TestCase):
         Let's use a custom ModelAdmin that changes the ordering, and make sure
         it actually changes.
         """
+
         class BandAdmin(ModelAdmin):
-            ordering = ('rank',)  # default ordering is ('name',)
+            ordering = ('rank',) # default ordering is ('name',)
+
         ma = BandAdmin(Band, site)
         names = [b.name for b in ma.get_queryset(request)]
         self.assertEqual(['Radiohead', 'Van Halen', 'Aerosmith'], names)
@@ -66,6 +65,7 @@ class TestAdminOrdering(TestCase):
     def test_specified_ordering_by_f_expression(self):
         class BandAdmin(ModelAdmin):
             ordering = (F('rank').desc(nulls_last=True),)
+
         band_admin = BandAdmin(Band, site)
         names = [b.name for b in band_admin.get_queryset(request)]
         self.assertEqual(['Aerosmith', 'Van Halen', 'Radiohead'], names)
@@ -97,14 +97,14 @@ class TestInlineModelAdminOrdering(TestCase):
         Song.objects.bulk_create([
             Song(band=self.band, name='Pink', duration=235),
             Song(band=self.band, name='Dude (Looks Like a Lady)', duration=264),
-            Song(band=self.band, name='Jaded', duration=214),
+            Song(band=self.band, name='Jaded', duration=214)
         ])
 
     def test_default_ordering(self):
-        """
+        '''
         The default ordering should be by name, as specified in the inner Meta
         class.
-        """
+        '''
         inline = SongInlineDefaultOrdering(self.band, site)
         names = [s.name for s in inline.get_queryset(request)]
         self.assertEqual(['Dude (Looks Like a Lady)', 'Jaded', 'Pink'], names)
@@ -128,6 +128,7 @@ class TestRelatedFieldsAdminOrdering(TestCase):
         # for the related model
         class SongAdmin(admin.ModelAdmin):
             pass
+
         site.register(Song, SongAdmin)
 
     def tearDown(self):
@@ -148,31 +149,32 @@ class TestRelatedFieldsAdminOrdering(TestCase):
     def test_admin_with_no_ordering_fallback_to_model_ordering(self):
         class NoOrderingBandAdmin(admin.ModelAdmin):
             pass
-        site.register(Band, NoOrderingBandAdmin)
 
+        site.register(Band, NoOrderingBandAdmin)
         # should be ordered by name (as defined by the model)
         self.check_ordering_of_field_choices([self.b2, self.b1])
 
     def test_admin_ordering_beats_model_ordering(self):
         class StaticOrderingBandAdmin(admin.ModelAdmin):
             ordering = ('rank',)
-        site.register(Band, StaticOrderingBandAdmin)
 
+        site.register(Band, StaticOrderingBandAdmin)
         # should be ordered by rank (defined by the ModelAdmin)
         self.check_ordering_of_field_choices([self.b1, self.b2])
 
     def test_custom_queryset_still_wins(self):
-        """Custom queryset has still precedence (#21405)"""
+        '''Custom queryset has still precedence (#21405)'''
+
         class SongAdmin(admin.ModelAdmin):
             # Exclude one of the two Bands from the querysets
             def formfield_for_foreignkey(self, db_field, request, **kwargs):
                 if db_field.name == 'band':
-                    kwargs["queryset"] = Band.objects.filter(rank__gt=2)
+                    kwargs['queryset'] = Band.objects.filter(rank__gt=2)
                 return super().formfield_for_foreignkey(db_field, request, **kwargs)
 
             def formfield_for_manytomany(self, db_field, request, **kwargs):
                 if db_field.name == 'other_interpreters':
-                    kwargs["queryset"] = Band.objects.filter(rank__gt=2)
+                    kwargs['queryset'] = Band.objects.filter(rank__gt=2)
                 return super().formfield_for_foreignkey(db_field, request, **kwargs)
 
         class StaticOrderingBandAdmin(admin.ModelAdmin):

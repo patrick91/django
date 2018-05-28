@@ -4,14 +4,11 @@ from django.test import SimpleTestCase, override_settings
 from django.test.utils import TZ_SUPPORT, requires_tz_support
 from django.utils import dateformat, translation
 from django.utils.dateformat import format
-from django.utils.timezone import (
-    get_default_timezone, get_fixed_timezone, make_aware, utc,
-)
+from django.utils.timezone import get_default_timezone, get_fixed_timezone, make_aware, utc
 
 
 @override_settings(TIME_ZONE='Europe/Copenhagen')
 class DateFormatTests(SimpleTestCase):
-
     def setUp(self):
         self._orig_lang = translation.get_language()
         translation.activate('en-us')
@@ -31,7 +28,6 @@ class DateFormatTests(SimpleTestCase):
         # dt is ambiguous in Europe/Copenhagen. pytz raises an exception for
         # the ambiguity, which results in an empty string.
         dt = datetime(2015, 10, 25, 2, 30, 0)
-
         # Try all formatters that involve self.timezone.
         self.assertEqual(format(dt, 'I'), '')
         self.assertEqual(format(dt, 'O'), '')
@@ -121,7 +117,6 @@ class DateFormatTests(SimpleTestCase):
         summertime = datetime(2005, 10, 30, 1, 00)
         wintertime = datetime(2005, 10, 30, 4, 00)
         timestamp = datetime(2008, 5, 19, 11, 45, 23, 123456)
-
         # 3h30m to the west of UTC
         tz = get_fixed_timezone(-210)
         aware_dt = datetime(2009, 5, 16, 5, 30, 30, tzinfo=tz)
@@ -139,7 +134,6 @@ class DateFormatTests(SimpleTestCase):
             self.assertEqual(dateformat.format(summertime, 'O'), '+0200')
             self.assertEqual(dateformat.format(wintertime, 'I'), '0')
             self.assertEqual(dateformat.format(wintertime, 'O'), '+0100')
-
         # Ticket #16924 -- We don't need timezone support to test this
         self.assertEqual(dateformat.format(aware_dt, 'O'), '-0330')
 
@@ -147,9 +141,9 @@ class DateFormatTests(SimpleTestCase):
         my_birthday = date(1984, 8, 7)
 
         for specifier in ['a', 'A', 'f', 'g', 'G', 'h', 'H', 'i', 'P', 's', 'u']:
-            msg = (
-                "The format for date objects may not contain time-related "
-                "format specifiers (found '%s')." % specifier
-            )
+            msg = "The format for date objects may not contain time-related "
+                "format specifiers (found '%s')." \
+            % \
+            specifier
             with self.assertRaisesMessage(TypeError, msg):
                 dateformat.format(my_birthday, specifier)

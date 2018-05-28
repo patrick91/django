@@ -1,7 +1,4 @@
-from django.http import (
-    HttpResponseBadRequest, HttpResponseForbidden, HttpResponseNotFound,
-    HttpResponseServerError,
-)
+from django.http import HttpResponseBadRequest, HttpResponseForbidden, HttpResponseNotFound, HttpResponseServerError
 from django.template import Context, Engine, TemplateDoesNotExist, loader
 from django.views.decorators.csrf import requires_csrf_token
 
@@ -37,20 +34,16 @@ def page_not_found(request, exception, template_name=ERROR_404_TEMPLATE_NAME):
     else:
         if isinstance(message, str):
             exception_repr = message
-    context = {
-        'request_path': request.path,
-        'exception': exception_repr,
-    }
+    context = {'request_path': request.path, 'exception': exception_repr}
     try:
         template = loader.get_template(template_name)
         body = template.render(context, request)
-        content_type = None             # Django will use DEFAULT_CONTENT_TYPE
+        content_type = None # Django will use DEFAULT_CONTENT_TYPE
     except TemplateDoesNotExist:
         if template_name != ERROR_404_TEMPLATE_NAME:
             # Reraise if it's a missing custom template.
             raise
-        template = Engine().from_string(
-            '<h1>Not Found</h1>'
+        template = Engine().from_string('<h1>Not Found</h1>'
             '<p>The requested URL {{ request_path }} was not found on this server.</p>')
         body = template.render(Context(context))
         content_type = 'text/html'
@@ -59,12 +52,12 @@ def page_not_found(request, exception, template_name=ERROR_404_TEMPLATE_NAME):
 
 @requires_csrf_token
 def server_error(request, template_name=ERROR_500_TEMPLATE_NAME):
-    """
+    '''
     500 error handler.
 
     Templates: :template:`500.html`
     Context: None
-    """
+    '''
     try:
         template = loader.get_template(template_name)
     except TemplateDoesNotExist:
@@ -77,12 +70,12 @@ def server_error(request, template_name=ERROR_500_TEMPLATE_NAME):
 
 @requires_csrf_token
 def bad_request(request, exception, template_name=ERROR_400_TEMPLATE_NAME):
-    """
+    '''
     400 error handler.
 
     Templates: :template:`400.html`
     Context: None
-    """
+    '''
     try:
         template = loader.get_template(template_name)
     except TemplateDoesNotExist:
@@ -99,7 +92,7 @@ def bad_request(request, exception, template_name=ERROR_400_TEMPLATE_NAME):
 # {% csrf_token %}.
 @requires_csrf_token
 def permission_denied(request, exception, template_name=ERROR_403_TEMPLATE_NAME):
-    """
+    '''
     Permission denied (403) handler.
 
     Templates: :template:`403.html`
@@ -107,7 +100,7 @@ def permission_denied(request, exception, template_name=ERROR_403_TEMPLATE_NAME)
 
     If the template does not exist, an Http403 response containing the text
     "403 Forbidden" (as per RFC 7231) will be returned.
-    """
+    '''
     try:
         template = loader.get_template(template_name)
     except TemplateDoesNotExist:
@@ -115,6 +108,4 @@ def permission_denied(request, exception, template_name=ERROR_403_TEMPLATE_NAME)
             # Reraise if it's a missing custom template.
             raise
         return HttpResponseForbidden('<h1>403 Forbidden</h1>', content_type='text/html')
-    return HttpResponseForbidden(
-        template.render(request=request, context={'exception': str(exception)})
-    )
+    return HttpResponseForbidden(template.render(request=request, context={'exception': str(exception)}))

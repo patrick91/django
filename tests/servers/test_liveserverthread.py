@@ -3,7 +3,6 @@ from django.test import LiveServerTestCase, TestCase
 
 
 class LiveServerThreadTest(TestCase):
-
     def run_live_server_thread(self, connections_override=None):
         thread = LiveServerTestCase._create_server_thread(connections_override)
         thread.daemon = True
@@ -24,5 +23,6 @@ class LiveServerThreadTest(TestCase):
             self.assertTrue(conn.is_usable())
             self.run_live_server_thread(connections_override)
             self.assertFalse(conn.is_usable())
+
         finally:
             conn.allow_thread_sharing = saved_sharing

@@ -2,9 +2,7 @@ from collections import namedtuple
 
 from MySQLdb.constants import FIELD_TYPE
 
-from django.db.backends.base.introspection import (
-    BaseDatabaseIntrospection, FieldInfo, TableInfo,
-)
+from django.db.backends.base.introspection import BaseDatabaseIntrospection, FieldInfo, TableInfo
 from django.db.models.indexes import Index
 from django.utils.datastructures import OrderedSet
 
@@ -33,7 +31,7 @@ class DatabaseIntrospection(BaseDatabaseIntrospection):
         FIELD_TYPE.TINY_BLOB: 'TextField',
         FIELD_TYPE.MEDIUM_BLOB: 'TextField',
         FIELD_TYPE.LONG_BLOB: 'TextField',
-        FIELD_TYPE.VAR_STRING: 'CharField',
+        FIELD_TYPE.VAR_STRING: 'CharField'
     }
 
     def get_field_type(self, data_type, description):
@@ -51,16 +49,15 @@ class DatabaseIntrospection(BaseDatabaseIntrospection):
         return field_type
 
     def get_table_list(self, cursor):
-        """Return a list of table and view names in the current database."""
-        cursor.execute("SHOW FULL TABLES")
-        return [TableInfo(row[0], {'BASE TABLE': 't', 'VIEW': 'v'}.get(row[1]))
-                for row in cursor.fetchall()]
+        '''Return a list of table and view names in the current database.'''
+        cursor.execute('SHOW FULL TABLES')
+        return [TableInfo(row[0], {'BASE TABLE': 't', 'VIEW': 'v'}.get(row[1])) for row in cursor.fetchall()]
 
     def get_table_description(self, cursor, table_name):
-        """
+        '''
         Return a description of the table with the DB-API cursor.description
         interface."
-        """
+        '''
         # information_schema database gives more accurate results for some figures:
         # - varchar length returned by cursor.description is an internal length,
         #   not visible length (#5725)
@@ -75,10 +72,12 @@ class DatabaseIntrospection(BaseDatabaseIntrospection):
                     ELSE 0
                 END AS is_unsigned
             FROM information_schema.columns
-            WHERE table_name = %s AND table_schema = DATABASE()""", [table_name])
+            WHERE table_name = %s AND table_schema = DATABASE()""", [
+            table_name
+        ])
         field_info = {line[0]: InfoLine(*line) for line in cursor.fetchall()}
 
-        cursor.execute("SELECT * FROM %s LIMIT 1" % self.connection.ops.quote_name(table_name))
+        cursor.execute('SELECT * FROM %s LIMIT 1' % self.connection.ops.quote_name(table_name))
 
         def to_int(i):
             return int(i) if i is not None else i
@@ -86,16 +85,9 @@ class DatabaseIntrospection(BaseDatabaseIntrospection):
         fields = []
         for line in cursor.description:
             info = field_info[line[0]]
-            fields.append(FieldInfo(
-                *line[:3],
-                to_int(info.max_len) or line[3],
-                to_int(info.num_prec) or line[4],
-                to_int(info.num_scale) or line[5],
-                line[6],
-                info.column_default,
-                info.extra,
-                info.is_unsigned,
-            ))
+            fields.append(FieldInfo(*line[:3], to_int(info.max_len) or line[3], to_int(info.num_prec) \
+            or \
+            line[4], to_int(info.num_scale) or line[5], line[6], info.column_default, info.extra, info.is_unsigned))
         return fields
 
     def get_sequences(self, cursor, table_name, table_fields=()):
@@ -106,10 +98,10 @@ class DatabaseIntrospection(BaseDatabaseIntrospection):
         return []
 
     def get_relations(self, cursor, table_name):
-        """
+        '''
         Return a dictionary of {field_name: (field_name_other_table, other_table)}
         representing all relationships to the given table.
-        """
+        '''
         constraints = self.get_key_columns(cursor, table_name)
         relations = {}
         for my_fieldname, other_table, other_field in constraints:
@@ -117,18 +109,20 @@ class DatabaseIntrospection(BaseDatabaseIntrospection):
         return relations
 
     def get_key_columns(self, cursor, table_name):
-        """
+        '''
         Return a list of (column_name, referenced_table_name, referenced_column_name)
         for all key columns in the given table.
-        """
+        '''
         key_columns = []
-        cursor.execute("""
+        cursor.execute('''
             SELECT column_name, referenced_table_name, referenced_column_name
             FROM information_schema.key_column_usage
             WHERE table_name = %s
                 AND table_schema = DATABASE()
                 AND referenced_table_name IS NOT NULL
-                AND referenced_column_name IS NOT NULL""", [table_name])
+                AND referenced_column_name IS NOT NULL''', [
+            table_name
+        ])
         key_columns.extend(cursor.fetchall())
         return key_columns
 
@@ -137,30 +131,31 @@ class DatabaseIntrospection(BaseDatabaseIntrospection):
         Retrieve the storage engine for a given table. Return the default
         storage engine if the table doesn't exist.
         """
-        cursor.execute(
-            "SELECT engine "
+        cursor.execute("SELECT engine "
             "FROM information_schema.tables "
-            "WHERE table_name = %s", [table_name])
+            "WHERE table_name = %s", [
+            table_name
+        ])
         result = cursor.fetchone()
         if not result:
             return self.connection.features._mysql_storage_engine
         return result[0]
 
     def get_constraints(self, cursor, table_name):
-        """
+        '''
         Retrieve any constraints or keys (unique, pk, fk, check, index) across
         one or more columns.
-        """
+        '''
         constraints = {}
         # Get the actual constraint names and columns
-        name_query = """
+        name_query = '''
             SELECT kc.`constraint_name`, kc.`column_name`,
                 kc.`referenced_table_name`, kc.`referenced_column_name`
             FROM information_schema.key_column_usage AS kc
             WHERE
                 kc.table_schema = DATABASE() AND
                 kc.table_name = %s
-        """
+        '''
         cursor.execute(name_query, [table_name])
         for constraint, column, ref_table, ref_column in cursor.fetchall():
             if constraint not in constraints:
@@ -170,26 +165,26 @@ class DatabaseIntrospection(BaseDatabaseIntrospection):
                     'unique': False,
                     'index': False,
                     'check': False,
-                    'foreign_key': (ref_table, ref_column) if ref_column else None,
+                    'foreign_key': (ref_table, ref_column) if ref_column else None
                 }
             constraints[constraint]['columns'].add(column)
         # Now get the constraint types
-        type_query = """
+        type_query = '''
             SELECT c.constraint_name, c.constraint_type
             FROM information_schema.table_constraints AS c
             WHERE
                 c.table_schema = DATABASE() AND
                 c.table_name = %s
-        """
+        '''
         cursor.execute(type_query, [table_name])
         for constraint, kind in cursor.fetchall():
-            if kind.lower() == "primary key":
+            if kind.lower() == 'primary key':
                 constraints[constraint]['primary_key'] = True
                 constraints[constraint]['unique'] = True
-            elif kind.lower() == "unique":
+            elif kind.lower() == 'unique':
                 constraints[constraint]['unique'] = True
         # Now add in the indexes
-        cursor.execute("SHOW INDEX FROM %s" % self.connection.ops.quote_name(table_name))
+        cursor.execute('SHOW INDEX FROM %s' % self.connection.ops.quote_name(table_name))
         for table, non_unique, index, colseq, column, type_ in [x[:5] + (x[10],) for x in cursor.fetchall()]:
             if index not in constraints:
                 constraints[index] = {
@@ -197,7 +192,7 @@ class DatabaseIntrospection(BaseDatabaseIntrospection):
                     'primary_key': False,
                     'unique': False,
                     'check': False,
-                    'foreign_key': None,
+                    'foreign_key': None
                 }
             constraints[index]['index'] = True
             constraints[index]['type'] = Index.suffix if type_ == 'BTREE' else type_.lower()

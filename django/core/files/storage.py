@@ -20,24 +20,24 @@ __all__ = ('Storage', 'FileSystemStorage', 'DefaultStorage', 'default_storage')
 
 
 class Storage:
-    """
+    '''
     A base storage class, providing some default behaviors that all other
     storage systems can inherit or override, as necessary.
-    """
+    '''
 
     # The following methods represent a public interface to private methods.
     # These shouldn't be overridden by subclasses unless absolutely necessary.
 
     def open(self, name, mode='rb'):
-        """Retrieve the specified file from storage."""
+        '''Retrieve the specified file from storage.'''
         return self._open(name, mode)
 
     def save(self, name, content, max_length=None):
-        """
+        '''
         Save new content to the file specified by name. The content should be
         a proper File object or any python file-like object, ready to be read
         from the beginning.
-        """
+        '''
         # Get the proper name for the file, as it will actually be saved.
         if name is None:
             name = content.name
@@ -69,9 +69,9 @@ class Storage:
         # exists) to the filename until the generated filename doesn't exist.
         # Truncate original name if required, so the new filename does not
         # exceed the max_length.
-        while self.exists(name) or (max_length and len(name) > max_length):
+        while self.exists(name) or max_length and len(name) > max_length:
             # file_ext includes the dot.
-            name = os.path.join(dir_name, "%s_%s%s" % (file_root, get_random_string(7), file_ext))
+            name = os.path.join(dir_name, '%s_%s%s' % (file_root, get_random_string(7), file_ext))
             if max_length is None:
                 continue
             # Truncate file_root if max_length exceeded.
@@ -80,19 +80,20 @@ class Storage:
                 file_root = file_root[:-truncation]
                 # Entire file_root was truncated in attempt to find an available filename.
                 if not file_root:
-                    raise SuspiciousFileOperation(
-                        'Storage can not find an available filename for "%s". '
+                    raise
+                    SuspiciousFileOperation('Storage can not find an available filename for "%s". '
                         'Please make sure that the corresponding file field '
-                        'allows sufficient "max_length".' % name
-                    )
-                name = os.path.join(dir_name, "%s_%s%s" % (file_root, get_random_string(7), file_ext))
+                        'allows sufficient "max_length".' \
+                    % \
+                    name)
+                name = os.path.join(dir_name, '%s_%s%s' % (file_root, get_random_string(7), file_ext))
         return name
 
     def generate_filename(self, filename):
-        """
+        '''
         Validate the filename by calling get_valid_name() and return a filename
         to be passed to the save() method.
-        """
+        '''
         # `filename` may include a path as returned by FileField.upload_to.
         dirname, filename = os.path.split(filename)
         return os.path.normpath(os.path.join(dirname, self.get_valid_name(filename)))
@@ -109,29 +110,29 @@ class Storage:
     # no default implementations. Subclasses must implement *all* of these.
 
     def delete(self, name):
-        """
+        '''
         Delete the specified file from the storage system.
-        """
+        '''
         raise NotImplementedError('subclasses of Storage must provide a delete() method')
 
     def exists(self, name):
-        """
+        '''
         Return True if a file referenced by the given name already exists in the
         storage system, or False if the name is available for a new file.
-        """
+        '''
         raise NotImplementedError('subclasses of Storage must provide an exists() method')
 
     def listdir(self, path):
-        """
+        '''
         List the contents of the specified path. Return a 2-tuple of lists:
         the first item being directories, the second item being files.
-        """
+        '''
         raise NotImplementedError('subclasses of Storage must provide a listdir() method')
 
     def size(self, name):
-        """
+        '''
         Return the total size, in bytes, of the file specified by name.
-        """
+        '''
         raise NotImplementedError('subclasses of Storage must provide a size() method')
 
     def url(self, name):
@@ -142,35 +143,34 @@ class Storage:
         raise NotImplementedError('subclasses of Storage must provide a url() method')
 
     def get_accessed_time(self, name):
-        """
+        '''
         Return the last accessed time (as a datetime) of the file specified by
         name. The datetime will be timezone-aware if USE_TZ=True.
-        """
+        '''
         raise NotImplementedError('subclasses of Storage must provide a get_accessed_time() method')
 
     def get_created_time(self, name):
-        """
+        '''
         Return the creation time (as a datetime) of the file specified by name.
         The datetime will be timezone-aware if USE_TZ=True.
-        """
+        '''
         raise NotImplementedError('subclasses of Storage must provide a get_created_time() method')
 
     def get_modified_time(self, name):
-        """
+        '''
         Return the last modified time (as a datetime) of the file specified by
         name. The datetime will be timezone-aware if USE_TZ=True.
-        """
+        '''
         raise NotImplementedError('subclasses of Storage must provide a get_modified_time() method')
 
 
 @deconstructible
 class FileSystemStorage(Storage):
-    """
+    '''
     Standard filesystem storage
-    """
+    '''
 
-    def __init__(self, location=None, base_url=None, file_permissions_mode=None,
-                 directory_permissions_mode=None):
+    def __init__(self, location=None, base_url=None, file_permissions_mode=None, directory_permissions_mode=None):
         self._location = location
         self._base_url = base_url
         self._file_permissions_mode = file_permissions_mode
@@ -178,7 +178,7 @@ class FileSystemStorage(Storage):
         setting_changed.connect(self._clear_cached_properties)
 
     def _clear_cached_properties(self, setting, **kwargs):
-        """Reset setting based property values."""
+        '''Reset setting based property values.'''
         if setting == 'MEDIA_ROOT':
             self.__dict__.pop('base_location', None)
             self.__dict__.pop('location', None)
@@ -219,7 +219,6 @@ class FileSystemStorage(Storage):
 
     def _save(self, name, content):
         full_path = self.path(name)
-
         # Create any intermediate directories that do not exist.
         directory = os.path.dirname(full_path)
         if not os.path.exists(directory):
@@ -230,6 +229,7 @@ class FileSystemStorage(Storage):
                     old_umask = os.umask(0)
                     try:
                         os.makedirs(directory, self.directory_permissions_mode)
+
                     finally:
                         os.umask(old_umask)
                 else:
@@ -240,7 +240,7 @@ class FileSystemStorage(Storage):
                 # was created concurrently.
                 pass
         if not os.path.isdir(directory):
-            raise IOError("%s exists and is not a directory." % directory)
+            raise IOError('%s exists and is not a directory.' % directory)
 
         # There's a potential race condition between get_available_name and
         # saving the file; it's possible that two threads might return the
@@ -253,13 +253,11 @@ class FileSystemStorage(Storage):
                 # This file has a file path that we can move.
                 if hasattr(content, 'temporary_file_path'):
                     file_move_safe(content.temporary_file_path(), full_path)
-
-                # This is a normal uploadedfile that we can stream.
                 else:
+                    # This is a normal uploadedfile that we can stream.
                     # This fun binary flag incantation makes os.open throw an
                     # OSError if the file already exists before we open it.
-                    flags = (os.O_WRONLY | os.O_CREAT | os.O_EXCL |
-                             getattr(os, 'O_BINARY', 0))
+                    flags = os.O_WRONLY | os.O_CREAT | os.O_EXCL | getattr(os, 'O_BINARY', 0)
                     # The current umask value is masked out by os.open!
                     fd = os.open(full_path, flags, 0o666)
                     _file = None
@@ -270,9 +268,9 @@ class FileSystemStorage(Storage):
                                 mode = 'wb' if isinstance(chunk, bytes) else 'wt'
                                 _file = os.fdopen(fd, mode)
                             _file.write(chunk)
+
                     finally:
-                        locks.unlock(fd)
-                        if _file is not None:
+                        locks.unlock(fd)if _file is not None:
                             _file.close()
                         else:
                             os.close(fd)
@@ -286,12 +284,11 @@ class FileSystemStorage(Storage):
 
         if self.file_permissions_mode is not None:
             os.chmod(full_path, self.file_permissions_mode)
-
         # Store filenames with forward slashes, even on Windows.
         return name.replace('\\', '/')
 
     def delete(self, name):
-        assert name, "The name argument is not allowed to be empty."
+        assert name, 'The name argument is not allowed to be empty.'
         name = self.path(name)
         # If the file or directory exists, delete it from the filesystem.
         try:
@@ -325,17 +322,17 @@ class FileSystemStorage(Storage):
 
     def url(self, name):
         if self.base_url is None:
-            raise ValueError("This file is not accessible via a URL.")
+            raise ValueError('This file is not accessible via a URL.')
         url = filepath_to_uri(name)
         if url is not None:
             url = url.lstrip('/')
         return urljoin(self.base_url, url)
 
     def _datetime_from_timestamp(self, ts):
-        """
+        '''
         If timezone support is enabled, make an aware datetime object in UTC;
         otherwise make a naive one in the local timezone.
-        """
+        '''
         return datetime.fromtimestamp(ts, timezone.utc if settings.USE_TZ else None)
 
     def get_accessed_time(self, name):

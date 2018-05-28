@@ -4,7 +4,6 @@ from ..utils import setup
 
 
 class TruncatecharsTests(SimpleTestCase):
-
     @setup({'truncatechars01': '{{ a|truncatechars:5 }}'})
     def test_truncatechars01(self):
         output = self.engine.render_to_string('truncatechars01', {'a': 'Testing, testing'})

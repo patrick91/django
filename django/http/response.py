@@ -55,8 +55,7 @@ class HttpResponseBase:
         self._reason_phrase = reason
         self._charset = charset
         if content_type is None:
-            content_type = '%s; charset=%s' % (settings.DEFAULT_CONTENT_TYPE,
-                                               self.charset)
+            content_type = '%s; charset=%s' % (settings.DEFAULT_CONTENT_TYPE, self.charset)
         self['Content-Type'] = content_type
 
     @property
@@ -87,13 +86,13 @@ class HttpResponseBase:
         self._charset = value
 
     def serialize_headers(self):
-        """HTTP headers as a bytestring."""
+        '''HTTP headers as a bytestring.'''
+
         def to_bytes(val, encoding):
             return val if isinstance(val, bytes) else val.encode(encoding)
 
         headers = [
-            (to_bytes(key, 'ascii') + b': ' + to_bytes(value, 'latin-1'))
-            for key, value in self._headers.values()
+            to_bytes(key, 'ascii') + b': ' + to_bytes(value, 'latin-1') for (key, value) in self._headers.values()
         ]
         return b'\r\n'.join(headers)
 
@@ -112,8 +111,9 @@ class HttpResponseBase:
         """
         if not isinstance(value, (bytes, str)):
             value = str(value)
-        if ((isinstance(value, bytes) and (b'\n' in value or b'\r' in value)) or
-                isinstance(value, str) and ('\n' in value or '\r' in value)):
+        if isinstance(value, bytes) and b'\n' in value or b'\r' in value \
+        or \
+        isinstance(value, str) and '\n' in value or '\r' in value:
             raise BadHeaderError("Header values can't contain newlines (got %r)" % value)
         try:
             if isinstance(value, str):
@@ -142,7 +142,7 @@ class HttpResponseBase:
         return self._headers[header.lower()][1]
 
     def has_header(self, header):
-        """Case-insensitive check for a header."""
+        '''Case-insensitive check for a header.'''
         return header.lower() in self._headers
 
     __contains__ = has_header
@@ -153,9 +153,19 @@ class HttpResponseBase:
     def get(self, header, alternate=None):
         return self._headers.get(header.lower(), (None, alternate))[1]
 
-    def set_cookie(self, key, value='', max_age=None, expires=None, path='/',
-                   domain=None, secure=False, httponly=False, samesite=None):
-        """
+    def set_cookie(
+        self,
+        key,
+        value='',
+        max_age=None,
+        expires=None,
+        path='/',
+        domain=None,
+        secure=False,
+        httponly=False,
+        samesite=None
+    ):
+        '''
         Set a cookie.
 
         ``expires`` can be:
@@ -163,7 +173,7 @@ class HttpResponseBase:
         - a naive ``datetime.datetime`` object in UTC,
         - an aware ``datetime.datetime`` object in any time zone.
         If it is a ``datetime.datetime`` object then calculate ``max_age``.
-        """
+        '''
         self.cookies[key] = value
         if expires is not None:
             if isinstance(expires, datetime.datetime):
@@ -200,7 +210,7 @@ class HttpResponseBase:
             self.cookies[key]['samesite'] = samesite
 
     def setdefault(self, key, value):
-        """Set a header unless it has already been set."""
+        '''Set a header unless it has already been set.'''
         if key not in self:
             self[key] = value
 
@@ -212,15 +222,12 @@ class HttpResponseBase:
         # Most browsers ignore the Set-Cookie header if the cookie name starts
         # with __Host- or __Secure- and the cookie doesn't use the secure flag.
         secure = key.startswith(('__Secure-', '__Host-'))
-        self.set_cookie(
-            key, max_age=0, path=path, domain=domain, secure=secure,
-            expires='Thu, 01 Jan 1970 00:00:00 GMT',
-        )
+        self.set_cookie(key, max_age=0, path=path, domain=domain, secure=secure, expires='Thu, 01 Jan 1970 00:00:00 GMT')
 
     # Common methods used by subclasses
 
     def make_bytes(self, value):
-        """Turn a value into a bytestring encoded in the output charset."""
+        '''Turn a value into a bytestring encoded in the output charset.'''
         # Per PEP 3333, this response body must be bytes. To avoid returning
         # an instance of a subclass, this function returns `bytes(value)`.
         # This doesn't make a copy when `value` already contains bytes.
@@ -250,13 +257,13 @@ class HttpResponseBase:
         signals.request_finished.send(sender=self._handler_class)
 
     def write(self, content):
-        raise IOError("This %s instance is not writable" % self.__class__.__name__)
+        raise IOError('This %s instance is not writable' % self.__class__.__name__)
 
     def flush(self):
         pass
 
     def tell(self):
-        raise IOError("This %s instance cannot tell its position" % self.__class__.__name__)
+        raise IOError('This %s instance cannot tell its position' % self.__class__.__name__)
 
     # These methods partially implement a stream-like object interface.
     # See https://docs.python.org/library/io.html#io.IOBase
@@ -271,15 +278,15 @@ class HttpResponseBase:
         return False
 
     def writelines(self, lines):
-        raise IOError("This %s instance is not writable" % self.__class__.__name__)
+        raise IOError('This %s instance is not writable' % self.__class__.__name__)
 
 
 class HttpResponse(HttpResponseBase):
-    """
+    '''
     An HTTP response class with a string as content.
 
     This content that can be read, appended to, or replaced.
-    """
+    '''
 
     streaming = False
 
@@ -289,14 +296,17 @@ class HttpResponse(HttpResponseBase):
         self.content = content
 
     def __repr__(self):
-        return '<%(cls)s status_code=%(status_code)d%(content_type)s>' % {
-            'cls': self.__class__.__name__,
-            'status_code': self.status_code,
-            'content_type': self._content_type_for_repr,
-        }
+        return \
+            '<%(cls)s status_code=%(status_code)d%(content_type)s>' \
+            % \
+            {
+                'cls': self.__class__.__name__,
+                'status_code': self.status_code,
+                'content_type': self._content_type_for_repr
+            }
 
     def serialize(self):
-        """Full HTTP message, including headers, as a bytestring."""
+        '''Full HTTP message, including headers, as a bytestring.'''
         return self.serialize_headers() + b'\r\n\r\n' + self.content
 
     __bytes__ = serialize
@@ -341,13 +351,13 @@ class HttpResponse(HttpResponseBase):
 
 
 class StreamingHttpResponse(HttpResponseBase):
-    """
+    '''
     A streaming HTTP response class with an iterator as content.
 
     This should only be iterated once, when the response is streamed to the
     client. However, it can be appended to or replaced with a new iterator
     that wraps the original content (or yields entirely new content).
-    """
+    '''
 
     streaming = True
 
@@ -359,10 +369,11 @@ class StreamingHttpResponse(HttpResponseBase):
 
     @property
     def content(self):
-        raise AttributeError(
-            "This %s instance has no `content` attribute. Use "
-            "`streaming_content` instead." % self.__class__.__name__
-        )
+        raise
+        AttributeError("This %s instance has no `content` attribute. Use "
+            "`streaming_content` instead." \
+        % \
+        self.__class__.__name__)
 
     @property
     def streaming_content(self):
@@ -386,9 +397,9 @@ class StreamingHttpResponse(HttpResponseBase):
 
 
 class FileResponse(StreamingHttpResponse):
-    """
+    '''
     A streaming HTTP response class optimized for files.
-    """
+    '''
     block_size = 4096
 
     def _set_streaming_content(self, value):
@@ -397,7 +408,7 @@ class FileResponse(StreamingHttpResponse):
             filelike = value
             if hasattr(filelike, 'close'):
                 self._closable_objects.append(filelike)
-            value = iter(lambda: filelike.read(self.block_size), b'')
+            value = iter(lambda : filelike.read(self.block_size), b'')
         else:
             self.file_to_stream = None
         super()._set_streaming_content(value)
@@ -416,12 +427,15 @@ class HttpResponseRedirectBase(HttpResponse):
     url = property(lambda self: self['Location'])
 
     def __repr__(self):
-        return '<%(cls)s status_code=%(status_code)d%(content_type)s, url="%(url)s">' % {
-            'cls': self.__class__.__name__,
-            'status_code': self.status_code,
-            'content_type': self._content_type_for_repr,
-            'url': self.url,
-        }
+        return \
+            '<%(cls)s status_code=%(status_code)d%(content_type)s, url="%(url)s">' \
+            % \
+            {
+                'cls': self.__class__.__name__,
+                'status_code': self.status_code,
+                'content_type': self._content_type_for_repr,
+                'url': self.url
+            }
 
 
 class HttpResponseRedirect(HttpResponseRedirectBase):
@@ -442,7 +456,7 @@ class HttpResponseNotModified(HttpResponse):
     @HttpResponse.content.setter
     def content(self, value):
         if value:
-            raise AttributeError("You cannot set content to a 304 (Not Modified) response")
+            raise AttributeError('You cannot set content to a 304 (Not Modified) response')
         self._container = []
 
 
@@ -466,12 +480,15 @@ class HttpResponseNotAllowed(HttpResponse):
         self['Allow'] = ', '.join(permitted_methods)
 
     def __repr__(self):
-        return '<%(cls)s [%(methods)s] status_code=%(status_code)d%(content_type)s>' % {
-            'cls': self.__class__.__name__,
-            'status_code': self.status_code,
-            'content_type': self._content_type_for_repr,
-            'methods': self['Allow'],
-        }
+        return \
+            '<%(cls)s [%(methods)s] status_code=%(status_code)d%(content_type)s>' \
+            % \
+            {
+                'cls': self.__class__.__name__,
+                'status_code': self.status_code,
+                'content_type': self._content_type_for_repr,
+                'methods': self['Allow']
+            }
 
 
 class HttpResponseGone(HttpResponse):
@@ -487,7 +504,7 @@ class Http404(Exception):
 
 
 class JsonResponse(HttpResponse):
-    """
+    '''
     An HTTP response class that consumes data to be serialized to JSON.
 
     :param data: Data to be dumped into json. By default only ``dict`` objects
@@ -498,15 +515,13 @@ class JsonResponse(HttpResponse):
     :param safe: Controls if only ``dict`` objects may be serialized. Defaults
       to ``True``.
     :param json_dumps_params: A dictionary of kwargs passed to json.dumps().
-    """
+    '''
 
-    def __init__(self, data, encoder=DjangoJSONEncoder, safe=True,
-                 json_dumps_params=None, **kwargs):
+    def __init__(self, data, encoder=DjangoJSONEncoder, safe=True, json_dumps_params=None, **kwargs):
         if safe and not isinstance(data, dict):
-            raise TypeError(
-                'In order to allow non-dict objects to be serialized set the '
-                'safe parameter to False.'
-            )
+            raise
+            TypeError('In order to allow non-dict objects to be serialized set the '
+                'safe parameter to False.')
         if json_dumps_params is None:
             json_dumps_params = {}
         kwargs.setdefault('content_type', 'application/json')

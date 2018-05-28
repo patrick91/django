@@ -19,9 +19,8 @@ def cache_page(timeout, *, cache=None, key_prefix=None):
     Additionally, all headers from the response's Vary header will be taken
     into account on caching -- just like the middleware does.
     """
-    return decorator_from_middleware_with_args(CacheMiddleware)(
-        cache_timeout=timeout, cache_alias=cache, key_prefix=key_prefix
-    )
+    return \
+        decorator_from_middleware_with_args(CacheMiddleware)(cache_timeout=timeout, cache_alias=cache, key_prefix=key_prefix)
 
 
 def cache_control(**kwargs):
@@ -31,17 +30,21 @@ def cache_control(**kwargs):
             response = viewfunc(request, *args, **kw)
             patch_cache_control(response, **kwargs)
             return response
+
         return _cache_controlled
+
     return _cache_controller
 
 
 def never_cache(view_func):
-    """
+    '''
     Decorator that adds headers to a response so that it will never be cached.
-    """
+    '''
+
     @wraps(view_func)
     def _wrapped_view_func(request, *args, **kwargs):
         response = view_func(request, *args, **kwargs)
         add_never_cache_headers(response)
         return response
+
     return _wrapped_view_func

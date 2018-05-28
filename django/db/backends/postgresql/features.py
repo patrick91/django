@@ -32,26 +32,26 @@ class DatabaseFeatures(BaseDatabaseFeatures):
     can_clone_databases = True
     supports_temporal_subtraction = True
     supports_slicing_ordering_in_compound = True
-    create_test_procedure_without_params_sql = """
+    create_test_procedure_without_params_sql = '''
         CREATE FUNCTION test_procedure () RETURNS void AS $$
         DECLARE
             V_I INTEGER;
         BEGIN
             V_I := 1;
         END;
-    $$ LANGUAGE plpgsql;"""
-    create_test_procedure_with_int_param_sql = """
+    $$ LANGUAGE plpgsql;'''
+    create_test_procedure_with_int_param_sql = '''
         CREATE FUNCTION test_procedure (P_I INTEGER) RETURNS void AS $$
         DECLARE
             V_I INTEGER;
         BEGIN
             V_I := P_I;
         END;
-    $$ LANGUAGE plpgsql;"""
+    $$ LANGUAGE plpgsql;'''
     supports_over_clause = True
     supports_aggregate_filter_clause = True
     supported_explain_formats = {'JSON', 'TEXT', 'XML', 'YAML'}
-    validates_explain_options = False  # A query will error on invalid options.
+    validates_explain_options = False # A query will error on invalid options.
 
     @cached_property
     def is_postgresql_9_5(self):

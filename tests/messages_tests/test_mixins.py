@@ -6,7 +6,6 @@ from .urls import ContactFormViewWithMsg
 
 @override_settings(ROOT_URLCONF='messages_tests.urls')
 class SuccessMessageMixinTests(SimpleTestCase):
-
     def test_set_messages_success(self):
         author = {'name': 'John Doe', 'slug': 'success-msg'}
         add_url = reverse('add_success_msg')

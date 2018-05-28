@@ -6,10 +6,10 @@ from ..utils import setup
 
 
 class UpperTests(SimpleTestCase):
-    """
+    '''
     The "upper" filter messes up entities (which are case-sensitive),
     so it's not safe for non-escaping purposes.
-    """
+    '''
 
     @setup({'upper01': '{% autoescape off %}{{ a|upper }} {{ b|upper }}{% endautoescape %}'})
     def test_upper01(self):
@@ -23,7 +23,6 @@ class UpperTests(SimpleTestCase):
 
 
 class FunctionTests(SimpleTestCase):
-
     def test_upper(self):
         self.assertEqual(upper('Mixed case input'), 'MIXED CASE INPUT')
 

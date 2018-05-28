@@ -12,7 +12,6 @@ from .base import BaseEngine
 
 
 class DjangoTemplates(BaseEngine):
-
     app_dirname = 'templates'
 
     def __init__(self, params):
@@ -36,17 +35,16 @@ class DjangoTemplates(BaseEngine):
             reraise(exc, self)
 
     def get_templatetag_libraries(self, custom_libraries):
-        """
+        '''
         Return a collation of template tag libraries from installed
         applications and the supplied custom_libraries argument.
-        """
+        '''
         libraries = get_installed_libraries()
         libraries.update(custom_libraries)
         return libraries
 
 
 class Template:
-
     def __init__(self, template, backend):
         self.template = template
         self.backend = backend
@@ -64,11 +62,11 @@ class Template:
 
 
 def copy_exception(exc, backend=None):
-    """
+    '''
     Create a new TemplateDoesNotExist. Preserve its declared attributes and
     template debug data but discard __traceback__, __context__, and __cause__
     to make this object suitable for keeping around (in a cache, for example).
-    """
+    '''
     backend = backend or exc.backend
     new = exc.__class__(*exc.args, tried=exc.tried, backend=backend, chain=exc.chain)
     if hasattr(exc, 'template_debug'):
@@ -77,25 +75,23 @@ def copy_exception(exc, backend=None):
 
 
 def reraise(exc, backend):
-    """
+    '''
     Reraise TemplateDoesNotExist while maintaining template debug information.
-    """
+    '''
     new = copy_exception(exc, backend)
-    raise new from exc
+    raise new
 
 
 def get_installed_libraries():
-    """
+    '''
     Return the built-in template tag libraries and those from installed
     applications. Libraries are stored in a dictionary where keys are the
     individual module names, not the full module paths. Example:
     django.templatetags.i18n is stored as i18n.
-    """
+    '''
     libraries = {}
     candidates = ['django.templatetags']
-    candidates.extend(
-        '%s.templatetags' % app_config.name
-        for app_config in apps.get_app_configs())
+    candidates.extend('%s.templatetags' % app_config.name for app_config in apps.get_app_configs())
 
     for candidate in candidates:
         try:
@@ -112,18 +108,19 @@ def get_installed_libraries():
 
 
 def get_package_libraries(pkg):
-    """
+    '''
     Recursively yield template tag libraries defined in submodules of a
     package.
-    """
+    '''
     for entry in walk_packages(pkg.__path__, pkg.__name__ + '.'):
         try:
             module = import_module(entry[1])
         except ImportError as e:
-            raise InvalidTemplateLibrary(
-                "Invalid template library specified. ImportError raised when "
-                "trying to load '%s': %s" % (entry[1], e)
-            )
+            raise
+            InvalidTemplateLibrary("Invalid template library specified. ImportError raised when "
+                "trying to load '%s': %s" \
+            % \
+            (entry[1], e))
 
         if hasattr(module, 'register'):
             yield entry[1]

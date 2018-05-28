@@ -6,7 +6,6 @@ from ..utils import setup
 
 
 class WordcountTests(SimpleTestCase):
-
     @setup({'wordcount01': '{% autoescape off %}{{ a|wordcount }} {{ b|wordcount }}{% endautoescape %}'})
     def test_wordcount01(self):
         output = self.engine.render_to_string('wordcount01', {'a': 'a & b', 'b': mark_safe('a &amp; b')})
@@ -19,7 +18,6 @@ class WordcountTests(SimpleTestCase):
 
 
 class FunctionTests(SimpleTestCase):
-
     def test_empty_string(self):
         self.assertEqual(wordcount(''), 0)
 

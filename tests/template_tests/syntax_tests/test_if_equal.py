@@ -6,7 +6,6 @@ from ..utils import setup
 
 
 class IfEqualTagTests(SimpleTestCase):
-
     @setup({'ifequal01': '{% ifequal a b %}yes{% endifequal %}'})
     def test_ifequal01(self):
         output = self.engine.render_to_string('ifequal01', {'a': 1, 'b': 2})
@@ -27,12 +26,12 @@ class IfEqualTagTests(SimpleTestCase):
         output = self.engine.render_to_string('ifequal04', {'a': 1, 'b': 1})
         self.assertEqual(output, 'yes')
 
-    @setup({'ifequal05': '{% ifequal a \'test\' %}yes{% else %}no{% endifequal %}'})
+    @setup({'ifequal05': "{% ifequal a 'test' %}yes{% else %}no{% endifequal %}"})
     def test_ifequal05(self):
         output = self.engine.render_to_string('ifequal05', {'a': 'test'})
         self.assertEqual(output, 'yes')
 
-    @setup({'ifequal06': '{% ifequal a \'test\' %}yes{% else %}no{% endifequal %}'})
+    @setup({'ifequal06': "{% ifequal a 'test' %}yes{% else %}no{% endifequal %}"})
     def test_ifequal06(self):
         output = self.engine.render_to_string('ifequal06', {'a': 'no'})
         self.assertEqual(output, 'no')
@@ -73,7 +72,7 @@ class IfEqualTagTests(SimpleTestCase):
         output = self.engine.render_to_string('ifequal-split03', {'a': 'test man'})
         self.assertEqual(output, 'yes')
 
-    @setup({'ifequal-split04': '{% ifequal a \'test man\' %}yes{% else %}no{% endifequal %}'})
+    @setup({'ifequal-split04': "{% ifequal a 'test man' %}yes{% else %}no{% endifequal %}"})
     def test_ifequal_split04(self):
         output = self.engine.render_to_string('ifequal-split04', {'a': 'test man'})
         self.assertEqual(output, 'yes')
@@ -93,7 +92,7 @@ class IfEqualTagTests(SimpleTestCase):
         output = self.engine.render_to_string('ifequal-split07', {'a': 'i love you'})
         self.assertEqual(output, 'no')
 
-    @setup({'ifequal-split08': r"{% ifequal a 'I\'m happy' %}yes{% else %}no{% endifequal %}"})
+    @setup({'ifequal-split08': r"{% ifequal a 'I'm happy' %}yes{% else %}no{% endifequal %}"})
     def test_ifequal_split08(self):
         output = self.engine.render_to_string('ifequal-split08', {'a': "I'm happy"})
         self.assertEqual(output, 'yes')
@@ -197,7 +196,6 @@ class IfEqualTagTests(SimpleTestCase):
 
 
 class IfNotEqualTagTests(SimpleTestCase):
-
     @setup({'ifnotequal01': '{% ifnotequal a b %}yes{% endifnotequal %}'})
     def test_ifnotequal01(self):
         output = self.engine.render_to_string('ifnotequal01', {'a': 1, 'b': 2})

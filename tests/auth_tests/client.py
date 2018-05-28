@@ -1,8 +1,6 @@
 import re
 
-from django.contrib.auth.views import (
-    INTERNAL_RESET_SESSION_TOKEN, INTERNAL_RESET_URL_TOKEN,
-)
+from django.contrib.auth.views import INTERNAL_RESET_SESSION_TOKEN, INTERNAL_RESET_URL_TOKEN
 from django.test import Client
 
 
@@ -22,6 +20,7 @@ class PasswordResetConfirmClient(Client):
     >>> client = PasswordResetConfirmClient()
     >>> client.get('/reset/bla/my-token/')
     """
+
     def _get_password_reset_confirm_redirect_url(self, url):
         token = extract_token_from_url(url)
         if not token:

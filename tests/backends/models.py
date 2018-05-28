@@ -1,6 +1,4 @@
-from django.contrib.contenttypes.fields import (
-    GenericForeignKey, GenericRelation,
-)
+from django.contrib.contenttypes.fields import GenericForeignKey, GenericRelation
 from django.contrib.contenttypes.models import ContentType
 from django.db import models
 
@@ -10,7 +8,7 @@ class Square(models.Model):
     square = models.PositiveIntegerField()
 
     def __str__(self):
-        return "%s ** 2 == %s" % (self.root, self.square)
+        return '%s ** 2 == %s' % (self.root, self.square)
 
 
 class Person(models.Model):
@@ -54,7 +52,7 @@ class Reporter(models.Model):
     last_name = models.CharField(max_length=30)
 
     def __str__(self):
-        return "%s %s" % (self.first_name, self.last_name)
+        return '%s %s' % (self.first_name, self.last_name)
 
 
 class ReporterProxy(Reporter):
@@ -66,12 +64,7 @@ class Article(models.Model):
     headline = models.CharField(max_length=100)
     pub_date = models.DateField()
     reporter = models.ForeignKey(Reporter, models.CASCADE)
-    reporter_proxy = models.ForeignKey(
-        ReporterProxy,
-        models.SET_NULL,
-        null=True,
-        related_name='reporter_proxy',
-    )
+    reporter_proxy = models.ForeignKey(ReporterProxy, models.SET_NULL, null=True, related_name='reporter_proxy')
 
     def __str__(self):
         return self.headline
@@ -88,7 +81,7 @@ class Item(models.Model):
 
 
 class Object(models.Model):
-    related_objects = models.ManyToManyField("self", db_constraint=False, symmetrical=False)
+    related_objects = models.ManyToManyField('self', db_constraint=False, symmetrical=False)
 
     def __str__(self):
         return str(self.id)

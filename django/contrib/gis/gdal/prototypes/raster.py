@@ -1,14 +1,18 @@
-"""
+'''
 This module houses the ctypes function prototypes for GDAL DataSource (raster)
 related data structures.
-"""
+'''
 from ctypes import POINTER, c_bool, c_char_p, c_double, c_int, c_void_p
 from functools import partial
 
 from django.contrib.gis.gdal.libgdal import GDAL_VERSION, std_call
 from django.contrib.gis.gdal.prototypes.generation import (
-    chararray_output, const_string_output, double_output, int_output,
-    void_output, voidptr_output,
+    chararray_output,
+    const_string_output,
+    double_output,
+    int_output,
+    void_output,
+    voidptr_output
 )
 
 # For more detail about c function names and definitions see
@@ -20,23 +24,26 @@ from django.contrib.gis.gdal.prototypes.generation import (
 void_output = partial(void_output, cpl=True)
 const_string_output = partial(const_string_output, cpl=True)
 double_output = partial(double_output, cpl=True)
-
 # Raster Driver Routines
 register_all = void_output(std_call('GDALAllRegister'), [], errcheck=False)
 get_driver = voidptr_output(std_call('GDALGetDriver'), [c_int])
 get_driver_by_name = voidptr_output(std_call('GDALGetDriverByName'), [c_char_p], errcheck=False)
 get_driver_count = int_output(std_call('GDALGetDriverCount'), [])
 get_driver_description = const_string_output(std_call('GDALGetDescription'), [c_void_p])
-
 # Raster Data Source Routines
 create_ds = voidptr_output(std_call('GDALCreate'), [c_void_p, c_char_p, c_int, c_int, c_int, c_int, c_void_p])
 open_ds = voidptr_output(std_call('GDALOpen'), [c_char_p, c_int])
 close_ds = void_output(std_call('GDALClose'), [c_void_p], errcheck=False)
 flush_ds = int_output(std_call('GDALFlushCache'), [c_void_p])
-copy_ds = voidptr_output(
-    std_call('GDALCreateCopy'),
-    [c_void_p, c_char_p, c_void_p, c_int, POINTER(c_char_p), c_void_p, c_void_p]
-)
+copy_ds = voidptr_output(std_call('GDALCreateCopy'), [
+    c_void_p,
+    c_char_p,
+    c_void_p,
+    c_int,
+    POINTER(c_char_p),
+    c_void_p,
+    c_void_p
+])
 add_band_ds = void_output(std_call('GDALAddBand'), [c_void_p, c_int])
 get_ds_description = const_string_output(std_call('GDALGetDescription'), [c_void_p])
 get_ds_driver = voidptr_output(std_call('GDALGetDatasetDriver'), [c_void_p])
@@ -63,12 +70,21 @@ if GDAL_VERSION >= (2, 1):
     get_ds_info = const_string_output(std_call('GDALInfo'), [c_void_p, c_void_p])
 else:
     get_ds_info = None
-
 # Raster Band Routines
-band_io = void_output(
-    std_call('GDALRasterIO'),
-    [c_void_p, c_int, c_int, c_int, c_int, c_int, c_void_p, c_int, c_int, c_int, c_int, c_int]
-)
+band_io = void_output(std_call('GDALRasterIO'), [
+    c_void_p,
+    c_int,
+    c_int,
+    c_int,
+    c_int,
+    c_int,
+    c_void_p,
+    c_int,
+    c_int,
+    c_int,
+    c_int,
+    c_int
+])
 get_band_xsize = int_output(std_call('GDALGetRasterBandXSize'), [c_void_p])
 get_band_ysize = int_output(std_call('GDALGetRasterBandYSize'), [c_void_p])
 get_band_index = int_output(std_call('GDALGetBandNumber'), [c_void_p])
@@ -82,28 +98,48 @@ if GDAL_VERSION >= (2, 1):
     delete_band_nodata_value = void_output(std_call('GDALDeleteRasterNoDataValue'), [c_void_p])
 else:
     delete_band_nodata_value = None
-get_band_statistics = void_output(
-    std_call('GDALGetRasterStatistics'),
-    [
-        c_void_p, c_int, c_int, POINTER(c_double), POINTER(c_double),
-        POINTER(c_double), POINTER(c_double), c_void_p, c_void_p,
-    ],
-)
-compute_band_statistics = void_output(
-    std_call('GDALComputeRasterStatistics'),
-    [c_void_p, c_int, POINTER(c_double), POINTER(c_double), POINTER(c_double), POINTER(c_double), c_void_p, c_void_p],
-)
-
+get_band_statistics = void_output(std_call('GDALGetRasterStatistics'), [
+    c_void_p,
+    c_int,
+    c_int,
+    POINTER(c_double),
+    POINTER(c_double),
+    POINTER(c_double),
+    POINTER(c_double),
+    c_void_p,
+    c_void_p
+])
+compute_band_statistics = void_output(std_call('GDALComputeRasterStatistics'), [
+    c_void_p,
+    c_int,
+    POINTER(c_double),
+    POINTER(c_double),
+    POINTER(c_double),
+    POINTER(c_double),
+    c_void_p,
+    c_void_p
+])
 # Reprojection routine
-reproject_image = void_output(
-    std_call('GDALReprojectImage'),
-    [c_void_p, c_char_p, c_void_p, c_char_p, c_int, c_double, c_double, c_void_p, c_void_p, c_void_p]
-)
-auto_create_warped_vrt = voidptr_output(
-    std_call('GDALAutoCreateWarpedVRT'),
-    [c_void_p, c_char_p, c_char_p, c_int, c_double, c_void_p]
-)
-
+reproject_image = void_output(std_call('GDALReprojectImage'), [
+    c_void_p,
+    c_char_p,
+    c_void_p,
+    c_char_p,
+    c_int,
+    c_double,
+    c_double,
+    c_void_p,
+    c_void_p,
+    c_void_p
+])
+auto_create_warped_vrt = voidptr_output(std_call('GDALAutoCreateWarpedVRT'), [
+    c_void_p,
+    c_char_p,
+    c_char_p,
+    c_int,
+    c_double,
+    c_void_p
+])
 # Create VSI gdal raster files from in-memory buffers.
 # http://gdal.org/cpl__vsi_8h.html
 create_vsi_file_from_mem_buffer = voidptr_output(std_call('VSIFileFromMemBuffer'), [c_char_p, c_void_p, c_int, c_int])

@@ -2,9 +2,7 @@ import copy
 from itertools import chain
 
 from django import forms
-from django.contrib.postgres.validators import (
-    ArrayMaxLengthValidator, ArrayMinLengthValidator,
-)
+from django.contrib.postgres.validators import ArrayMaxLengthValidator, ArrayMinLengthValidator
 from django.core.exceptions import ValidationError
 from django.utils.translation import gettext_lazy as _
 
@@ -12,9 +10,7 @@ from ..utils import prefix_validation_error
 
 
 class SimpleArrayField(forms.CharField):
-    default_error_messages = {
-        'item_invalid': _('Item %(nth)s in the array did not validate: '),
-    }
+    default_error_messages = {'item_invalid': _('Item %(nth)s in the array did not validate: ')}
 
     def __init__(self, base_field, *, delimiter=',', max_length=None, min_length=None, **kwargs):
         self.base_field = base_field
@@ -49,12 +45,9 @@ class SimpleArrayField(forms.CharField):
             try:
                 values.append(self.base_field.to_python(item))
             except ValidationError as error:
-                errors.append(prefix_validation_error(
-                    error,
-                    prefix=self.error_messages['item_invalid'],
-                    code='item_invalid',
-                    params={'nth': index + 1},
-                ))
+                errors.append(prefix_validation_error(error, prefix=self.error_messages[
+                    'item_invalid'
+                ], code='item_invalid', params={'nth': index + 1}))
         if errors:
             raise ValidationError(errors)
         return values
@@ -66,12 +59,9 @@ class SimpleArrayField(forms.CharField):
             try:
                 self.base_field.validate(item)
             except ValidationError as error:
-                errors.append(prefix_validation_error(
-                    error,
-                    prefix=self.error_messages['item_invalid'],
-                    code='item_invalid',
-                    params={'nth': index + 1},
-                ))
+                errors.append(prefix_validation_error(error, prefix=self.error_messages[
+                    'item_invalid'
+                ], code='item_invalid', params={'nth': index + 1}))
         if errors:
             raise ValidationError(errors)
 
@@ -82,12 +72,9 @@ class SimpleArrayField(forms.CharField):
             try:
                 self.base_field.run_validators(item)
             except ValidationError as error:
-                errors.append(prefix_validation_error(
-                    error,
-                    prefix=self.error_messages['item_invalid'],
-                    code='item_invalid',
-                    params={'nth': index + 1},
-                ))
+                errors.append(prefix_validation_error(error, prefix=self.error_messages[
+                    'item_invalid'
+                ], code='item_invalid', params={'nth': index + 1}))
         if errors:
             raise ValidationError(errors)
 
@@ -115,14 +102,13 @@ class SplitArrayWidget(forms.Widget):
         return self.widget.is_hidden
 
     def value_from_datadict(self, data, files, name):
-        return [self.widget.value_from_datadict(data, files, '%s_%s' % (name, index))
-                for index in range(self.size)]
+        return [self.widget.value_from_datadict(data, files, '%s_%s' % (name, index)) for index in range(self.size)]
 
     def value_omitted_from_data(self, data, files, name):
-        return all(
-            self.widget.value_omitted_from_data(data, files, '%s_%s' % (name, index))
-            for index in range(self.size)
-        )
+        return \
+            all(
+                self.widget.value_omitted_from_data(data, files, '%s_%s' % (name, index)) for index in range(self.size)
+            )
 
     def id_for_label(self, id_):
         # See the comment for RadioSelect.id_for_label()
@@ -145,10 +131,12 @@ class SplitArrayWidget(forms.Widget):
             except IndexError:
                 widget_value = None
             if id_:
-                final_attrs = {**final_attrs, 'id': '%s_%s' % (id_, i)}
-            context['widget']['subwidgets'].append(
-                self.widget.get_context(name + '_%s' % i, widget_value, final_attrs)['widget']
-            )
+                final_attrs = {: final_attrs, 'id': '%s_%s' % (id_, i)}
+            context['widget']['subwidgets'].append(self.widget.get_context(name \
+            + \
+            '_%s' % i, widget_value, final_attrs)[
+                'widget'
+            ])
         return context
 
     @property
@@ -166,9 +154,7 @@ class SplitArrayWidget(forms.Widget):
 
 
 class SplitArrayField(forms.Field):
-    default_error_messages = {
-        'item_invalid': _('Item %(nth)s in the array did not validate: '),
-    }
+    default_error_messages = {'item_invalid': _('Item %(nth)s in the array did not validate: ')}
 
     def __init__(self, base_field, size, *, remove_trailing_nulls=False, **kwargs):
         self.base_field = base_field
@@ -189,12 +175,9 @@ class SplitArrayField(forms.Field):
             try:
                 cleaned_data.append(self.base_field.clean(item))
             except ValidationError as error:
-                errors.append(prefix_validation_error(
-                    error,
-                    self.error_messages['item_invalid'],
-                    code='item_invalid',
-                    params={'nth': index + 1},
-                ))
+                errors.append(prefix_validation_error(error, self.error_messages[
+                    'item_invalid'
+                ], code='item_invalid', params={'nth': index + 1}))
                 cleaned_data.append(None)
             else:
                 errors.append(None)

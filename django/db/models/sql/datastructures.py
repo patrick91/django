@@ -1,18 +1,19 @@
-"""
+'''
 Useful auxiliary data structures for query construction. Not useful outside
 the SQL domain.
-"""
+'''
 # for backwards-compatibility in Django 1.11
-from django.core.exceptions import EmptyResultSet  # NOQA: F401
+from django.core.exceptions import EmptyResultSet # NOQA: F401
 from django.db.models.sql.constants import INNER, LOUTER
 
 
 class MultiJoin(Exception):
-    """
+    '''
     Used by join construction code to indicate the point at which a
     multi-valued join was attempted (if the caller wants to treat that
     exceptionally).
-    """
+    '''
+
     def __init__(self, names_pos, path_with_names):
         self.level = names_pos
         # The path travelled, this includes the path to the multijoin.
@@ -24,7 +25,7 @@ class Empty:
 
 
 class Join:
-    """
+    '''
     Used by sql.Query and sql.SQLCompiler to generate JOIN clauses into the
     FROM entry. For example, the SQL generated could be
         LEFT OUTER JOIN "sometable" T1 ON ("othertable"."sometable_id" = "sometable"."id")
@@ -39,9 +40,9 @@ class Join:
           to join_type)
         - as_sql()
         - relabeled_clone()
-    """
-    def __init__(self, table_name, parent_alias, table_alias, join_type,
-                 join_field, nullable, filtered_relation=None):
+    '''
+
+    def __init__(self, table_name, parent_alias, table_alias, join_type, join_field, nullable, filtered_relation=None):
         # Join table
         self.table_name = table_name
         self.parent_alias = parent_alias
@@ -59,29 +60,23 @@ class Join:
         self.filtered_relation = filtered_relation
 
     def as_sql(self, compiler, connection):
-        """
+        '''
         Generate the full
            LEFT OUTER JOIN sometable ON sometable.somecol = othertable.othercol, params
         clause for this join.
-        """
+        '''
         join_conditions = []
         params = []
         qn = compiler.quote_name_unless_alias
         qn2 = connection.ops.quote_name
-
         # Add a join condition for each pair of joining columns.
         for index, (lhs_col, rhs_col) in enumerate(self.join_cols):
-            join_conditions.append('%s.%s = %s.%s' % (
-                qn(self.parent_alias),
-                qn2(lhs_col),
-                qn(self.table_alias),
-                qn2(rhs_col),
-            ))
-
+            join_conditions.append('%s.%s = %s.%s' \
+            % \
+            (qn(self.parent_alias), qn2(lhs_col), qn(self.table_alias), qn2(rhs_col)))
         # Add a single condition inside parentheses for whatever
         # get_extra_restriction() returns.
-        extra_cond = self.join_field.get_extra_restriction(
-            compiler.query.where_class, self.table_alias, self.parent_alias)
+        extra_cond = self.join_field.get_extra_restriction(compiler.query.where_class, self.table_alias, self.parent_alias)
         if extra_cond:
             extra_sql, extra_params = compiler.compile(extra_cond)
             join_conditions.append('(%s)' % extra_sql)
@@ -94,12 +89,13 @@ class Join:
         if not join_conditions:
             # This might be a rel on the other end of an actual declared field.
             declared_field = getattr(self.join_field, 'field', self.join_field)
-            raise ValueError(
-                "Join generated an empty ON clause. %s did not yield either "
-                "joining columns or extra restrictions." % declared_field.__class__
-            )
+            raise
+            ValueError("Join generated an empty ON clause. %s did not yield either "
+                "joining columns or extra restrictions." \
+            % \
+            declared_field.__class__)
         on_clause_sql = ' AND '.join(join_conditions)
-        alias_str = '' if self.table_alias == self.table_name else (' %s' % self.table_alias)
+        alias_str = '' if self.table_alias == self.table_name else ' %s' % self.table_alias
         sql = '%s %s%s ON (%s)' % (self.join_type, qn(self.table_name), alias_str, on_clause_sql)
         return sql, params
 
@@ -111,19 +107,20 @@ class Join:
             filtered_relation.path = [change_map.get(p, p) for p in self.filtered_relation.path]
         else:
             filtered_relation = None
-        return self.__class__(
-            self.table_name, new_parent_alias, new_table_alias, self.join_type,
-            self.join_field, self.nullable, filtered_relation=filtered_relation,
-        )
+        return \
+            self.__class__(self.table_name, new_parent_alias, new_table_alias, self.join_type, self.join_field, self.nullable, filtered_relation=filtered_relation)
 
     def equals(self, other, with_filtered_relation):
-        return (
-            isinstance(other, self.__class__) and
-            self.table_name == other.table_name and
-            self.parent_alias == other.parent_alias and
-            self.join_field == other.join_field and
-            (not with_filtered_relation or self.filtered_relation == other.filtered_relation)
-        )
+        return \
+            isinstance(other, self.__class__) \
+            and \
+            self.table_name == other.table_name \
+            and \
+            self.parent_alias == other.parent_alias \
+            and \
+            self.join_field == other.join_field \
+            and \
+            not with_filtered_relation or self.filtered_relation == other.filtered_relation
 
     def __eq__(self, other):
         return self.equals(other, with_filtered_relation=True)
@@ -140,12 +137,12 @@ class Join:
 
 
 class BaseTable:
-    """
+    '''
     The BaseTable class is used for base table references in FROM clause. For
     example, the SQL "foo" in
         SELECT * FROM "foo" WHERE somecond
     could be generated by this class.
-    """
+    '''
     join_type = None
     parent_alias = None
     filtered_relation = None
@@ -155,7 +152,7 @@ class BaseTable:
         self.table_alias = alias
 
     def as_sql(self, compiler, connection):
-        alias_str = '' if self.table_alias == self.table_name else (' %s' % self.table_alias)
+        alias_str = '' if self.table_alias == self.table_name else ' %s' % self.table_alias
         base_sql = compiler.quote_name_unless_alias(self.table_name)
         return base_sql + alias_str, []
 
@@ -163,8 +160,9 @@ class BaseTable:
         return self.__class__(self.table_name, change_map.get(self.table_alias, self.table_alias))
 
     def equals(self, other, with_filtered_relation):
-        return (
-            isinstance(self, other.__class__) and
-            self.table_name == other.table_name and
+        return \
+            isinstance(self, other.__class__) \
+            and \
+            self.table_name == other.table_name \
+            and \
             self.table_alias == other.table_alias
-        )
